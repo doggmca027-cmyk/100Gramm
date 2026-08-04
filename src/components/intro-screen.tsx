@@ -16,7 +16,7 @@ export function IntroScreen({ onDone }: { onDone: () => void }) {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-6 text-center">
+    <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-6 text-center">
       <h1 className="text-3xl font-bold">🍾 100ГРАМ</h1>
 
       <div className="gradient-surface rounded-2xl p-5 text-left text-[15px] leading-relaxed">

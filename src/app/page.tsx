@@ -10,11 +10,13 @@ import { BalanceScreen } from "@/components/balance-screen";
 import { UpgradesScreen } from "@/components/upgrades-screen";
 import { SquadScreen } from "@/components/squad-screen";
 import { GamesScreen } from "@/components/games-screen";
+import { AdminScreen } from "@/components/admin-screen";
 
 export default function Home() {
   const { state, loading, error, refresh, setState } = usePlayerState();
   const [tab, setTab] = useState<TabId>("path");
   const [introDone, setIntroDone] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(false);
 
   if (loading) {
     return (
@@ -45,17 +47,23 @@ export default function Home() {
 
   return (
     <>
-      <AppHeader state={state} />
-      <main className="flex min-h-0 flex-1 flex-col">
-        {tab === "path" && <PathScreen state={state} onStateChange={setState} />}
-        {tab === "balance" && (
-          <BalanceScreen state={state} onStateChange={setState} />
-        )}
-        {tab === "upgrades" && <UpgradesScreen state={state} />}
-        {tab === "squad" && <SquadScreen state={state} />}
-        {tab === "games" && <GamesScreen />}
-      </main>
-      <BottomNav active={tab} onChange={setTab} />
+      <AppHeader state={state} onOpenAdmin={() => setAdminOpen(true)} />
+      {adminOpen ? (
+        <AdminScreen onBack={() => setAdminOpen(false)} />
+      ) : (
+        <>
+          <main className="flex min-h-0 flex-1 flex-col">
+            {tab === "path" && <PathScreen state={state} onStateChange={setState} />}
+            {tab === "balance" && (
+              <BalanceScreen state={state} onStateChange={setState} />
+            )}
+            {tab === "upgrades" && <UpgradesScreen state={state} />}
+            {tab === "squad" && <SquadScreen state={state} />}
+            {tab === "games" && <GamesScreen />}
+          </main>
+          <BottomNav active={tab} onChange={setTab} />
+        </>
+      )}
     </>
   );
 }

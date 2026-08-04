@@ -5,13 +5,17 @@ import { useCountdown, formatDuration } from "@/hooks/use-countdown";
 import type { PlayerState } from "@/lib/types";
 import { isAdminTelegramId } from "@/lib/admin";
 import { LeaderboardModal } from "./leaderboard-modal";
-import { AdminPanelModal } from "./admin-panel-modal";
 
-export function AppHeader({ state }: { state: PlayerState }) {
+export function AppHeader({
+  state,
+  onOpenAdmin,
+}: {
+  state: PlayerState;
+  onOpenAdmin: () => void;
+}) {
   const secondsLeft = useCountdown(state.season.ends_at);
   const daysLeft = Math.floor(secondsLeft / 86400);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
-  const [adminOpen, setAdminOpen] = useState(false);
   const isAdmin = isAdminTelegramId(state.squad.invite_code);
 
   return (
@@ -35,7 +39,7 @@ export function AppHeader({ state }: { state: PlayerState }) {
           {isAdmin && (
             <button
               type="button"
-              onClick={() => setAdminOpen(true)}
+              onClick={onOpenAdmin}
               className="gradient-surface flex h-9 w-9 items-center justify-center rounded-full text-lg"
               aria-label="Управление"
             >
@@ -56,7 +60,6 @@ export function AppHeader({ state }: { state: PlayerState }) {
       {leaderboardOpen && (
         <LeaderboardModal onClose={() => setLeaderboardOpen(false)} />
       )}
-      {adminOpen && <AdminPanelModal onClose={() => setAdminOpen(false)} />}
     </>
   );
 }
