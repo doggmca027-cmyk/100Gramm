@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import type { ActiveCycle, TierState } from "@/lib/types";
-import { useCountdown, formatDuration } from "@/hooks/use-countdown";
+import { useCountdown, useElapsedPercent, formatDuration } from "@/hooks/use-countdown";
+
+// Stable placeholder for useElapsedPercent's start param when there's no
+// real previousTier.unlocked_at yet — avoids computing `new Date()` (impure)
+// during render just to produce an unused fallback.
+const EPOCH = "1970-01-01T00:00:00.000Z";
 
 const TIER_ACCENT: Record<number, string> = {
   1: "#8b7765",
@@ -29,13 +34,6 @@ function CycleTimer({ cycle }: { cycle: ActiveCycle }) {
   );
 }
 
-/** Renders "· ещё Xч" once `unlockAtIso` is in the future; nothing once it has passed. */
-function UnlockTimeNote({ unlockAtIso }: { unlockAtIso: string }) {
-  const remaining = useCountdown(unlockAtIso);
-  if (remaining <= 0) return null;
-  return <> · ещё {formatDuration(remaining)}</>;
-}
-
 export function ProductCard({
   tier,
   previousTier,
@@ -54,6 +52,18 @@ export function ProductCard({
   const [starting, setStarting] = useState(false);
   const accent = TIER_ACCENT[tier.tier] ?? "#8b7765";
 
+  // Unlock requires BOTH enough completed cycles AND enough elapsed time
+  // (see supabase/migrations/0002_functions.sql) — the real progress is
+  // whichever of the two is further behind, not the cycle count alone.
+  const requiredCycles = previousTier?.unlock_required_cycles ?? 0;
+  const doneCycles = Math.min(previousTier?.completed_cycles ?? 0, requiredCycles);
+  const cyclesPercent = requiredCycles > 0 ? (doneCycles / requiredCycles) * 100 : 100;
+  const timePercent = useElapsedPercent(
+    previousTier?.unlocked_at ?? EPOCH,
+    previousTier?.unlocked_at ? (previousTier?.unlock_min_hours ?? 0) : 0,
+  );
+  const unlockPercent = Math.floor(Math.min(cyclesPercent, timePercent));
+
   async function handleStart() {
     setStarting(true);
     try {
@@ -64,15 +74,6 @@ export function ProductCard({
   }
 
   if (!tier.unlocked) {
-    const requiredCycles = previousTier?.unlock_required_cycles ?? 0;
-    const doneCycles = Math.min(previousTier?.completed_cycles ?? 0, requiredCycles);
-    const unlockAtIso = previousTier?.unlocked_at
-      ? new Date(
-          new Date(previousTier.unlocked_at).getTime() +
-            (previousTier?.unlock_min_hours ?? 0) * 3600_000,
-        ).toISOString()
-      : null;
-
     return (
       <div className="gradient-surface flex flex-col gap-2 rounded-2xl p-4 opacity-60">
         <div className="flex items-center justify-between">
@@ -82,16 +83,11 @@ export function ProductCard({
         <div className="h-1.5 rounded-full bg-progress-bg">
           <div
             className="h-1.5 rounded-full bg-progress-fill"
-            style={{
-              width: requiredCycles
-                ? `${Math.min(100, (doneCycles / requiredCycles) * 100)}%`
-                : "0%",
-            }}
+            style={{ width: `${unlockPercent}%` }}
           />
         </div>
         <p className="text-xs text-nav-inactive">
-          Открывается после: {doneCycles}/{requiredCycles} циклов
-          {unlockAtIso && <UnlockTimeNote unlockAtIso={unlockAtIso} />}
+          Открывается после: {doneCycles}/{requiredCycles} циклов · {unlockPercent}%
         </p>
       </div>
     );
