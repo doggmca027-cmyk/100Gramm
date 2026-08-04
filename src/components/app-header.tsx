@@ -42,14 +42,6 @@ export function AppHeader({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="text-right">
-            <p className="gradient-gram bg-clip-text text-lg font-bold text-transparent">
-              {state.wallet.balance.toFixed(2)} {t("common.gram")}
-            </p>
-            <p className="text-xs text-nav-inactive">
-              {t("header.season")}: {daysLeft > 0 ? `${daysLeft} d` : formatDuration(secondsLeft)}
-            </p>
-          </div>
           <button
             type="button"
             onClick={handleSupport}
@@ -77,6 +69,14 @@ export function AppHeader({
           >
             🏆
           </button>
+          <div className="text-right">
+            <p className="gradient-gram bg-clip-text text-lg font-bold text-transparent">
+              {state.wallet.balance.toFixed(2)} {t("common.gram")}
+            </p>
+            <p className="text-xs text-nav-inactive">
+              {t("header.season")}: {daysLeft > 0 ? `${daysLeft} d` : formatDuration(secondsLeft)}
+            </p>
+          </div>
         </div>
       </header>
 
