@@ -97,3 +97,40 @@ export function createAdminPartnerTask(input: {
 export function deactivateAdminPartnerTask(id: string) {
   return request<{ ok: true }>(`/api/admin/partner-tasks/${id}`, { method: "PATCH" });
 }
+
+export interface AdminUser {
+  id: string;
+  telegram_id: number;
+  username: string | null;
+  first_name: string | null;
+  is_ambassador: boolean;
+}
+
+export function searchAdminUsers(q: string) {
+  return request<AdminUser[]>(`/api/admin/users/search?q=${encodeURIComponent(q)}`);
+}
+
+export function setUserAmbassador(id: string, isAmbassador: boolean) {
+  return request<{ ok: true }>(`/api/admin/users/${id}/ambassador`, {
+    method: "PATCH",
+    body: JSON.stringify({ isAmbassador }),
+  });
+}
+
+export interface AmbassadorLevelStats {
+  level: number;
+  referred_count: number;
+  total_deposited: number;
+}
+
+export interface AmbassadorStats {
+  id: string;
+  telegram_id: number;
+  username: string | null;
+  first_name: string | null;
+  levels: AmbassadorLevelStats[];
+}
+
+export function fetchAmbassadorStats() {
+  return request<AmbassadorStats[]>("/api/admin/ambassadors/stats");
+}
