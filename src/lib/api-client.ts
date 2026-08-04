@@ -68,3 +68,32 @@ export function checkPartnerTaskSubscription(taskId: string) {
     body: JSON.stringify({ taskId }),
   });
 }
+
+export interface AdminPartnerTask {
+  id: string;
+  title: string;
+  description: string | null;
+  reward_amount: number;
+  channel_username: string;
+  is_active: boolean;
+  sort_order: number;
+}
+
+export function fetchAdminPartnerTasks() {
+  return request<AdminPartnerTask[]>("/api/admin/partner-tasks");
+}
+
+export function createAdminPartnerTask(input: {
+  title: string;
+  channelLink: string;
+  reward: number;
+}) {
+  return request<AdminPartnerTask>("/api/admin/partner-tasks", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function deactivateAdminPartnerTask(id: string) {
+  return request<{ ok: true }>(`/api/admin/partner-tasks/${id}`, { method: "PATCH" });
+}

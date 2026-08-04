@@ -32,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ru"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-bg">
+      <body className="flex h-dvh flex-col overflow-hidden bg-bg">
         <AppBootstrap>{children}</AppBootstrap>
       </body>
     </html>
