@@ -13,6 +13,10 @@ export interface PlayerState {
       features?: Record<string, boolean>;
     };
   };
+  profile: {
+    username: string | null;
+    first_name: string | null;
+  };
   wallet: {
     balance: number;
     total_earned: number;
@@ -20,7 +24,16 @@ export interface PlayerState {
     completed_cycles_total: number;
     has_seen_intro: boolean;
   };
-  rank: { name: string; icon: string | null } | null;
+  stats: {
+    profit_24h: number;
+  };
+  rank: {
+    name: string;
+    icon: string | null;
+    level: number;
+    min_earned: number;
+    next_min_earned: number | null;
+  } | null;
   tiers: TierState[];
   active_cycles: ActiveCycle[];
   quests: Quest[];
@@ -35,6 +48,7 @@ export interface PlayerState {
 export interface TierState {
   tier: number;
   name: string;
+  description: string | null;
   price: number;
   payout_percent: number;
   cycle_hours: number;
@@ -74,4 +88,11 @@ export interface Container {
   opens_at: string;
   opened_at: string | null;
   reward_amount: number | null;
+}
+
+export interface HistoryEntry {
+  type: "cycle" | "referral";
+  tier: number;
+  amount: number;
+  created_at: string;
 }

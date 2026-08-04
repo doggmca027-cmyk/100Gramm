@@ -1,19 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #171827;
-  --surface: #29283d;
-  --surface-from: #302f46;
-  --surface-to: #242337;
-  --header: #25243a;
-  --nav: #211f32;
-  --nav-inactive: #8b8c9a;
-  --action-from: #9b35ff;
-  --action-to: #3867ff;
+  --bg: #141420;
+  --surface: #1b1a2a;
+  --surface-from: #232236;
+  --surface-to: #1b1a2a;
+  --border: #25243a;
+  --header: #1b1a2a;
+  --nav: #1b1a2a;
+  --nav-inactive: #a8a8ba;
+  --action-from: #3867ff;
+  --action-to: #9b35ff;
   --gram: #ffc857;
   --gram-from: #ffe08a;
   --gram-to: #f6b73c;
   --profit: #38d996;
+  --danger: #f05454;
   --progress-fill: #4d7cff;
   --progress-bg: #35364d;
 }
@@ -21,11 +23,13 @@
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
+  --color-border: var(--border);
   --color-header: var(--header);
   --color-nav: var(--nav);
   --color-nav-inactive: var(--nav-inactive);
   --color-gram: var(--gram);
   --color-profit: var(--profit);
+  --color-danger: var(--danger);
   --color-progress-fill: var(--progress-fill);
   --color-progress-bg: var(--progress-bg);
   --font-sans: var(--font-geist-sans);
@@ -34,7 +38,7 @@
 
 body {
   background: var(--bg);
-  color: #f4f3fb;
+  color: #ffffff;
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
@@ -45,6 +49,7 @@ body {
  */
 .gradient-surface {
   background-image: linear-gradient(160deg, var(--surface-from), var(--surface-to));
+  border: 1px solid var(--border);
 }
 
 .gradient-action {

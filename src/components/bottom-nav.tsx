@@ -18,15 +18,16 @@ export function BottomNav({
   onChange: (tab: TabId) => void;
 }) {
   return (
-    <nav className="bg-nav fixed inset-x-0 bottom-0 flex justify-around border-t border-white/5 py-2">
+    <nav className="bg-nav/90 fixed inset-x-0 bottom-0 flex justify-around border-t border-border py-2 backdrop-blur-md">
       {TABS.map((tab) => (
         <button
           key={tab.id}
           type="button"
           onClick={() => onChange(tab.id)}
-          className={`flex flex-col items-center gap-0.5 px-3 py-1 text-xs ${
+          className={`flex flex-col items-center gap-0.5 rounded-xl px-3 py-1 text-xs transition-colors ${
             active === tab.id ? "text-white" : "text-nav-inactive"
           }`}
+          style={active === tab.id ? { textShadow: "0 0 12px #9b35ff" } : undefined}
         >
           <span className="text-lg">{tab.icon}</span>
           {tab.label}

@@ -1,4 +1,4 @@
-import type { PlayerState } from "./types";
+import type { HistoryEntry, PlayerState } from "./types";
 
 export class ApiError extends Error {
   constructor(public code: string) {
@@ -56,4 +56,8 @@ export interface LeaderboardEntry {
 
 export function fetchLeaderboard(metric: "total_earned" | "completed_cycles_total" = "total_earned") {
   return request<LeaderboardEntry[]>(`/api/leaderboard?metric=${metric}`);
+}
+
+export function fetchHistory() {
+  return request<HistoryEntry[]>("/api/history");
 }
