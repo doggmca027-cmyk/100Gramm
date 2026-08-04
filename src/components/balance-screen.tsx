@@ -3,7 +3,6 @@
 import type { PlayerState } from "@/lib/types";
 import { QuestList } from "./quest-list";
 import { ContainerList } from "./container-list";
-import { LeaderboardList } from "./leaderboard-list";
 
 export function BalanceScreen({
   state,
@@ -26,7 +25,6 @@ export function BalanceScreen({
 
       <QuestList quests={state.quests} onStateChange={onStateChange} />
       <ContainerList containers={state.containers} onStateChange={onStateChange} />
-      <LeaderboardList />
     </div>
   );
 }
