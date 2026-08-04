@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
     p_username: validated.user.username ?? null,
     p_first_name: validated.user.first_name ?? null,
     p_ref_code: validated.startParam,
+    p_photo_url: validated.user.photo_url ?? null,
   });
 
   if (error || !userId) {

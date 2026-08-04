@@ -16,6 +16,7 @@ export interface PlayerState {
   profile: {
     username: string | null;
     first_name: string | null;
+    photo_url: string | null;
   };
   wallet: {
     balance: number;

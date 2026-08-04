@@ -1,6 +1,7 @@
 "use client";
 
 import type { PlayerState } from "@/lib/types";
+import { ProfileAvatar } from "./profile-avatar";
 
 export function PlayerProfileCard({ state }: { state: PlayerState }) {
   const rank = state.rank;
@@ -15,9 +16,11 @@ export function PlayerProfileCard({ state }: { state: PlayerState }) {
   return (
     <div className="gradient-surface flex items-center justify-between gap-3 rounded-2xl p-4">
       <div className="flex items-center gap-3">
-        <div className="gradient-action flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl">
-          {rank?.icon ?? "🥴"}
-        </div>
+        <ProfileAvatar
+          photoUrl={state.profile.photo_url}
+          rankIcon={rank?.icon ?? null}
+          rankLevel={rank?.level}
+        />
         <div>
           <p className="font-semibold">{rank?.name ?? "Бомж"}</p>
           <p className="text-xs text-nav-inactive">Уровень {rank?.level ?? 1}</p>

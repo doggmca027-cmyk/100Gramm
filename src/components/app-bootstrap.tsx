@@ -26,7 +26,12 @@ export function AppBootstrap({ children }: { children: React.ReactNode }) {
               tgWebAppData: new URLSearchParams([
                 [
                   "user",
-                  JSON.stringify({ id: 1, first_name: "Dev", username: "dev_user" }),
+                  JSON.stringify({
+                    id: 1,
+                    first_name: "Dev",
+                    username: "dev_user",
+                    photo_url: "https://i.pravatar.cc/150?img=12",
+                  }),
                 ],
                 ["auth_date", String(Math.floor(Date.now() / 1000))],
                 ["signature", "dev-mock-signature"],
