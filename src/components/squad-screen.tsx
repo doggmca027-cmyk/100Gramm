@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import type { PlayerState } from "@/lib/types";
+import { SQUAD_BANNER_IMAGE } from "@/lib/tier-art";
 
 export function SquadScreen({ state }: { state: PlayerState }) {
   const [copied, setCopied] = useState(false);
@@ -19,12 +21,24 @@ export function SquadScreen({ state }: { state: PlayerState }) {
 
   return (
     <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pb-24">
+      <div className="relative overflow-hidden rounded-2xl">
+        <Image
+          src={SQUAD_BANNER_IMAGE}
+          alt=""
+          width={800}
+          height={450}
+          className="h-40 w-full object-cover"
+        />
+        <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/30 to-transparent p-4">
+          <p className="text-xs text-nav-inactive">👥 Банда</p>
+          <p className="text-2xl font-bold">{state.squad.referred_count}</p>
+        </div>
+      </div>
+
       <div className="gradient-surface rounded-2xl p-5 text-center">
-        <p className="text-sm text-nav-inactive">👥 Банда</p>
-        <p className="text-3xl font-bold">{state.squad.referred_count}</p>
-        <p className="mt-1 text-xs text-nav-inactive">
-          Доход с команды:{" "}
-          <span className="text-gram">{state.squad.earned_total.toFixed(2)} GRAM</span>
+        <p className="text-xs text-nav-inactive">Доход с команды</p>
+        <p className="gradient-gram bg-clip-text text-2xl font-bold text-transparent">
+          {state.squad.earned_total.toFixed(2)} GRAM
         </p>
       </div>
 

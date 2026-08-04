@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import type { PlayerState } from "@/lib/types";
 import { QuestList } from "./quest-list";
 import { ComingSoonSection } from "./coming-soon-section";
 import { HistoryModal } from "./history-modal";
+import { GRAM_COIN_IMAGE, SQUAD_BANNER_IMAGE } from "@/lib/tier-art";
 
 export function BalanceScreen({
   state,
@@ -18,11 +20,21 @@ export function BalanceScreen({
 
   return (
     <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-4 pb-24">
-      <div className="gradient-surface rounded-2xl p-5 text-center">
-        <p className="text-xs text-nav-inactive">Ваш баланс</p>
-        <p className="gradient-gram bg-clip-text text-3xl font-bold text-transparent">
-          {state.wallet.balance.toFixed(2)} GRAM
-        </p>
+      <div className="gradient-surface flex items-center justify-between rounded-2xl p-5">
+        <div>
+          <p className="text-xs text-nav-inactive">Ваш баланс</p>
+          <p className="gradient-gram bg-clip-text text-3xl font-bold text-transparent">
+            {state.wallet.balance.toFixed(2)}
+          </p>
+          <p className="text-xs text-nav-inactive">GRAM</p>
+        </div>
+        <Image
+          src={GRAM_COIN_IMAGE}
+          alt=""
+          width={80}
+          height={80}
+          className="h-20 w-20 rounded-xl object-cover"
+        />
       </div>
 
       <div className="grid grid-cols-3 gap-2">
@@ -69,13 +81,20 @@ export function BalanceScreen({
         </div>
       </div>
 
-      <div className="gradient-surface rounded-2xl p-4">
-        <p className="text-sm font-semibold">👥 Бонус за друзей</p>
-        <p className="mt-1 text-xs text-nav-inactive">
-          Зови друзей и получай долю их дохода.
-        </p>
-        <p className="mt-2 text-2xl font-bold text-gram">+10%</p>
-        <p className="text-xs text-nav-inactive">от дохода 1-го уровня приглашённых</p>
+      <div className="relative overflow-hidden rounded-2xl">
+        <Image
+          src={SQUAD_BANNER_IMAGE}
+          alt=""
+          width={600}
+          height={300}
+          className="h-32 w-full object-cover"
+        />
+        <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4">
+          <p className="text-sm font-semibold">👥 Бонус за друзей</p>
+          <p className="text-xs text-nav-inactive">
+            Зови друзей и получай <span className="font-semibold text-gram">+10%</span> от их дохода
+          </p>
+        </div>
       </div>
 
       <QuestList quests={state.quests} onStateChange={onStateChange} />

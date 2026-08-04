@@ -1,7 +1,19 @@
 // Single place to plug in real art once it's supplied — fill a tier's entry
 // with a URL and the card/detail screen will use it instead of the emoji
 // placeholder automatically.
-export const TIER_IMAGE_URL: Partial<Record<number, string>> = {};
+export const TIER_IMAGE_URL: Partial<Record<number, string>> = {
+  1: "/products/1-bottle.jpg",
+  2: "/products/2-crate.jpg",
+  3: "/products/3-cart.jpg",
+  4: "/products/4-kiosk.jpg",
+  5: "/products/5-bar.jpg",
+  6: "/products/6-liquor.jpg",
+  7: "/products/7-restaurant.jpg",
+  8: "/products/8-palace.jpg",
+};
+
+export const GRAM_COIN_IMAGE = "/products/gram-coin.jpg";
+export const SQUAD_BANNER_IMAGE = "/products/squad-banner.jpg";
 
 export const TIER_ICON: Record<number, string> = {
   1: "🍾",

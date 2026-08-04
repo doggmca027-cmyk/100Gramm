@@ -65,7 +65,7 @@ export function ProductDetailScreen({
       </header>
 
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pb-28">
-        <TierImage tier={tier.tier} className="h-48 w-full rounded-2xl" emojiClassName="text-6xl" />
+        <TierImage tier={tier.tier} className="aspect-square w-full rounded-2xl" emojiClassName="text-6xl" />
 
         <div>
           <div className="flex items-center gap-2">
