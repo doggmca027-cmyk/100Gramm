@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { PartnerTasksAdminSection } from "./admin/partner-tasks-admin-section";
 import { AmbassadorsAdminSection } from "./admin/ambassadors-admin-section";
+import { NewsAdminSection } from "./admin/news-admin-section";
 import { AmbassadorStatsScreen } from "./ambassador-stats-screen";
 
-type Section = "tasks" | "ambassadors";
+type Section = "tasks" | "ambassadors" | "news";
 
 export function AdminScreen({ onBack }: { onBack: () => void }) {
   const [section, setSection] = useState<Section>("tasks");
@@ -43,6 +44,15 @@ export function AdminScreen({ onBack }: { onBack: () => void }) {
         >
           ⭐ Амбассадоры
         </button>
+        <button
+          type="button"
+          onClick={() => setSection("news")}
+          className={`flex-1 rounded-full py-2 text-xs font-semibold ${
+            section === "news" ? "gradient-action" : "gradient-surface text-nav-inactive"
+          }`}
+        >
+          📰 Новости
+        </button>
       </div>
 
       <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-4 pb-8">
@@ -50,6 +60,7 @@ export function AdminScreen({ onBack }: { onBack: () => void }) {
         {section === "ambassadors" && (
           <AmbassadorsAdminSection onOpenStats={() => setStatsOpen(true)} />
         )}
+        {section === "news" && <NewsAdminSection />}
         {/* Дальнейшие разделы админки добавляются сюда. */}
       </div>
     </div>

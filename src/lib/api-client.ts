@@ -134,3 +134,26 @@ export interface AmbassadorStats {
 export function fetchAmbassadorStats() {
   return request<AmbassadorStats[]>("/api/admin/ambassadors/stats");
 }
+
+export interface BroadcastResult {
+  sent: number;
+  failed: number;
+  total: number;
+}
+
+export async function sendBroadcast(form: FormData) {
+  const res = await fetch("/api/admin/broadcast", {
+    method: "POST",
+    credentials: "include",
+    // No Content-Type here on purpose — the browser sets
+    // multipart/form-data with the correct boundary itself.
+    body: form,
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new ApiError(body?.error ?? `http_${res.status}`);
+  }
+
+  return res.json() as Promise<BroadcastResult>;
+}
