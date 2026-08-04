@@ -2,7 +2,7 @@
 
 import type { PlayerState } from "@/lib/types";
 import { QuestList } from "./quest-list";
-import { ContainerList } from "./container-list";
+import { ComingSoonSection } from "./coming-soon-section";
 
 export function BalanceScreen({
   state,
@@ -24,7 +24,11 @@ export function BalanceScreen({
       </div>
 
       <QuestList quests={state.quests} onStateChange={onStateChange} />
-      <ContainerList containers={state.containers} onStateChange={onStateChange} />
+      <ComingSoonSection
+        icon="📦"
+        title="Контейнеры"
+        description="Появятся в одном из следующих сезонов."
+      />
     </div>
   );
 }
