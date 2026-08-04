@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import type { PlayerState } from "@/lib/types";
 import { startCycle } from "@/lib/api-client";
+import { useLanguage } from "@/lib/i18n/context";
 import { ProductCard } from "./product-card";
 import { ProductDetailScreen } from "./product-detail-screen";
 import { PlayerProfileCard } from "./player-profile-card";
@@ -14,6 +15,7 @@ export function PathScreen({
   state: PlayerState;
   onStateChange: (state: PlayerState) => void;
 }) {
+  const { t } = useLanguage();
   const [detailTier, setDetailTier] = useState<number | null>(null);
   const usedSlots = state.active_cycles.reduce((sum, c) => sum + c.slot_quantity, 0);
   const freeSlots = state.wallet.slots_count - usedSlots;
@@ -53,9 +55,11 @@ export function PathScreen({
 
       <div className="flex items-center justify-between px-1 text-sm text-nav-inactive">
         <span>
-          Слоты: {usedSlots}/{state.wallet.slots_count}
+          {t("path.slots")}: {usedSlots}/{state.wallet.slots_count}
         </span>
-        <span>{state.wallet.completed_cycles_total} циклов пройдено</span>
+        <span>
+          {state.wallet.completed_cycles_total} {t("path.cyclesDone")}
+        </span>
       </div>
 
       {state.tiers.map((tier, index) => (

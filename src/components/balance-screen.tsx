@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import type { PlayerState } from "@/lib/types";
+import { useLanguage } from "@/lib/i18n/context";
 import { QuestList } from "./quest-list";
 import { PartnerTasksSection } from "./partner-tasks-section";
 import { ComingSoonSection } from "./coming-soon-section";
@@ -16,6 +17,7 @@ export function BalanceScreen({
   state: PlayerState;
   onStateChange: (state: PlayerState) => void;
 }) {
+  const { t } = useLanguage();
   const [historyOpen, setHistoryOpen] = useState(false);
   const usedSlots = state.active_cycles.reduce((sum, c) => sum + c.slot_quantity, 0);
 
@@ -23,11 +25,11 @@ export function BalanceScreen({
     <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-4 pb-24">
       <div className="gradient-surface flex items-center justify-between rounded-2xl p-5">
         <div>
-          <p className="text-xs text-nav-inactive">Ваш баланс</p>
+          <p className="text-xs text-nav-inactive">{t("balance.yourBalance")}</p>
           <p className="gradient-gram bg-clip-text text-3xl font-bold text-transparent">
             {state.wallet.balance.toFixed(2)}
           </p>
-          <p className="text-xs text-nav-inactive">GRAM</p>
+          <p className="text-xs text-nav-inactive">{t("common.gram")}</p>
         </div>
         <Image
           src={GRAM_COIN_IMAGE}
@@ -45,7 +47,7 @@ export function BalanceScreen({
           className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-3 text-xs opacity-40"
         >
           <span className="text-lg">⬆️</span>
-          Пополнить
+          {t("balance.topUp")}
         </button>
         <button
           type="button"
@@ -53,7 +55,7 @@ export function BalanceScreen({
           className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-3 text-xs opacity-40"
         >
           <span className="text-lg">⬇️</span>
-          Вывести
+          {t("balance.withdraw")}
         </button>
         <button
           type="button"
@@ -61,18 +63,18 @@ export function BalanceScreen({
           className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-3 text-xs"
         >
           <span className="text-lg">📜</span>
-          История
+          {t("balance.history")}
         </button>
       </div>
 
       <div className="flex flex-col gap-2">
-        <h2 className="px-1 text-sm font-semibold text-nav-inactive">Статистика</h2>
+        <h2 className="px-1 text-sm font-semibold text-nav-inactive">{t("balance.statistics")}</h2>
         <div className="gradient-surface flex flex-col divide-y divide-white/5 rounded-xl">
           {[
-            ["Завершено циклов", `${state.wallet.completed_cycles_total}`],
-            ["Заработано всего", `${state.wallet.total_earned.toFixed(2)} GRAM`],
-            ["Прибыль за 24ч", `${state.stats.profit_24h.toFixed(2)} GRAM`],
-            ["Активных слотов", `${usedSlots} / ${state.wallet.slots_count}`],
+            [t("balance.cyclesCompleted"), `${state.wallet.completed_cycles_total}`],
+            [t("balance.totalEarned"), `${state.wallet.total_earned.toFixed(2)} ${t("common.gram")}`],
+            [t("balance.profit24h"), `${state.stats.profit_24h.toFixed(2)} ${t("common.gram")}`],
+            [t("balance.activeSlots"), `${usedSlots} / ${state.wallet.slots_count}`],
           ].map(([label, value]) => (
             <div key={label} className="flex items-center justify-between p-3 text-sm">
               <span className="text-nav-inactive">{label}</span>
@@ -91,9 +93,10 @@ export function BalanceScreen({
           className="h-32 w-full object-cover"
         />
         <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4">
-          <p className="text-sm font-semibold">👥 Бонус за друзей</p>
+          <p className="text-sm font-semibold">{t("balance.friendBonusTitle")}</p>
           <p className="text-xs text-nav-inactive">
-            Зови друзей и получай <span className="font-semibold text-gram">+10%</span> от их дохода
+            {t("balance.friendBonusText")} <span className="font-semibold text-gram">+10%</span>{" "}
+            {t("balance.friendBonusSuffix")}
           </p>
         </div>
       </div>
@@ -102,8 +105,8 @@ export function BalanceScreen({
       <PartnerTasksSection tasks={state.partner_tasks} onStateChange={onStateChange} />
       <ComingSoonSection
         icon="📦"
-        title="Контейнеры"
-        description="Появятся в одном из следующих сезонов."
+        title={t("containers.title")}
+        description={t("containers.comingSoon")}
       />
 
       {historyOpen && <HistoryModal onClose={() => setHistoryOpen(false)} />}

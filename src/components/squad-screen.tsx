@@ -4,8 +4,10 @@ import { useState } from "react";
 import Image from "next/image";
 import type { PlayerState } from "@/lib/types";
 import { SQUAD_BANNER_IMAGE } from "@/lib/tier-art";
+import { useLanguage } from "@/lib/i18n/context";
 
 export function SquadScreen({ state }: { state: PlayerState }) {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const botUsername = process.env.NEXT_PUBLIC_BOT_USERNAME;
   const inviteLink = botUsername
@@ -30,27 +32,24 @@ export function SquadScreen({ state }: { state: PlayerState }) {
           className="h-40 w-full object-cover"
         />
         <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/30 to-transparent p-4">
-          <p className="text-xs text-nav-inactive">👥 Банда</p>
+          <p className="text-xs text-nav-inactive">{t("squad.title")}</p>
           <p className="text-2xl font-bold">{state.squad.referred_count}</p>
         </div>
       </div>
 
       <div className="gradient-surface rounded-2xl p-5 text-center">
-        <p className="text-xs text-nav-inactive">Доход с команды</p>
+        <p className="text-xs text-nav-inactive">{t("squad.teamIncome")}</p>
         <p className="gradient-gram bg-clip-text text-2xl font-bold text-transparent">
-          {state.squad.earned_total.toFixed(2)} GRAM
+          {state.squad.earned_total.toFixed(2)} {t("common.gram")}
         </p>
       </div>
 
       <div className="gradient-surface rounded-2xl p-4 text-sm leading-relaxed">
-        <p>
-          В этом мире одному выжить сложно. Приглашай друзей — получай долю
-          GRAM с каждого их запущенного цикла.
-        </p>
+        <p>{t("squad.description")}</p>
         <ul className="mt-3 space-y-1 text-xs text-nav-inactive">
-          <li>🥇 Уровень 1 (напарники) — 10%</li>
-          <li>🥈 Уровень 2 — 5%</li>
-          <li>🥉 Уровень 3 — 2%</li>
+          <li>{t("squad.level1")}</li>
+          <li>{t("squad.level2")}</li>
+          <li>{t("squad.level3")}</li>
         </ul>
       </div>
 
@@ -60,7 +59,7 @@ export function SquadScreen({ state }: { state: PlayerState }) {
         disabled={!inviteLink}
         className="gradient-action rounded-full py-3 text-sm font-semibold disabled:opacity-40"
       >
-        {copied ? "Скопировано!" : "🍾 Позвать в команду"}
+        {copied ? t("squad.copied") : t("squad.invite")}
       </button>
     </div>
   );

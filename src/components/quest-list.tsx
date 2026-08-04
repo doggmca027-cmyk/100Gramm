@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { PlayerState, Quest } from "@/lib/types";
 import { claimQuest } from "@/lib/api-client";
+import { useLanguage } from "@/lib/i18n/context";
 
 function QuestRow({
   quest,
@@ -11,6 +12,7 @@ function QuestRow({
   quest: Quest;
   onClaimed: (state: PlayerState) => void;
 }) {
+  const { t, pick } = useLanguage();
   const [claiming, setClaiming] = useState(false);
   const ready = Boolean(quest.completed_at) && !quest.claimed_at;
 
@@ -29,15 +31,18 @@ function QuestRow({
   return (
     <div className="gradient-surface flex items-center justify-between rounded-xl p-3">
       <div>
-        <p className="text-sm font-semibold">{quest.title}</p>
-        <p className="text-xs text-nav-inactive">{quest.description}</p>
+        <p className="text-sm font-semibold">{pick(quest.title_i18n)}</p>
+        <p className="text-xs text-nav-inactive">{pick(quest.description_i18n)}</p>
         <p className="mt-1 text-xs">
-          {Math.min(quest.progress_count, quest.target_count)}/{quest.target_count} циклов ·{" "}
-          <span className="text-gram">+{quest.reward_amount} GRAM</span>
+          {Math.min(quest.progress_count, quest.target_count)}/{quest.target_count}{" "}
+          {t("productCard.cycles")} ·{" "}
+          <span className="text-gram">
+            +{quest.reward_amount} {t("common.gram")}
+          </span>
         </p>
       </div>
       {quest.claimed_at ? (
-        <span className="text-xs text-profit">Получено</span>
+        <span className="text-xs text-profit">{t("quests.claimed")}</span>
       ) : (
         <button
           type="button"
@@ -45,7 +50,7 @@ function QuestRow({
           disabled={!ready || claiming}
           className="gradient-action rounded-full px-3 py-1.5 text-xs font-semibold disabled:opacity-40"
         >
-          Забрать
+          {t("quests.claim")}
         </button>
       )}
     </div>
@@ -59,13 +64,12 @@ export function QuestList({
   quests: Quest[];
   onStateChange: (state: PlayerState) => void;
 }) {
+  const { t } = useLanguage();
   if (quests.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="px-1 text-sm font-semibold text-nav-inactive">
-        ⏰ Срочные заказы
-      </h2>
+      <h2 className="px-1 text-sm font-semibold text-nav-inactive">{t("quests.title")}</h2>
       {quests.map((quest) => (
         <QuestRow key={quest.id} quest={quest} onClaimed={onStateChange} />
       ))}

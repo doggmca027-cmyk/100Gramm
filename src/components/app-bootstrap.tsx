@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { init, isTMA, mockTelegramEnv, retrieveRawInitData } from "@telegram-apps/sdk-react";
+import { useLanguage } from "@/lib/i18n/context";
 
 type Status = "pending" | "ready" | "error";
 
@@ -14,6 +15,7 @@ type Status = "pending" | "ready" | "error";
  */
 export function AppBootstrap({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<Status>("pending");
+  const { t } = useLanguage();
 
   useEffect(() => {
     let cancelled = false;
@@ -77,7 +79,7 @@ export function AppBootstrap({ children }: { children: React.ReactNode }) {
   if (status === "pending") {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <p className="text-nav-inactive">Загрузка...</p>
+        <p className="text-nav-inactive">{t("common.loading")}</p>
       </div>
     );
   }
@@ -85,9 +87,7 @@ export function AppBootstrap({ children }: { children: React.ReactNode }) {
   if (status === "error") {
     return (
       <div className="flex flex-1 items-center justify-center p-6 text-center">
-        <p className="text-nav-inactive">
-          Не удалось подключиться. Открой приложение через Telegram.
-        </p>
+        <p className="text-nav-inactive">{t("connectError.text")}</p>
       </div>
     );
   }

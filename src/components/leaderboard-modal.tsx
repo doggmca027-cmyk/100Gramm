@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { fetchLeaderboard, type LeaderboardEntry } from "@/lib/api-client";
+import { useLanguage } from "@/lib/i18n/context";
 
 export function LeaderboardModal({ onClose }: { onClose: () => void }) {
+  const { t } = useLanguage();
   const [entries, setEntries] = useState<LeaderboardEntry[] | null>(null);
 
   useEffect(() => {
@@ -22,22 +24,22 @@ export function LeaderboardModal({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold">🏆 Рейтинг сезона</h2>
+          <h2 className="text-base font-semibold">{t("leaderboard.title")}</h2>
           <button
             type="button"
             onClick={onClose}
             className="text-nav-inactive"
-            aria-label="Закрыть"
+            aria-label={t("common.back")}
           >
             ✕
           </button>
         </div>
         <div className="gradient-surface flex flex-col divide-y divide-white/5 overflow-y-auto rounded-xl">
           {entries === null && (
-            <p className="p-3 text-sm text-nav-inactive">Загрузка...</p>
+            <p className="p-3 text-sm text-nav-inactive">{t("common.loading")}</p>
           )}
           {entries?.length === 0 && (
-            <p className="p-3 text-sm text-nav-inactive">Пока никого нет</p>
+            <p className="p-3 text-sm text-nav-inactive">{t("leaderboard.empty")}</p>
           )}
           {entries?.map((entry, index) => (
             <div
@@ -47,7 +49,9 @@ export function LeaderboardModal({ onClose }: { onClose: () => void }) {
               <span>
                 #{index + 1} {entry.display_name}
               </span>
-              <span className="text-gram">{entry.total_earned.toFixed(2)} GRAM</span>
+              <span className="text-gram">
+                {entry.total_earned.toFixed(2)} {t("common.gram")}
+              </span>
             </div>
           ))}
         </div>

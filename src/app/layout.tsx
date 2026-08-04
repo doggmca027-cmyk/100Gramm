@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppBootstrap } from "@/components/app-bootstrap";
+import { LanguageProvider } from "@/lib/i18n/context";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -33,7 +34,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex h-dvh flex-col overflow-hidden bg-bg">
-        <AppBootstrap>{children}</AppBootstrap>
+        <LanguageProvider>
+          <AppBootstrap>{children}</AppBootstrap>
+        </LanguageProvider>
       </body>
     </html>
   );

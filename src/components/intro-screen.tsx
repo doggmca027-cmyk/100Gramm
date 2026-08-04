@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { markIntroSeen } from "@/lib/api-client";
+import { useLanguage } from "@/lib/i18n/context";
 
 export function IntroScreen({ onDone }: { onDone: () => void }) {
   const [submitting, setSubmitting] = useState(false);
+  const { t } = useLanguage();
 
   async function handleStart() {
     setSubmitting(true);
@@ -20,36 +22,23 @@ export function IntroScreen({ onDone }: { onDone: () => void }) {
       <h1 className="text-3xl font-bold">🍾 100ГРАМ</h1>
 
       <div className="gradient-surface rounded-2xl p-5 text-left text-[15px] leading-relaxed">
-        <p>
-          Где-то на окраине забытого города открываются твои глаза. Холодный
-          асфальт под спиной. Рваная одежда. Пустые карманы. Ни одного
-          воспоминания о прошлом.
-        </p>
+        <p>{t("intro.p1")}</p>
+        <p className="mt-3">{t("intro.p2")}</p>
+        <p className="mt-4 font-semibold">{t("intro.day1Title")}</p>
+        <p className="mt-2">{t("intro.p3")}</p>
         <p className="mt-3">
-          Ты не знаешь, кто ты. Ты не знаешь, как сюда попал. Но ты знаешь
-          одно... Тебе нужно выжить.
-        </p>
-        <p className="mt-4 font-semibold">День 1. Новая жизнь</p>
-        <p className="mt-2">
-          У тебя нет дома, денег, работы. В этом мире всё имеет цену. Каждая
-          бутылка. Каждый грамм. Каждый шанс выбраться наверх.
-        </p>
-        <p className="mt-3">
-          Ты находишь старую бутылку... На ней написано:{" "}
-          <span className="font-semibold text-gram">1 GRAM</span>. Говорят,
-          тот, кто соберёт достаточно GRAM, сможет изменить свою судьбу.
+          {t("intro.p4prefix")}
+          <span className="font-semibold text-gram">1 GRAM</span>
+          {t("intro.p4suffix")}
         </p>
         <ul className="mt-4 space-y-1">
-          <li>🥃 Собирай первые граммы</li>
-          <li>⏳ Запускай циклы добычи</li>
-          <li>💰 Увеличивай свои запасы</li>
-          <li>🔓 Открывай новые возможности</li>
-          <li>🏚️ Поднимайся от улицы до богатства</li>
+          <li>{t("intro.feature1")}</li>
+          <li>{t("intro.feature2")}</li>
+          <li>{t("intro.feature3")}</li>
+          <li>{t("intro.feature4")}</li>
+          <li>{t("intro.feature5")}</li>
         </ul>
-        <p className="mt-4">
-          Сегодня ты всего лишь бомж без гроша в кармане. Но завтра ты можешь
-          стать легендой мира 100ГРАМ.
-        </p>
+        <p className="mt-4">{t("intro.p5")}</p>
       </div>
 
       <button
@@ -58,7 +47,7 @@ export function IntroScreen({ onDone }: { onDone: () => void }) {
         disabled={submitting}
         className="gradient-action mt-auto rounded-full px-6 py-4 text-lg font-bold disabled:opacity-60"
       >
-        🚀 НАЧАТЬ ПУТЬ
+        {t("intro.cta")}
       </button>
     </div>
   );

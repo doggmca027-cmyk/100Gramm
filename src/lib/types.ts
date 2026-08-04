@@ -1,9 +1,13 @@
+import type { Localized } from "./i18n/types";
+
 export interface PlayerState {
   season: {
     id: string;
     slug: string;
     title: string;
     story_theme: string | null;
+    title_i18n: Localized;
+    story_theme_i18n: Localized;
     starts_at: string;
     ends_at: string;
     config: {
@@ -30,6 +34,7 @@ export interface PlayerState {
   };
   rank: {
     name: string;
+    name_i18n: Localized;
     icon: string | null;
     level: number;
     min_earned: number;
@@ -51,6 +56,8 @@ export interface TierState {
   tier: number;
   name: string;
   description: string | null;
+  name_i18n: Localized;
+  description_i18n: Localized;
   price: number;
   payout_percent: number;
   cycle_hours: number;
@@ -75,6 +82,8 @@ export interface Quest {
   id: string;
   title: string;
   description: string | null;
+  title_i18n: Localized;
+  description_i18n: Localized;
   target_count: number;
   progress_count: number;
   reward_amount: number;

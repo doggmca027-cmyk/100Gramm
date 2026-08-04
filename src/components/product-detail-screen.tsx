@@ -3,16 +3,18 @@
 import { useState } from "react";
 import type { ActiveCycle, TierState } from "@/lib/types";
 import { useCountdown, formatDuration } from "@/hooks/use-countdown";
-import { TIER_RARITY } from "@/lib/tier-art";
+import { useLanguage } from "@/lib/i18n/context";
+import { TIER_RARITY_KEY } from "@/lib/tier-art";
 import { TierImage } from "./tier-image";
 
 function SlotTile({ endsAt }: { endsAt: string }) {
+  const { t } = useLanguage();
   const remaining = useCountdown(endsAt);
   return (
     <div className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-2">
       <span className="text-lg">🍾</span>
       <span className="font-mono text-[11px] text-nav-inactive">
-        {remaining > 0 ? formatDuration(remaining) : "Готово"}
+        {remaining > 0 ? formatDuration(remaining) : t("productCard.ready")}
       </span>
     </div>
   );
@@ -35,6 +37,7 @@ export function ProductDetailScreen({
   onStart: (tier: number) => Promise<void>;
   onBack: () => void;
 }) {
+  const { t, pick } = useLanguage();
   const [starting, setStarting] = useState(false);
   const usedSlots = activeCycles.reduce((sum, c) => sum + c.slot_quantity, 0);
   const slotTiles = activeCycles.flatMap((c) =>
@@ -45,6 +48,8 @@ export function ProductDetailScreen({
   const canStart = canAfford && freeSlots > 0 && !starting;
   const launchQuantity = Math.max(1, Math.min(freeSlots, Math.floor(balance / tier.price)));
   const totalPrice = tier.price * launchQuantity;
+  const description = pick(tier.description_i18n);
+  const rarityKey = TIER_RARITY_KEY[tier.tier] ?? "Common";
 
   async function handleStart() {
     setStarting(true);
@@ -58,10 +63,10 @@ export function ProductDetailScreen({
   return (
     <div className="flex flex-1 flex-col">
       <header className="bg-header flex items-center gap-3 px-4 py-3">
-        <button type="button" onClick={onBack} aria-label="Назад" className="text-lg">
+        <button type="button" onClick={onBack} aria-label={t("common.back")} className="text-lg">
           ←
         </button>
-        <p className="font-semibold">О предприятии</p>
+        <p className="font-semibold">{t("productDetail.title")}</p>
       </header>
 
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pb-28">
@@ -70,23 +75,24 @@ export function ProductDetailScreen({
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-bold">
-              {tier.tier}. {tier.name}
+              {tier.tier}. {pick(tier.name_i18n)}
             </h1>
             <span className="gradient-surface rounded-full px-2 py-0.5 text-[10px] text-nav-inactive">
-              {TIER_RARITY[tier.tier] ?? "Обычное"}
+              {t(`productDetail.rarity${rarityKey}` as `productDetail.${string}`)}
             </span>
           </div>
-          {tier.description && (
-            <p className="mt-1 text-sm text-nav-inactive">{tier.description}</p>
-          )}
+          {description && <p className="mt-1 text-sm text-nav-inactive">{description}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           {[
-            ["Цена", `${tier.price} GRAM`],
-            ["Прибыль", `+${(tier.price * (1 + tier.payout_percent / 100)).toFixed(2)} GRAM`],
-            ["Доходность", `${tier.payout_percent}%`],
-            ["Цикл", `${tier.cycle_hours} ч`],
+            [t("productDetail.price"), `${tier.price} ${t("common.gram")}`],
+            [
+              t("productDetail.profit"),
+              `+${(tier.price * (1 + tier.payout_percent / 100)).toFixed(2)} ${t("common.gram")}`,
+            ],
+            [t("productDetail.yield"), `${tier.payout_percent}%`],
+            [t("productDetail.cycle"), `${tier.cycle_hours} ${t("productCard.hours")}`],
           ].map(([label, value]) => (
             <div key={label} className="gradient-surface rounded-xl p-3">
               <p className="text-xs text-nav-inactive">{label}</p>
@@ -98,7 +104,7 @@ export function ProductDetailScreen({
         <div>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-nav-inactive">
-              Слоты ({usedSlots}/{slotsTotal})
+              {t("productDetail.slots")} ({usedSlots}/{slotsTotal})
             </h2>
           </div>
           <div className="grid grid-cols-4 gap-2">
@@ -109,10 +115,9 @@ export function ProductDetailScreen({
               type="button"
               disabled
               className="gradient-surface flex flex-col items-center justify-center gap-1 rounded-xl p-2 text-nav-inactive opacity-50"
-              title="Скоро"
             >
               <span className="text-lg">+</span>
-              <span className="text-[10px]">Купить слот</span>
+              <span className="text-[10px]">{t("productDetail.buySlot")}</span>
             </button>
           </div>
         </div>
@@ -126,10 +131,10 @@ export function ProductDetailScreen({
           className="gradient-action w-full rounded-full py-3 text-sm font-semibold disabled:opacity-40"
         >
           {!canAfford
-            ? "Недостаточно GRAM"
+            ? t("productCard.insufficientBalance")
             : freeSlots <= 0
-              ? "Нет свободных слотов"
-              : `Запустить цикл (${totalPrice.toFixed(2)} GRAM)`}
+              ? t("productCard.noFreeSlots")
+              : `${t("productDetail.launchCycle")} (${totalPrice.toFixed(2)} ${t("common.gram")})`}
         </button>
       </div>
     </div>

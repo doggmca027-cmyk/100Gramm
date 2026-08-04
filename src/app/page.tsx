@@ -11,8 +11,10 @@ import { UpgradesScreen } from "@/components/upgrades-screen";
 import { SquadScreen } from "@/components/squad-screen";
 import { GamesScreen } from "@/components/games-screen";
 import { AdminScreen } from "@/components/admin-screen";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function Home() {
+  const { t } = useLanguage();
   const { state, loading, error, refresh, setState } = usePlayerState();
   const [tab, setTab] = useState<TabId>("path");
   const [introDone, setIntroDone] = useState(false);
@@ -21,7 +23,7 @@ export default function Home() {
   if (loading) {
     return (
       <main className="flex flex-1 items-center justify-center">
-        <p className="text-nav-inactive">Загрузка...</p>
+        <p className="text-nav-inactive">{t("common.loading")}</p>
       </main>
     );
   }
@@ -29,13 +31,13 @@ export default function Home() {
   if (error || !state) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
-        <p className="text-nav-inactive">Не удалось загрузить данные.</p>
+        <p className="text-nav-inactive">{t("common.loadFailed")}</p>
         <button
           type="button"
           onClick={refresh}
           className="gradient-action rounded-full px-4 py-2 text-sm font-semibold"
         >
-          Повторить
+          {t("common.retry")}
         </button>
       </main>
     );

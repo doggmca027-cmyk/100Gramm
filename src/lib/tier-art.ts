@@ -37,13 +37,14 @@ export const TIER_ACCENT: Record<number, string> = {
   8: "#ffd700",
 };
 
-export const TIER_RARITY: Record<number, string> = {
-  1: "Обычное",
-  2: "Обычное",
-  3: "Необычное",
-  4: "Необычное",
-  5: "Редкое",
-  6: "Редкое",
-  7: "Эпическое",
-  8: "Легендарное",
+// Suffix of the productDetail.rarity* translation key for each tier.
+export const TIER_RARITY_KEY: Record<number, string> = {
+  1: "Common",
+  2: "Common",
+  3: "Uncommon",
+  4: "Uncommon",
+  5: "Rare",
+  6: "Rare",
+  7: "Epic",
+  8: "Legendary",
 };

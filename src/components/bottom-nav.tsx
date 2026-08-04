@@ -1,13 +1,15 @@
 "use client";
 
+import { useLanguage } from "@/lib/i18n/context";
+
 export type TabId = "path" | "balance" | "upgrades" | "squad" | "games";
 
-const TABS: { id: TabId; label: string; icon: string }[] = [
-  { id: "path", label: "Путь", icon: "🍾" },
-  { id: "balance", label: "Баланс", icon: "💰" },
-  { id: "upgrades", label: "Улучшения", icon: "⭐" },
-  { id: "squad", label: "Банда", icon: "👥" },
-  { id: "games", label: "Игры", icon: "🎮" },
+const TABS: { id: TabId; key: "path" | "balance" | "upgrades" | "squad" | "games"; icon: string }[] = [
+  { id: "path", key: "path", icon: "🍾" },
+  { id: "balance", key: "balance", icon: "💰" },
+  { id: "upgrades", key: "upgrades", icon: "⭐" },
+  { id: "squad", key: "squad", icon: "👥" },
+  { id: "games", key: "games", icon: "🎮" },
 ];
 
 export function BottomNav({
@@ -17,6 +19,8 @@ export function BottomNav({
   active: TabId;
   onChange: (tab: TabId) => void;
 }) {
+  const { t } = useLanguage();
+
   return (
     <nav className="bg-nav/90 fixed inset-x-0 bottom-0 flex justify-around border-t border-border py-2 backdrop-blur-md">
       {TABS.map((tab) => (
@@ -30,7 +34,7 @@ export function BottomNav({
           style={active === tab.id ? { textShadow: "0 0 12px #9b35ff" } : undefined}
         >
           <span className="text-lg">{tab.icon}</span>
-          {tab.label}
+          {t(`nav.${tab.key}`)}
         </button>
       ))}
     </nav>

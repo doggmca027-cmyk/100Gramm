@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ActiveCycle, TierState } from "@/lib/types";
 import { useCountdown, useElapsedPercent, formatDuration } from "@/hooks/use-countdown";
+import { useLanguage } from "@/lib/i18n/context";
 import { TIER_ACCENT } from "@/lib/tier-art";
 import { TierImage } from "./tier-image";
 
@@ -33,6 +34,7 @@ export function ProductCard({
   onStart: (tier: number) => Promise<void>;
   onOpenDetail: () => void;
 }) {
+  const { t, pick } = useLanguage();
   const [starting, setStarting] = useState(false);
   const accent = TIER_ACCENT[tier.tier] ?? "#8b7765";
 
@@ -65,8 +67,10 @@ export function ProductCard({
         <TierImage tier={tier.tier} className="h-16 w-16 shrink-0 rounded-xl" />
         <div className="flex flex-1 flex-col justify-center gap-1.5">
           <div className="flex items-center justify-between">
-            <span className="font-semibold">🔒 {tier.name}</span>
-            <span className="text-sm text-nav-inactive">{tier.price} GRAM</span>
+            <span className="font-semibold">🔒 {pick(tier.name_i18n)}</span>
+            <span className="text-sm text-nav-inactive">
+              {tier.price} {t("common.gram")}
+            </span>
           </div>
           <div className="h-1.5 rounded-full bg-progress-bg">
             <div
@@ -75,7 +79,8 @@ export function ProductCard({
             />
           </div>
           <p className="text-xs text-nav-inactive">
-            Откроется после {requiredCycles} циклов · {doneCycles}/{requiredCycles} · {unlockPercent}%
+            {t("productCard.unlocksAfter")} {requiredCycles} {t("productCard.cycles")} ·{" "}
+            {doneCycles}/{requiredCycles} · {unlockPercent}%
           </p>
         </div>
       </div>
@@ -88,6 +93,7 @@ export function ProductCard({
   // affordable, capped at all of them — shown so the button's ×N is accurate
   // before the click, not just a guess.
   const launchQuantity = Math.max(1, Math.min(freeSlots, Math.floor(balance / tier.price)));
+  const description = pick(tier.description_i18n);
 
   return (
     <div
@@ -100,26 +106,28 @@ export function ProductCard({
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="font-semibold">
-              {tier.tier}. {tier.name}
+              {tier.tier}. {pick(tier.name_i18n)}
             </p>
-            {tier.description && (
-              <p className="text-xs text-nav-inactive">{tier.description}</p>
-            )}
+            {description && <p className="text-xs text-nav-inactive">{description}</p>}
           </div>
-          <span className="shrink-0 text-sm text-gram">{tier.price} GRAM</span>
+          <span className="shrink-0 text-sm text-gram">
+            {tier.price} {t("common.gram")}
+          </span>
         </div>
 
         <div className="flex items-center justify-between text-xs">
           <span className="text-profit">
-            +{(tier.price * (1 + tier.payout_percent / 100)).toFixed(2)} GRAM
+            +{(tier.price * (1 + tier.payout_percent / 100)).toFixed(2)} {t("common.gram")}
           </span>
           {usedSlots > 0 && soonestEndsAt ? (
             <span className="font-mono text-nav-inactive">
-              ⏱ {remaining > 0 ? formatDuration(remaining) : "Готово"}
+              ⏱ {remaining > 0 ? formatDuration(remaining) : t("productCard.ready")}
               {usedSlots > 1 ? ` ×${usedSlots}` : ""}
             </span>
           ) : (
-            <span className="text-nav-inactive">🕐 {tier.cycle_hours} ч</span>
+            <span className="text-nav-inactive">
+              🕐 {tier.cycle_hours} {t("productCard.hours")}
+            </span>
           )}
         </div>
 
@@ -130,12 +138,12 @@ export function ProductCard({
           className="gradient-action mt-1 rounded-full py-2 text-sm font-semibold disabled:opacity-40"
         >
           {!canAfford
-            ? "Недостаточно GRAM"
+            ? t("productCard.insufficientBalance")
             : freeSlots <= 0
-              ? "Нет свободных слотов"
+              ? t("productCard.noFreeSlots")
               : launchQuantity > 1
-                ? `Запустить цикл ×${launchQuantity}`
-                : "Запустить цикл"}
+                ? `${t("productCard.launchCycle")} ×${launchQuantity}`
+                : t("productCard.launchCycle")}
         </button>
       </div>
     </div>
