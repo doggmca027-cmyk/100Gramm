@@ -19,7 +19,9 @@ function CycleTimer({ cycle }: { cycle: ActiveCycle }) {
   const remaining = useCountdown(cycle.ends_at);
   return (
     <div className="flex items-center justify-between rounded-lg bg-progress-bg px-3 py-1.5 text-xs">
-      <span className="text-nav-inactive">В процессе</span>
+      <span className="text-nav-inactive">
+        В процессе{cycle.slot_quantity > 1 ? ` ×${cycle.slot_quantity}` : ""}
+      </span>
       <span className="font-mono font-semibold">
         {remaining > 0 ? formatDuration(remaining) : "Готово"}
       </span>
@@ -97,6 +99,10 @@ export function ProductCard({
 
   const canAfford = balance >= tier.price;
   const canStart = canAfford && freeSlots > 0 && !starting;
+  // Mirrors the server's start_cycle: one launch fills as many idle slots as
+  // affordable, capped at all of them — shown so the button's ×N is accurate
+  // before the click, not just a guess.
+  const launchQuantity = Math.max(1, Math.min(freeSlots, Math.floor(balance / tier.price)));
 
   return (
     <div
@@ -128,7 +134,9 @@ export function ProductCard({
           ? "Недостаточно GRAM"
           : freeSlots <= 0
             ? "Нет свободных слотов"
-            : "🍾 Запустить цикл"}
+            : launchQuantity > 1
+              ? `🍾 Запустить цикл ×${launchQuantity}`
+              : "🍾 Запустить цикл"}
       </button>
     </div>
   );

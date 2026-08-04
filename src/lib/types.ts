@@ -51,6 +51,7 @@ export interface ActiveCycle {
   started_at: string;
   ends_at: string;
   amount_in: number;
+  slot_quantity: number;
   seconds_remaining: number;
 }
 

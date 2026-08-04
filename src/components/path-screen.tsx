@@ -12,7 +12,8 @@ export function PathScreen({
   state: PlayerState;
   onStateChange: (state: PlayerState) => void;
 }) {
-  const freeSlots = state.wallet.slots_count - state.active_cycles.length;
+  const usedSlots = state.active_cycles.reduce((sum, c) => sum + c.slot_quantity, 0);
+  const freeSlots = state.wallet.slots_count - usedSlots;
 
   const handleStart = useCallback(
     async (tier: number) => {
@@ -32,7 +33,7 @@ export function PathScreen({
     <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4 pb-24">
       <div className="flex items-center justify-between px-1 text-sm text-nav-inactive">
         <span>
-          Слоты: {state.active_cycles.length}/{state.wallet.slots_count}
+          Слоты: {usedSlots}/{state.wallet.slots_count}
         </span>
         <span>{state.wallet.completed_cycles_total} циклов пройдено</span>
       </div>
