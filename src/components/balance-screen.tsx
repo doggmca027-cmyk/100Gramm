@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import type { PlayerState } from "@/lib/types";
 import { QuestList } from "./quest-list";
+import { PartnerTasksSection } from "./partner-tasks-section";
 import { ComingSoonSection } from "./coming-soon-section";
 import { HistoryModal } from "./history-modal";
 import { GRAM_COIN_IMAGE, SQUAD_BANNER_IMAGE } from "@/lib/tier-art";
@@ -98,6 +99,7 @@ export function BalanceScreen({
       </div>
 
       <QuestList quests={state.quests} onStateChange={onStateChange} />
+      <PartnerTasksSection tasks={state.partner_tasks} onStateChange={onStateChange} />
       <ComingSoonSection
         icon="📦"
         title="Контейнеры"

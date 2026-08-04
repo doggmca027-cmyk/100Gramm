@@ -61,3 +61,10 @@ export function fetchLeaderboard(metric: "total_earned" | "completed_cycles_tota
 export function fetchHistory() {
   return request<HistoryEntry[]>("/api/history");
 }
+
+export function checkPartnerTaskSubscription(taskId: string) {
+  return request<{ reward: number; state: PlayerState }>("/api/tasks/check-sub", {
+    method: "POST",
+    body: JSON.stringify({ taskId }),
+  });
+}

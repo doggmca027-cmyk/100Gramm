@@ -10,6 +10,8 @@ const KNOWN_RPC_ERRORS: Record<string, number> = {
   insufficient_balance: 409,
   container_not_ready: 409,
   quest_not_claimable: 409,
+  unknown_task: 404,
+  already_claimed: 409,
 };
 
 /** Postgres wraps a plpgsql `raise exception 'x'` message as `x` (sometimes with a trailing detail). */

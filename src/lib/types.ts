@@ -38,6 +38,7 @@ export interface PlayerState {
   active_cycles: ActiveCycle[];
   quests: Quest[];
   containers: Container[];
+  partner_tasks: PartnerTask[];
   squad: {
     invite_code: string;
     referred_count: number;
@@ -88,6 +89,16 @@ export interface Container {
   opens_at: string;
   opened_at: string | null;
   reward_amount: number | null;
+}
+
+export interface PartnerTask {
+  id: string;
+  title: string;
+  description: string | null;
+  reward_amount: number;
+  channel_username: string;
+  icon_url: string | null;
+  completed: boolean;
 }
 
 export interface HistoryEntry {
