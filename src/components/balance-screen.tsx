@@ -149,10 +149,7 @@ export function BalanceScreen({
         />
       )}
       {walletConnectOpen && (
-        <WalletConnectModal
-          onStateChange={onStateChange}
-          onClose={() => setWalletConnectOpen(false)}
-        />
+        <WalletConnectModal onClose={() => setWalletConnectOpen(false)} />
       )}
     </div>
   );

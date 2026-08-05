@@ -68,13 +68,6 @@ export interface WalletTxResult {
   net_amount: number;
 }
 
-export function depositGram(amount: number) {
-  return request<{ result: WalletTxResult; state: PlayerState }>("/api/wallet/deposit", {
-    method: "POST",
-    body: JSON.stringify({ amount }),
-  });
-}
-
 export interface WithdrawalRequestResult extends WalletTxResult {
   status: "pending";
 }

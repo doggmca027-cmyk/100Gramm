@@ -142,7 +142,8 @@ const tr: typeof ru = {
     gotIt: "Anladım",
     pendingTitle: "Talep inceleniyor",
     pendingBody: "Yönetici para çekme talebini onaylayacak veya reddedecek — durum burada görünecek",
-    needsWallet: "GRAM çekmek için TON cüzdanı bağla — ödeme oraya gönderilecek",
+    needsWalletDeposit: "Bakiyeni yüklemek için TON cüzdanı bağla",
+    needsWalletWithdraw: "GRAM çekmek için TON cüzdanı bağla — ödeme oraya gönderilecek",
     payoutTo: "Ödeme adresi",
   },
   walletConnect: {

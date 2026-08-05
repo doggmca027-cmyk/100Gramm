@@ -70,10 +70,12 @@ export async function PATCH(
       if (error) throw error;
     }
 
+    // users!user_id disambiguates the embed — withdrawal_requests has two
+    // FKs into users (user_id and resolved_by).
     const { data, error: fetchError } = await supabase
       .from("withdrawal_requests")
       .select(
-        "id, amount, fee, net_amount, status, created_at, resolved_at, admin_note, payout_address, payout_tx_hash, user:users(telegram_id, username, first_name)",
+        "id, amount, fee, net_amount, status, created_at, resolved_at, admin_note, payout_address, payout_tx_hash, user:users!user_id(telegram_id, username, first_name)",
       )
       .eq("id", id)
       .single();

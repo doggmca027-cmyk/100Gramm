@@ -142,7 +142,8 @@ const id: typeof ru = {
     gotIt: "Mengerti",
     pendingTitle: "Permintaan sedang ditinjau",
     pendingBody: "Admin akan menyetujui atau menolak penarikan — statusnya akan muncul di sini",
-    needsWallet: "Hubungkan dompet TON untuk menarik GRAM — di situlah pembayaran akan dikirim",
+    needsWalletDeposit: "Hubungkan dompet TON untuk isi ulang saldo",
+    needsWalletWithdraw: "Hubungkan dompet TON untuk menarik GRAM — di situlah pembayaran akan dikirim",
     payoutTo: "Dibayarkan ke",
   },
   walletConnect: {
