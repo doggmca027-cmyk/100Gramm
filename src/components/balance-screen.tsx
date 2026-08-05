@@ -28,13 +28,19 @@ export function BalanceScreen({
   const [walletConnectOpen, setWalletConnectOpen] = useState(false);
   const tonAddress = useTonAddress();
 
+  const balance = state.wallet.balance ?? 0;
+  const totalEarned = state.wallet.total_earned ?? 0;
+  const profit24h = state.stats?.profit_24h ?? 0;
+  const totalSlotsUsed = state.wallet.total_slots_used ?? 0;
+  const totalSlotsOpen = state.wallet.total_slots_open ?? 0;
+
   return (
     <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-4 pb-24">
       <div className="gradient-surface flex items-center justify-between rounded-2xl p-5">
         <div>
           <p className="text-xs text-nav-inactive">{t("balance.yourBalance")}</p>
           <p className="gradient-gram bg-clip-text text-3xl font-bold text-transparent">
-            {state.wallet.balance.toFixed(2)}
+            {balance.toFixed(2)}
           </p>
           <p className="text-xs text-nav-inactive">{t("common.gram")}</p>
         </div>
@@ -95,9 +101,9 @@ export function BalanceScreen({
         <div className="gradient-surface flex flex-col divide-y divide-white/5 rounded-xl">
           {[
             [t("balance.cyclesCompleted"), `${state.wallet.completed_cycles_total}`],
-            [t("balance.totalEarned"), `${state.wallet.total_earned.toFixed(2)} ${t("common.gram")}`],
-            [t("balance.profit24h"), `${state.stats.profit_24h.toFixed(2)} ${t("common.gram")}`],
-            [t("balance.activeSlots"), `${state.wallet.total_slots_used} / ${state.wallet.total_slots_open}`],
+            [t("balance.totalEarned"), `${totalEarned.toFixed(2)} ${t("common.gram")}`],
+            [t("balance.profit24h"), `${profit24h.toFixed(2)} ${t("common.gram")}`],
+            [t("balance.activeSlots"), `${totalSlotsUsed} / ${totalSlotsOpen}`],
           ].map(([label, value]) => (
             <div key={label} className="flex items-center justify-between p-3 text-sm">
               <span className="text-nav-inactive">{label}</span>
