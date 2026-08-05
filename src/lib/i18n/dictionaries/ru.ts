@@ -134,6 +134,12 @@ const ru = {
     netLabel: "К получению",
     confirmDeposit: "Пополнить",
     confirmWithdraw: "Вывести",
+    errorAlreadyPending: "У тебя уже есть заявка на вывод в обработке",
+    submittedTitle: "Заявка отправлена",
+    submittedBody: "После подтверждения администратором ты получишь {net} GRAM",
+    gotIt: "Понятно",
+    pendingTitle: "Заявка на рассмотрении",
+    pendingBody: "Администратор подтвердит или отклонит вывод — статус появится здесь",
   },
   shop: {
     navLabel: "Купить GRAM",

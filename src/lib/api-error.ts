@@ -25,6 +25,8 @@ const KNOWN_RPC_ERRORS: Record<string, number> = {
   tx_already_used: 409,
   payment_not_found: 404,
   payment_mismatch: 400,
+  withdrawal_already_pending: 409,
+  request_not_found: 404,
 };
 
 /** Postgres wraps a plpgsql `raise exception 'x'` message as `x` (sometimes with a trailing detail). */

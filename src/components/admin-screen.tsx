@@ -5,9 +5,10 @@ import { PartnerTasksAdminSection } from "./admin/partner-tasks-admin-section";
 import { AmbassadorsAdminSection } from "./admin/ambassadors-admin-section";
 import { NewsAdminSection } from "./admin/news-admin-section";
 import { DailyComboAdminSection } from "./admin/daily-combo-admin-section";
+import { WithdrawalsAdminSection } from "./admin/withdrawals-admin-section";
 import { AmbassadorStatsScreen } from "./ambassador-stats-screen";
 
-type Section = "tasks" | "ambassadors" | "news" | "combo";
+type Section = "tasks" | "ambassadors" | "news" | "combo" | "withdrawals";
 
 export function AdminScreen({ onBack }: { onBack: () => void }) {
   const [section, setSection] = useState<Section>("tasks");
@@ -26,11 +27,11 @@ export function AdminScreen({ onBack }: { onBack: () => void }) {
         <p className="font-semibold">⚙️ Админ-панель</p>
       </header>
 
-      <div className="flex gap-2 px-4 pt-3">
+      <div className="flex gap-2 overflow-x-auto px-4 pt-3">
         <button
           type="button"
           onClick={() => setSection("tasks")}
-          className={`flex-1 rounded-full py-2 text-xs font-semibold ${
+          className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
             section === "tasks" ? "gradient-action" : "gradient-surface text-nav-inactive"
           }`}
         >
@@ -39,7 +40,7 @@ export function AdminScreen({ onBack }: { onBack: () => void }) {
         <button
           type="button"
           onClick={() => setSection("ambassadors")}
-          className={`flex-1 rounded-full py-2 text-xs font-semibold ${
+          className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
             section === "ambassadors" ? "gradient-action" : "gradient-surface text-nav-inactive"
           }`}
         >
@@ -48,7 +49,7 @@ export function AdminScreen({ onBack }: { onBack: () => void }) {
         <button
           type="button"
           onClick={() => setSection("news")}
-          className={`flex-1 rounded-full py-2 text-xs font-semibold ${
+          className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
             section === "news" ? "gradient-action" : "gradient-surface text-nav-inactive"
           }`}
         >
@@ -57,11 +58,20 @@ export function AdminScreen({ onBack }: { onBack: () => void }) {
         <button
           type="button"
           onClick={() => setSection("combo")}
-          className={`flex-1 rounded-full py-2 text-xs font-semibold ${
+          className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
             section === "combo" ? "gradient-action" : "gradient-surface text-nav-inactive"
           }`}
         >
           🎴 Combo
+        </button>
+        <button
+          type="button"
+          onClick={() => setSection("withdrawals")}
+          className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
+            section === "withdrawals" ? "gradient-action" : "gradient-surface text-nav-inactive"
+          }`}
+        >
+          💸 Выводы
         </button>
       </div>
 
@@ -72,6 +82,7 @@ export function AdminScreen({ onBack }: { onBack: () => void }) {
         )}
         {section === "news" && <NewsAdminSection />}
         {section === "combo" && <DailyComboAdminSection />}
+        {section === "withdrawals" && <WithdrawalsAdminSection />}
         {/* Дальнейшие разделы админки добавляются сюда. */}
       </div>
     </div>

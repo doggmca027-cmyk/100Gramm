@@ -31,6 +31,8 @@ export interface PlayerState {
     /** Sum of slots_open across unlocked tiers — a display aggregate, not a shared pool. */
     total_slots_open: number;
     total_slots_used: number;
+    /** The player's own open withdrawal request, awaiting admin approve/reject — null if none. */
+    pending_withdrawal: PendingWithdrawal | null;
   };
   stats: {
     profit_24h: number;
@@ -176,4 +178,12 @@ export interface WalletConfig {
   deposit_min: number;
   withdraw_min: number;
   withdraw_fee_percent: number;
+}
+
+export interface PendingWithdrawal {
+  id: string;
+  amount: number;
+  fee: number;
+  net_amount: number;
+  created_at: string;
 }

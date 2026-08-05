@@ -136,6 +136,12 @@ const en: typeof ru = {
     netLabel: "You'll receive",
     confirmDeposit: "Deposit",
     confirmWithdraw: "Withdraw",
+    errorAlreadyPending: "You already have a withdrawal request being processed",
+    submittedTitle: "Request submitted",
+    submittedBody: "Once an admin approves it, you'll receive {net} GRAM",
+    gotIt: "Got it",
+    pendingTitle: "Request under review",
+    pendingBody: "An admin will approve or reject the withdrawal — the status will show up here",
   },
   shop: {
     navLabel: "Buy GRAM",

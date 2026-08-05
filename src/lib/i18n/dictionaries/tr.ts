@@ -136,6 +136,12 @@ const tr: typeof ru = {
     netLabel: "Alacağın",
     confirmDeposit: "Yatır",
     confirmWithdraw: "Çek",
+    errorAlreadyPending: "Zaten işlemde olan bir para çekme talebin var",
+    submittedTitle: "Talep gönderildi",
+    submittedBody: "Yönetici onayladıktan sonra {net} GRAM alacaksın",
+    gotIt: "Anladım",
+    pendingTitle: "Talep inceleniyor",
+    pendingBody: "Yönetici para çekme talebini onaylayacak veya reddedecek — durum burada görünecek",
   },
   shop: {
     navLabel: "GRAM Satın Al",

@@ -71,8 +71,13 @@ export function depositGram(amount: number) {
   });
 }
 
+export interface WithdrawalRequestResult extends WalletTxResult {
+  status: "pending";
+}
+
+/** Doesn't pay out — files a pending request an admin has to approve/reject. */
 export function withdrawGram(amount: number) {
-  return request<{ result: WalletTxResult; state: PlayerState }>("/api/wallet/withdraw", {
+  return request<{ result: WithdrawalRequestResult; state: PlayerState }>("/api/wallet/withdraw", {
     method: "POST",
     body: JSON.stringify({ amount }),
   });
@@ -308,4 +313,31 @@ export async function sendBroadcast(form: FormData) {
   }
 
   return res.json() as Promise<BroadcastResult>;
+}
+
+export interface AdminWithdrawalRequest {
+  id: string;
+  amount: number;
+  fee: number;
+  net_amount: number;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+  resolved_at: string | null;
+  admin_note: string | null;
+  user: {
+    telegram_id: number;
+    username: string | null;
+    first_name: string | null;
+  } | null;
+}
+
+export function fetchAdminWithdrawals(status: "pending" | "approved" | "rejected" = "pending") {
+  return request<AdminWithdrawalRequest[]>(`/api/admin/withdrawals?status=${status}`);
+}
+
+export function resolveAdminWithdrawal(id: string, approve: boolean, note?: string) {
+  return request<AdminWithdrawalRequest>(`/api/admin/withdrawals/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ approve, note }),
+  });
 }

@@ -15,7 +15,9 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = supabaseServer();
-    const { data: result, error } = await supabase.rpc("withdraw_gram", {
+    // Doesn't pay out — escrows the amount and files a pending request an
+    // admin has to approve/reject (see 0021_withdrawal_requests.sql).
+    const { data: result, error } = await supabase.rpc("request_withdrawal", {
       p_user_id: userId,
       p_amount: amount,
     });

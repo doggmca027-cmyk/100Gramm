@@ -136,6 +136,12 @@ const id: typeof ru = {
     netLabel: "Akan diterima",
     confirmDeposit: "Setor",
     confirmWithdraw: "Tarik",
+    errorAlreadyPending: "Kamu sudah punya permintaan penarikan yang sedang diproses",
+    submittedTitle: "Permintaan terkirim",
+    submittedBody: "Setelah disetujui admin, kamu akan menerima {net} GRAM",
+    gotIt: "Mengerti",
+    pendingTitle: "Permintaan sedang ditinjau",
+    pendingBody: "Admin akan menyetujui atau menolak penarikan — statusnya akan muncul di sini",
   },
   shop: {
     navLabel: "Beli GRAM",
