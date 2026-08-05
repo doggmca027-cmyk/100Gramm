@@ -129,6 +129,16 @@ const en: typeof ru = {
   games: {
     title: "Coming soon",
     description: "Mini-games are coming in a future season.",
+    comboTitle: "🎴 Daily Combo",
+    comboSubtitle: "4 secret cards are picked every day. Find all of them to get a reward.",
+    comboReward: "Reward for completing",
+    comboFound: "{found}/{total} found",
+    comboCompletedTitle: "Combo complete!",
+    comboCompletedBody: "You got +{amount} GRAM",
+    comboResetsIn: "Resets in {time}",
+    comboHint: "Start cycles on different products in the Path tab — guess the cards or check our channel for hints.",
+    comboMystery: "Secret",
+    comboCta: "🍾 Go to Path",
   },
   partnerTasks: {
     title: "🤝 Neighborhood ties",

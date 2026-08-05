@@ -129,6 +129,16 @@ const id: typeof ru = {
   games: {
     title: "Segera hadir",
     description: "Mini-game akan hadir di musim mendatang.",
+    comboTitle: "🎴 Combo Harian",
+    comboSubtitle: "Setiap hari 4 kartu rahasia dipilih. Temukan semuanya untuk dapat hadiah.",
+    comboReward: "Hadiah penyelesaian",
+    comboFound: "{found}/{total} ditemukan",
+    comboCompletedTitle: "Combo selesai!",
+    comboCompletedBody: "Kamu dapat +{amount} GRAM",
+    comboResetsIn: "Reset dalam {time}",
+    comboHint: "Mulai siklus di produk berbeda di tab Path — tebak kartunya atau cek kanal kami untuk petunjuk.",
+    comboMystery: "Rahasia",
+    comboCta: "🍾 Ke Path",
   },
   partnerTasks: {
     title: "🤝 Koneksi lingkungan",

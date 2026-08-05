@@ -129,6 +129,16 @@ const tr: typeof ru = {
   games: {
     title: "Yakında",
     description: "Mini oyunlar gelecek bir sezonda eklenecek.",
+    comboTitle: "🎴 Günün Kombosu",
+    comboSubtitle: "Her gün gizlice 4 kart seçilir. Hepsini bul, ödülü kap.",
+    comboReward: "Tamamlama ödülü",
+    comboFound: "{found}/{total} bulundu",
+    comboCompletedTitle: "Kombo tamamlandı!",
+    comboCompletedBody: "+{amount} GRAM kazandın",
+    comboResetsIn: "Yenilenmeye {time}",
+    comboHint: "Yol sekmesinde farklı ürünlerde döngü başlat — kartları tahmin et ya da kanalımızdan öğren.",
+    comboMystery: "Gizli",
+    comboCta: "🍾 Yola git",
   },
   partnerTasks: {
     title: "🤝 Mahalle bağlantıları",

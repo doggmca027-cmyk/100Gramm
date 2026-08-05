@@ -141,6 +141,34 @@ export interface BroadcastResult {
   total: number;
 }
 
+export interface AdminDailyComboSlot {
+  tier: number;
+  name: string;
+}
+
+export interface AdminDailyCombo {
+  id: string;
+  combo_date: string;
+  reward_amount: number;
+  tiers: AdminDailyComboSlot[];
+  all_tiers: AdminDailyComboSlot[];
+}
+
+export function fetchAdminDailyCombo() {
+  return request<AdminDailyCombo>("/api/admin/daily-combo");
+}
+
+export function regenerateAdminDailyCombo() {
+  return request<AdminDailyCombo>("/api/admin/daily-combo/regenerate", { method: "POST" });
+}
+
+export function setAdminDailyComboTiers(tiers: number[]) {
+  return request<AdminDailyCombo>("/api/admin/daily-combo", {
+    method: "PATCH",
+    body: JSON.stringify({ tiers }),
+  });
+}
+
 export async function sendBroadcast(form: FormData) {
   const res = await fetch("/api/admin/broadcast", {
     method: "POST",

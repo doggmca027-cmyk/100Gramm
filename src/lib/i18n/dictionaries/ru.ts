@@ -127,6 +127,16 @@ const ru = {
   games: {
     title: "Скоро",
     description: "Мини-игры появятся в одном из следующих сезонов.",
+    comboTitle: "🎴 Комбо дня",
+    comboSubtitle: "Каждый день секретно выбираются 4 карточки. Найди все — получи награду.",
+    comboReward: "Награда за сборку",
+    comboFound: "{found}/{total} найдено",
+    comboCompletedTitle: "Комбо собрано!",
+    comboCompletedBody: "Ты получил +{amount} GRAM",
+    comboResetsIn: "Обновление через {time}",
+    comboHint: "Запускай циклы на разных товарах на вкладке «Путь» — угадай карточки или узнай их в нашем канале.",
+    comboMystery: "Секрет",
+    comboCta: "🍾 К пути",
   },
   partnerTasks: {
     title: "🤝 Связи на районе",

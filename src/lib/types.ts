@@ -50,6 +50,23 @@ export interface PlayerState {
     referred_count: number;
     earned_total: number;
   };
+  daily_combo: DailyCombo | null;
+}
+
+export interface DailyComboSlot {
+  found: boolean;
+  tier?: number;
+  name?: string;
+  name_i18n?: Localized;
+}
+
+export interface DailyCombo {
+  reward_amount: number;
+  is_completed: boolean;
+  found_count: number;
+  total_count: number;
+  resets_at: string;
+  slots: DailyComboSlot[];
 }
 
 export interface TierState {
