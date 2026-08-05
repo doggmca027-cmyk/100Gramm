@@ -179,6 +179,7 @@ export function markIntroSeen() {
 
 export interface LeaderboardEntry {
   display_name: string;
+  photo_url: string | null;
   total_earned: number;
   completed_cycles_total: number;
 }

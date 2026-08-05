@@ -169,6 +169,7 @@ const en: typeof ru = {
   },
   leaderboard: {
     title: "🏆 Season leaderboard",
+    subtitle: "Ranked by GRAM earned this season",
     empty: "No one here yet",
   },
   squad: {
