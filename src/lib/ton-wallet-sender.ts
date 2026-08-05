@@ -1,9 +1,11 @@
 import "server-only";
 import {
   Address,
+  SendMode,
   TonClient,
   WalletContractV3R2,
   WalletContractV4,
+  WalletContractV5R1,
   comment,
   internal,
   toNano,
@@ -20,24 +22,24 @@ import { pollForOutgoingPayment } from "./ton-verify";
  * queue is expected to need, not the project's full treasury.
  */
 
-// v5r1 isn't supported here — its sendTransfer() needs an extra `authType`
-// field that doesn't line up with the v3r2/v4 call shape below. Those two
-// cover the overwhelming majority of wallets; a hot wallet dedicated to
-// this purpose can simply be a fresh v4 wallet if the real treasury
-// happens to be v5r1.
-type WalletVersion = "v3r2" | "v4";
+type WalletVersion = "v3r2" | "v4" | "v5r1";
 
-interface TreasuryWallet {
-  contract: WalletContractV3R2 | WalletContractV4;
-  secretKey: Buffer;
-}
+// Kept as a discriminated union (not WalletContractV3R2 | V4 | V5R1) because
+// V5R1's sendTransfer() requires a `sendMode` argument the other two don't
+// (and rejects being called through a shared/union-typed handle) — the
+// `version` tag is what lets sendTonPayout below dispatch to the right
+// call shape without unsafe casts.
+type TreasuryWallet =
+  | { version: "v3r2"; contract: WalletContractV3R2; secretKey: Buffer }
+  | { version: "v4"; contract: WalletContractV4; secretKey: Buffer }
+  | { version: "v5r1"; contract: WalletContractV5R1; secretKey: Buffer };
 
 let cachedWallet: TreasuryWallet | null = null;
 let cachedClient: TonClient | null = null;
 
 function tonCenterEndpoint(): string {
   const network = process.env.TON_NETWORK ?? process.env.NEXT_PUBLIC_TON_NETWORK ?? "mainnet";
-  return network === "testnet"
+  return network.toLowerCase() === "testnet"
     ? "https://testnet.toncenter.com/api/v2/jsonRPC"
     : "https://toncenter.com/api/v2/jsonRPC";
 }
@@ -55,10 +57,11 @@ function getClient(): TonClient {
 /**
  * Derives the treasury wallet contract from TREASURY_WALLET_MNEMONIC and
  * validates its address actually matches NEXT_PUBLIC_GAME_TREASURY_WALLET —
- * a wallet-version mismatch (v3r2 vs v4) derives a *different* address from
- * the same mnemonic, so this check is what turns "silently pays out of thin
- * air / to nowhere" into a loud startup error instead. Cached after the
- * first successful call (mnemonic-to-keypair is a deliberately slow KDF).
+ * a wallet-version mismatch (v3r2 vs v4 vs v5r1) derives a *different*
+ * address from the same mnemonic, so this check is what turns "silently
+ * pays out of thin air / to nowhere" into a loud startup error instead.
+ * Cached after the first successful call (mnemonic-to-keypair is a
+ * deliberately slow KDF).
  */
 async function getTreasuryWallet(): Promise<TreasuryWallet> {
   if (cachedWallet) return cachedWallet;
@@ -76,22 +79,39 @@ async function getTreasuryWallet(): Promise<TreasuryWallet> {
 
   const keyPair = await mnemonicToPrivateKey(words);
   const version = (process.env.TREASURY_WALLET_VERSION ?? "v4").toLowerCase() as WalletVersion;
+  const target = Address.parse(expectedAddress);
 
-  const contract =
-    version === "v3r2"
-      ? WalletContractV3R2.create({ workchain: 0, publicKey: keyPair.publicKey })
-      : WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
+  let wallet: TreasuryWallet;
+  if (version === "v3r2") {
+    wallet = {
+      version,
+      contract: WalletContractV3R2.create({ workchain: 0, publicKey: keyPair.publicKey }),
+      secretKey: keyPair.secretKey,
+    };
+  } else if (version === "v5r1") {
+    wallet = {
+      version,
+      contract: WalletContractV5R1.create({ workchain: 0, publicKey: keyPair.publicKey }),
+      secretKey: keyPair.secretKey,
+    };
+  } else {
+    wallet = {
+      version: "v4",
+      contract: WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey }),
+      secretKey: keyPair.secretKey,
+    };
+  }
 
-  if (!contract.address.equals(Address.parse(expectedAddress))) {
+  if (!wallet.contract.address.equals(target)) {
     throw new Error(
-      `treasury_wallet_address_mismatch: mnemonic derives ${contract.address.toString()} as ${version}, ` +
-        `expected ${expectedAddress}. Set TREASURY_WALLET_VERSION to whichever of v3r2/v4 matches the real ` +
-        `treasury wallet's contract type.`,
+      `treasury_wallet_address_mismatch: mnemonic derives ${wallet.contract.address.toString()} as ${version}, ` +
+        `expected ${expectedAddress}. Set TREASURY_WALLET_VERSION to whichever of v3r2/v4/v5r1 matches the ` +
+        `real treasury wallet's contract type.`,
     );
   }
 
-  cachedWallet = { contract, secretKey: keyPair.secretKey };
-  return cachedWallet;
+  cachedWallet = wallet;
+  return wallet;
 }
 
 export interface PayoutResult {
@@ -113,9 +133,17 @@ export async function sendTonPayout(
   amountTon: number,
   memo: string,
 ): Promise<PayoutResult> {
-  const { contract, secretKey } = await getTreasuryWallet();
+  const wallet = await getTreasuryWallet();
   const client = getClient();
-  const opened = client.open(contract);
+
+  const messages = [
+    internal({
+      to: Address.parse(toAddress),
+      value: toNano(String(amountTon)),
+      bounce: false,
+      body: comment(memo),
+    }),
+  ];
 
   // A wallet contract's external message can be accepted (seqno
   // increments) even when it can't actually afford the enclosed transfer —
@@ -124,25 +152,23 @@ export async function sendTonPayout(
   // failure mode (treasury underfunded) before we ever broadcast, rather
   // than leaving it to a later reconciliation.
   const requiredNano = toNano(String(amountTon)) + toNano("0.05"); // + network fee buffer
-  const balanceNano = await opened.getBalance();
-  if (balanceNano < requiredNano) {
-    throw new Error("insufficient_treasury_balance");
+
+  if (wallet.version === "v5r1") {
+    const opened = client.open(wallet.contract);
+    const balanceNano = await opened.getBalance();
+    if (balanceNano < requiredNano) throw new Error("insufficient_treasury_balance");
+    const seqno = await opened.getSeqno();
+    // v5r1's sendTransfer requires an explicit sendMode (v3r2/v4 default it
+    // internally) — PAY_GAS_SEPARATELY is the standard "sender covers gas,
+    // recipient gets exactly `value`" mode used for a plain transfer.
+    await opened.sendTransfer({ seqno, secretKey: wallet.secretKey, messages, sendMode: SendMode.PAY_GAS_SEPARATELY });
+  } else {
+    const opened = client.open(wallet.contract);
+    const balanceNano = await opened.getBalance();
+    if (balanceNano < requiredNano) throw new Error("insufficient_treasury_balance");
+    const seqno = await opened.getSeqno();
+    await opened.sendTransfer({ seqno, secretKey: wallet.secretKey, messages });
   }
-
-  const seqno = await opened.getSeqno();
-
-  await opened.sendTransfer({
-    seqno,
-    secretKey,
-    messages: [
-      internal({
-        to: Address.parse(toAddress),
-        value: toNano(String(amountTon)),
-        bounce: false,
-        body: comment(memo),
-      }),
-    ],
-  });
 
   const treasuryAddress = process.env.NEXT_PUBLIC_GAME_TREASURY_WALLET!;
   const payment = await pollForOutgoingPayment(treasuryAddress, toAddress, memo);
