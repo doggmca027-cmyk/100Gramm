@@ -37,11 +37,20 @@ function QuestRow({
         <p className="text-xs text-nav-inactive">{pick(quest.description_i18n)}</p>
         <p className="mt-1 text-xs">
           {Math.min(quest.progress_count, quest.target_count)}/{quest.target_count}{" "}
-          {t("productCard.cycles")} ·{" "}
-          <span className="text-gram">
-            +{quest.reward_amount} {t("common.gram")}
-          </span>
-          {quest.grants_boost && <span className="ml-1 text-boost">+1 ⚡</span>}
+          {t("productCard.cycles")}
+          {quest.reward_amount > 0 && (
+            <>
+              {" · "}
+              <span className="text-gram">
+                +{quest.reward_amount} {t("common.gram")}
+              </span>
+            </>
+          )}
+          {quest.grants_boost && (
+            <span className={quest.reward_amount > 0 ? "ml-1 text-boost" : "text-boost"}>
+              {quest.reward_amount > 0 ? "+1 ⚡" : " · +1 ⚡"}
+            </span>
+          )}
         </p>
         {boostGranted && (
           <p className="mt-1 text-xs font-semibold text-boost">{t("quests.boostGranted")}</p>
