@@ -11,6 +11,7 @@ import { UpgradesScreen } from "@/components/upgrades-screen";
 import { SquadScreen } from "@/components/squad-screen";
 import { GamesScreen } from "@/components/games-screen";
 import { AdminScreen } from "@/components/admin-screen";
+import { LeaderboardScreen } from "@/components/leaderboard-screen";
 import { useLanguage } from "@/lib/i18n/context";
 
 export default function Home() {
@@ -19,6 +20,7 @@ export default function Home() {
   const [tab, setTab] = useState<TabId>("path");
   const [introDone, setIntroDone] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false);
 
   if (loading) {
     return (
@@ -49,9 +51,15 @@ export default function Home() {
 
   return (
     <>
-      <AppHeader state={state} onOpenAdmin={() => setAdminOpen(true)} />
+      <AppHeader
+        state={state}
+        onOpenAdmin={() => setAdminOpen(true)}
+        onOpenLeaderboard={() => setLeaderboardOpen(true)}
+      />
       {adminOpen ? (
         <AdminScreen onBack={() => setAdminOpen(false)} />
+      ) : leaderboardOpen ? (
+        <LeaderboardScreen onBack={() => setLeaderboardOpen(false)} />
       ) : (
         <>
           <main className="flex min-h-0 flex-1 flex-col">

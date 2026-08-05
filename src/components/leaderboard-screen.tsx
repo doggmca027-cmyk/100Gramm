@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchLeaderboard, type LeaderboardEntry } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
 
-export function LeaderboardModal({ onClose }: { onClose: () => void }) {
+export function LeaderboardScreen({ onBack }: { onBack: () => void }) {
   const { t } = useLanguage();
   const [entries, setEntries] = useState<LeaderboardEntry[] | null>(null);
 
@@ -15,26 +15,16 @@ export function LeaderboardModal({ onClose }: { onClose: () => void }) {
   }, []);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60"
-      onClick={onClose}
-    >
-      <div
-        className="bg-nav flex max-h-[80vh] flex-col gap-3 rounded-t-2xl p-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold">{t("leaderboard.title")}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-nav-inactive"
-            aria-label={t("common.back")}
-          >
-            ✕
-          </button>
-        </div>
-        <div className="gradient-surface flex flex-col divide-y divide-white/5 overflow-y-auto rounded-xl">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <header className="bg-header flex items-center gap-3 px-4 py-3">
+        <button type="button" onClick={onBack} aria-label={t("common.back")} className="text-lg">
+          ←
+        </button>
+        <p className="font-semibold">{t("leaderboard.title")}</p>
+      </header>
+
+      <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4 pb-8">
+        <div className="gradient-surface flex flex-col divide-y divide-white/5 rounded-xl">
           {entries === null && (
             <p className="p-3 text-sm text-nav-inactive">{t("common.loading")}</p>
           )}
