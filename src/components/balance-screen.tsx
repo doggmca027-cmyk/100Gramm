@@ -8,6 +8,7 @@ import { QuestList } from "./quest-list";
 import { PartnerTasksSection } from "./partner-tasks-section";
 import { ComingSoonSection } from "./coming-soon-section";
 import { HistoryModal } from "./history-modal";
+import { WalletModal } from "./wallet-modal";
 import { GRAM_COIN_IMAGE, SQUAD_BANNER_IMAGE } from "@/lib/tier-art";
 
 export function BalanceScreen({
@@ -19,6 +20,7 @@ export function BalanceScreen({
 }) {
   const { t } = useLanguage();
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [walletMode, setWalletMode] = useState<"deposit" | "withdraw" | null>(null);
 
   return (
     <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-4 pb-24">
@@ -42,16 +44,16 @@ export function BalanceScreen({
       <div className="grid grid-cols-3 gap-2">
         <button
           type="button"
-          disabled
-          className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-3 text-xs opacity-40"
+          onClick={() => setWalletMode("deposit")}
+          className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-3 text-xs"
         >
           <span className="text-lg">⬆️</span>
           {t("balance.topUp")}
         </button>
         <button
           type="button"
-          disabled
-          className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-3 text-xs opacity-40"
+          onClick={() => setWalletMode("withdraw")}
+          className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-3 text-xs"
         >
           <span className="text-lg">⬇️</span>
           {t("balance.withdraw")}
@@ -109,6 +111,14 @@ export function BalanceScreen({
       />
 
       {historyOpen && <HistoryModal onClose={() => setHistoryOpen(false)} />}
+      {walletMode && (
+        <WalletModal
+          mode={walletMode}
+          state={state}
+          onStateChange={onStateChange}
+          onClose={() => setWalletMode(null)}
+        />
+      )}
     </div>
   );
 }

@@ -52,21 +52,37 @@ export function HistoryModal({ onClose }: { onClose: () => void }) {
           {entries?.length === 0 && (
             <p className="p-3 text-sm text-nav-inactive">{t("history.empty")}</p>
           )}
-          {entries?.map((entry, i) => (
-            <div key={i} className="flex items-center justify-between p-3 text-sm">
-              <div>
-                <p>
-                  {entry.type === "cycle"
-                    ? `${t("history.cyclePrefix")} ${entry.tier}`
-                    : `${t("history.referralPrefix")}${entry.tier}`}
-                </p>
-                <p className="text-xs text-nav-inactive">{formatDate(entry.created_at)}</p>
+          {entries?.map((entry, i) => {
+            const isDebit = entry.type === "withdraw";
+            return (
+              <div key={i} className="flex items-center justify-between p-3 text-sm">
+                <div>
+                  <p>
+                    {entry.type === "cycle"
+                      ? `${t("history.cyclePrefix")} ${entry.tier}`
+                      : entry.type === "referral"
+                        ? `${t("history.referralPrefix")}${entry.tier}`
+                        : entry.type === "deposit"
+                          ? t("history.depositLabel")
+                          : t("history.withdrawLabel")}
+                  </p>
+                  <p className="text-xs text-nav-inactive">{formatDate(entry.created_at)}</p>
+                  {entry.type === "withdraw" && entry.fee != null && (
+                    <p className="text-xs text-nav-inactive">
+                      {t("history.feeNote", {
+                        fee: entry.fee.toFixed(2),
+                        net: (entry.net_amount ?? 0).toFixed(2),
+                      })}
+                    </p>
+                  )}
+                </div>
+                <span className={isDebit ? "text-danger" : "text-profit"}>
+                  {isDebit ? "-" : "+"}
+                  {entry.amount.toFixed(2)} {t("common.gram")}
+                </span>
               </div>
-              <span className="text-profit">
-                +{entry.amount.toFixed(2)} {t("common.gram")}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

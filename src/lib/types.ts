@@ -15,6 +15,7 @@ export interface PlayerState {
       cycles_per_slot: number;
       max_slots: number | null;
       features?: Record<string, boolean>;
+      wallet?: WalletConfig;
     };
   };
   profile: {
@@ -163,8 +164,16 @@ export interface PartnerTask {
 }
 
 export interface HistoryEntry {
-  type: "cycle" | "referral";
-  tier: number;
+  type: "cycle" | "referral" | "deposit" | "withdraw";
+  tier: number | null;
   amount: number;
+  fee: number | null;
+  net_amount: number | null;
   created_at: string;
+}
+
+export interface WalletConfig {
+  deposit_min: number;
+  withdraw_min: number;
+  withdraw_fee_percent: number;
 }

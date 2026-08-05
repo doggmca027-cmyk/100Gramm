@@ -19,6 +19,7 @@ const KNOWN_RPC_ERRORS: Record<string, number> = {
   unknown_boost: 404,
   boost_not_pending: 409,
   tier_already_boosted: 409,
+  amount_too_low: 400,
 };
 
 /** Postgres wraps a plpgsql `raise exception 'x'` message as `x` (sometimes with a trailing detail). */

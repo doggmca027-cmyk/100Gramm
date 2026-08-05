@@ -57,6 +57,27 @@ export function claimQuest(id: string) {
   });
 }
 
+export interface WalletTxResult {
+  id: string;
+  amount: number;
+  fee: number;
+  net_amount: number;
+}
+
+export function depositGram(amount: number) {
+  return request<{ result: WalletTxResult; state: PlayerState }>("/api/wallet/deposit", {
+    method: "POST",
+    body: JSON.stringify({ amount }),
+  });
+}
+
+export function withdrawGram(amount: number) {
+  return request<{ result: WalletTxResult; state: PlayerState }>("/api/wallet/withdraw", {
+    method: "POST",
+    body: JSON.stringify({ amount }),
+  });
+}
+
 export function applyBoost(boostId: string, tier: number) {
   return request<{ state: PlayerState }>(`/api/boosts/${boostId}/apply`, {
     method: "POST",
