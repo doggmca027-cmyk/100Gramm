@@ -32,6 +32,14 @@ export function startCycle(tier: number) {
   });
 }
 
+/** Wholesale purchase — only valid once a tier's slots are fully upgraded (5/5). */
+export function buyMaxSlots(tier: number) {
+  return request<{ cycleId: string; state: PlayerState }>("/api/cycles/buy-max", {
+    method: "POST",
+    body: JSON.stringify({ tier }),
+  });
+}
+
 export function openContainer(id: string) {
   return request<{ reward: number; state: PlayerState }>(`/api/containers/${id}/open`, {
     method: "POST",

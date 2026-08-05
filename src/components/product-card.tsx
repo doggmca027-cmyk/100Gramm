@@ -24,6 +24,7 @@ export function ProductCard({
   balance,
   freeSlots,
   onStart,
+  onBuyMax,
   onOpenDetail,
 }: {
   tier: TierState;
@@ -32,6 +33,7 @@ export function ProductCard({
   balance: number;
   freeSlots: number;
   onStart: (tier: number) => Promise<void>;
+  onBuyMax: (tier: number) => Promise<void>;
   onOpenDetail: () => void;
 }) {
   const { t, pick } = useLanguage();
@@ -56,6 +58,16 @@ export function ProductCard({
     setStarting(true);
     try {
       await onStart(tier.tier);
+    } finally {
+      setStarting(false);
+    }
+  }
+
+  async function handleBuyMax(e: React.MouseEvent) {
+    e.stopPropagation();
+    setStarting(true);
+    try {
+      await onBuyMax(tier.tier);
     } finally {
       setStarting(false);
     }
@@ -131,20 +143,50 @@ export function ProductCard({
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={handleStart}
-          disabled={!canStart}
-          className="gradient-action mt-1 rounded-full py-2 text-sm font-semibold disabled:opacity-40"
-        >
-          {!canAfford
-            ? t("productCard.insufficientBalance")
-            : freeSlots <= 0
-              ? t("productCard.noFreeSlots")
-              : launchQuantity > 1
-                ? `${t("productCard.launchCycle")} ×${launchQuantity}`
-                : t("productCard.launchCycle")}
-        </button>
+        <div className="flex items-center gap-1.5 text-[11px] text-nav-inactive">
+          <span>
+            🎰 {t("productCard.slots")} {tier.slots_open}/{tier.slots_max}
+          </span>
+          {tier.can_buy_max ? (
+            <span className="text-profit">· {t("productCard.slotsMaxed")}</span>
+          ) : (
+            tier.cycles_to_next_slot != null && (
+              <span>
+                · {t("productCard.nextSlotIn", { n: tier.cycles_to_next_slot })}
+              </span>
+            )
+          )}
+        </div>
+
+        {tier.can_buy_max ? (
+          <button
+            type="button"
+            onClick={handleBuyMax}
+            disabled={!canStart}
+            className="gradient-action mt-1 rounded-full py-2 text-sm font-semibold disabled:opacity-40"
+          >
+            {!canAfford
+              ? t("productCard.insufficientBalance")
+              : freeSlots <= 0
+                ? t("productCard.noFreeSlots")
+                : `🔥 ${t("productCard.buyMax")} ×${launchQuantity}`}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleStart}
+            disabled={!canStart}
+            className="gradient-action mt-1 rounded-full py-2 text-sm font-semibold disabled:opacity-40"
+          >
+            {!canAfford
+              ? t("productCard.insufficientBalance")
+              : freeSlots <= 0
+                ? t("productCard.noFreeSlots")
+                : launchQuantity > 1
+                  ? `${t("productCard.launchCycle")} ×${launchQuantity}`
+                  : t("productCard.launchCycle")}
+          </button>
+        )}
       </div>
     </div>
   );

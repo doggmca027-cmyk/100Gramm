@@ -13,6 +13,7 @@ const KNOWN_RPC_ERRORS: Record<string, number> = {
   unknown_task: 404,
   already_claimed: 409,
   invalid_combo_tiers: 400,
+  slots_not_maxed: 409,
 };
 
 /** Postgres wraps a plpgsql `raise exception 'x'` message as `x` (sometimes with a trailing detail). */

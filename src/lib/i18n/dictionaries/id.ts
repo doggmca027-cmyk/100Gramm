@@ -55,6 +55,10 @@ const id: typeof ru = {
     ready: "Selesai",
     inProgress: "Sedang berjalan",
     hours: "j",
+    slots: "Slot:",
+    slotsMaxed: "Slot maks — beli grosir terbuka",
+    nextSlotIn: "{n} siklus lagi ke slot berikutnya",
+    buyMax: "Beli grosir",
   },
   productDetail: {
     title: "Tentang usaha ini",
@@ -63,7 +67,7 @@ const id: typeof ru = {
     yield: "Imbal hasil",
     cycle: "Siklus",
     slots: "Slot",
-    buySlot: "Beli slot",
+    lockedSlot: "Terkunci",
     launchCycle: "Mulai siklus",
     rarityCommon: "Umum",
     rarityUncommon: "Tidak umum",
@@ -122,8 +126,9 @@ const id: typeof ru = {
   },
   upgrades: {
     slots: "Slot",
+    subtitle: "Setiap produk punya progres slotnya sendiri — 3 sampai 5, terpisah, setiap 5 siklus.",
     maxReached: "Jumlah slot maksimum tercapai",
-    untilNext: "{n} siklus lagi menuju slot baru (+1 slot setiap {per} siklus)",
+    untilNext: "{n} siklus lagi menuju slot baru",
     futureNote: "🛠 Gerobak, gudang, dan peningkatan lainnya akan hadir di musim mendatang.",
   },
   games: {

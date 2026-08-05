@@ -19,7 +19,6 @@ export function BalanceScreen({
 }) {
   const { t } = useLanguage();
   const [historyOpen, setHistoryOpen] = useState(false);
-  const usedSlots = state.active_cycles.reduce((sum, c) => sum + c.slot_quantity, 0);
 
   return (
     <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-4 pb-24">
@@ -74,7 +73,7 @@ export function BalanceScreen({
             [t("balance.cyclesCompleted"), `${state.wallet.completed_cycles_total}`],
             [t("balance.totalEarned"), `${state.wallet.total_earned.toFixed(2)} ${t("common.gram")}`],
             [t("balance.profit24h"), `${state.stats.profit_24h.toFixed(2)} ${t("common.gram")}`],
-            [t("balance.activeSlots"), `${usedSlots} / ${state.wallet.slots_count}`],
+            [t("balance.activeSlots"), `${state.wallet.total_slots_used} / ${state.wallet.total_slots_open}`],
           ].map(([label, value]) => (
             <div key={label} className="flex items-center justify-between p-3 text-sm">
               <span className="text-nav-inactive">{label}</span>

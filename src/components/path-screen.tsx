@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import type { PlayerState } from "@/lib/types";
-import { startCycle } from "@/lib/api-client";
+import { startCycle, buyMaxSlots } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
 import { ProductCard } from "./product-card";
 import { ProductDetailScreen } from "./product-detail-screen";
@@ -17,8 +17,6 @@ export function PathScreen({
 }) {
   const { t } = useLanguage();
   const [detailTier, setDetailTier] = useState<number | null>(null);
-  const usedSlots = state.active_cycles.reduce((sum, c) => sum + c.slot_quantity, 0);
-  const freeSlots = state.wallet.slots_count - usedSlots;
 
   const handleStart = useCallback(
     async (tier: number) => {
@@ -34,6 +32,19 @@ export function PathScreen({
     [onStateChange],
   );
 
+  const handleBuyMax = useCallback(
+    async (tier: number) => {
+      try {
+        const result = await buyMaxSlots(tier);
+        onStateChange(result.state);
+      } catch {
+        // slots_not_maxed / insufficient_balance are prevented by the button's
+        // own disabled state; a transient failure just leaves state untouched.
+      }
+    },
+    [onStateChange],
+  );
+
   const openTier = detailTier != null ? state.tiers.find((t) => t.tier === detailTier) : null;
   if (openTier) {
     return (
@@ -41,9 +52,10 @@ export function PathScreen({
         tier={openTier}
         activeCycles={state.active_cycles.filter((c) => c.tier === openTier.tier)}
         balance={state.wallet.balance}
-        freeSlots={freeSlots}
-        slotsTotal={state.wallet.slots_count}
+        freeSlots={openTier.slots_open - openTier.slots_used}
+        slotsTotal={openTier.slots_open}
         onStart={handleStart}
+        onBuyMax={handleBuyMax}
         onBack={() => setDetailTier(null)}
       />
     );
@@ -55,7 +67,7 @@ export function PathScreen({
 
       <div className="flex items-center justify-between px-1 text-sm text-nav-inactive">
         <span>
-          {t("path.slots")}: {usedSlots}/{state.wallet.slots_count}
+          {t("path.slots")}: {state.wallet.total_slots_used}/{state.wallet.total_slots_open}
         </span>
         <span>
           {state.wallet.completed_cycles_total} {t("path.cyclesDone")}
@@ -69,8 +81,9 @@ export function PathScreen({
           previousTier={index > 0 ? state.tiers[index - 1] : null}
           activeCycles={state.active_cycles.filter((c) => c.tier === tier.tier)}
           balance={state.wallet.balance}
-          freeSlots={freeSlots}
+          freeSlots={tier.slots_open - tier.slots_used}
           onStart={handleStart}
+          onBuyMax={handleBuyMax}
           onOpenDetail={() => setDetailTier(tier.tier)}
         />
       ))}

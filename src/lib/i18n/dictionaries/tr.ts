@@ -55,6 +55,10 @@ const tr: typeof ru = {
     ready: "Hazır",
     inProgress: "Devam ediyor",
     hours: "sa",
+    slots: "Slotlar:",
+    slotsMaxed: "Maks. slot — toptan alım açık",
+    nextSlotIn: "sonraki slota {n} döngü kaldı",
+    buyMax: "Toptan alım",
   },
   productDetail: {
     title: "İşletme hakkında",
@@ -63,7 +67,7 @@ const tr: typeof ru = {
     yield: "Getiri",
     cycle: "Döngü",
     slots: "Slotlar",
-    buySlot: "Slot satın al",
+    lockedSlot: "Kilitli",
     launchCycle: "Döngüyü başlat",
     rarityCommon: "Sıradan",
     rarityUncommon: "Nadir olmayan",
@@ -122,8 +126,9 @@ const tr: typeof ru = {
   },
   upgrades: {
     slots: "Slotlar",
+    subtitle: "Her ürünün kendi slot ilerlemesi var — 3'ten 5'e, her 5 döngüde ayrı ayrı.",
     maxReached: "Maksimum slot sayısına ulaşıldı",
-    untilNext: "Yeni bir slota {n} döngü kaldı (her {per} döngüde +1 slot)",
+    untilNext: "Yeni bir slota {n} döngü kaldı",
     futureNote: "🛠 El arabası, depo ve diğer geliştirmeler gelecek sezonlarda gelecek.",
   },
   games: {

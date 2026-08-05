@@ -55,6 +55,10 @@ const en: typeof ru = {
     ready: "Ready",
     inProgress: "In progress",
     hours: "h",
+    slots: "Slots:",
+    slotsMaxed: "Max slots — wholesale buy unlocked",
+    nextSlotIn: "{n} more cycles to next slot",
+    buyMax: "Wholesale buy",
   },
   productDetail: {
     title: "About this business",
@@ -63,7 +67,7 @@ const en: typeof ru = {
     yield: "Yield",
     cycle: "Cycle",
     slots: "Slots",
-    buySlot: "Buy slot",
+    lockedSlot: "Locked",
     launchCycle: "Start cycle",
     rarityCommon: "Common",
     rarityUncommon: "Uncommon",
@@ -122,8 +126,9 @@ const en: typeof ru = {
   },
   upgrades: {
     slots: "Slots",
+    subtitle: "Every product has its own slot progress — 3 to 5, separately, every 5 cycles.",
     maxReached: "Maximum slots reached",
-    untilNext: "{n} more cycles until a new slot (+1 slot every {per})",
+    untilNext: "{n} more cycles until a new slot",
     futureNote: "🛠 Carts, warehouses and other upgrades are coming in future seasons.",
   },
   games: {

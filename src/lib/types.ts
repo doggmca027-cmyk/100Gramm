@@ -25,9 +25,11 @@ export interface PlayerState {
   wallet: {
     balance: number;
     total_earned: number;
-    slots_count: number;
     completed_cycles_total: number;
     has_seen_intro: boolean;
+    /** Sum of slots_open across unlocked tiers — a display aggregate, not a shared pool. */
+    total_slots_open: number;
+    total_slots_used: number;
   };
   stats: {
     profit_24h: number;
@@ -83,6 +85,12 @@ export interface TierState {
   unlock_required_cycles: number;
   unlock_min_hours: number;
   unlocked_at: string | null;
+  /** Per-item slot progression: min(slots_max, 3 + floor(completed_cycles / 5)), isolated per tier. */
+  slots_open: number;
+  slots_used: number;
+  slots_max: number;
+  cycles_to_next_slot: number | null;
+  can_buy_max: boolean;
 }
 
 export interface ActiveCycle {

@@ -27,6 +27,7 @@ export function ProductDetailScreen({
   freeSlots,
   slotsTotal,
   onStart,
+  onBuyMax,
   onBack,
 }: {
   tier: TierState;
@@ -35,6 +36,7 @@ export function ProductDetailScreen({
   freeSlots: number;
   slotsTotal: number;
   onStart: (tier: number) => Promise<void>;
+  onBuyMax: (tier: number) => Promise<void>;
   onBack: () => void;
 }) {
   const { t, pick } = useLanguage();
@@ -60,8 +62,17 @@ export function ProductDetailScreen({
     }
   }
 
+  async function handleBuyMax() {
+    setStarting(true);
+    try {
+      await onBuyMax(tier.tier);
+    } finally {
+      setStarting(false);
+    }
+  }
+
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       <header className="bg-header flex items-center gap-3 px-4 py-3">
         <button type="button" onClick={onBack} aria-label={t("common.back")} className="text-lg">
           ←
@@ -69,7 +80,7 @@ export function ProductDetailScreen({
         <p className="font-semibold">{t("productDetail.title")}</p>
       </header>
 
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pb-28">
+      <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pb-40">
         <TierImage tier={tier.tier} className="aspect-square w-full rounded-2xl" emojiClassName="text-6xl" />
 
         <div>
@@ -106,36 +117,63 @@ export function ProductDetailScreen({
             <h2 className="text-sm font-semibold text-nav-inactive">
               {t("productDetail.slots")} ({usedSlots}/{slotsTotal})
             </h2>
+            {tier.can_buy_max ? (
+              <span className="text-xs font-semibold text-profit">
+                🔥 {t("productCard.slotsMaxed")}
+              </span>
+            ) : (
+              tier.cycles_to_next_slot != null && (
+                <span className="text-xs text-nav-inactive">
+                  {t("productCard.nextSlotIn", { n: tier.cycles_to_next_slot })}
+                </span>
+              )
+            )}
           </div>
           <div className="grid grid-cols-4 gap-2">
             {slotTiles.map((endsAt, i) => (
               <SlotTile key={i} endsAt={endsAt} />
             ))}
-            <button
-              type="button"
-              disabled
-              className="gradient-surface flex flex-col items-center justify-center gap-1 rounded-xl p-2 text-nav-inactive opacity-50"
-            >
-              <span className="text-lg">+</span>
-              <span className="text-[10px]">{t("productDetail.buySlot")}</span>
-            </button>
+            {Array.from({ length: Math.max(0, tier.slots_max - slotsTotal) }, (_, i) => (
+              <div
+                key={`locked-${i}`}
+                className="flex flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-border p-2 text-nav-inactive opacity-50"
+              >
+                <span className="text-lg">🔒</span>
+                <span className="text-[10px]">{t("productDetail.lockedSlot")}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       <div className="fixed inset-x-0 bottom-16 p-4">
-        <button
-          type="button"
-          onClick={handleStart}
-          disabled={!canStart}
-          className="gradient-action w-full rounded-full py-3 text-sm font-semibold disabled:opacity-40"
-        >
-          {!canAfford
-            ? t("productCard.insufficientBalance")
-            : freeSlots <= 0
-              ? t("productCard.noFreeSlots")
-              : `${t("productDetail.launchCycle")} (${totalPrice.toFixed(2)} ${t("common.gram")})`}
-        </button>
+        {tier.can_buy_max ? (
+          <button
+            type="button"
+            onClick={handleBuyMax}
+            disabled={!canStart}
+            className="gradient-action w-full rounded-full py-3 text-sm font-semibold disabled:opacity-40"
+          >
+            {!canAfford
+              ? t("productCard.insufficientBalance")
+              : freeSlots <= 0
+                ? t("productCard.noFreeSlots")
+                : `🔥 ${t("productCard.buyMax")} ×${launchQuantity} (${totalPrice.toFixed(2)} ${t("common.gram")})`}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleStart}
+            disabled={!canStart}
+            className="gradient-action w-full rounded-full py-3 text-sm font-semibold disabled:opacity-40"
+          >
+            {!canAfford
+              ? t("productCard.insufficientBalance")
+              : freeSlots <= 0
+                ? t("productCard.noFreeSlots")
+                : `${t("productDetail.launchCycle")} (${totalPrice.toFixed(2)} ${t("common.gram")})`}
+          </button>
+        )}
       </div>
     </div>
   );
