@@ -9,10 +9,9 @@ import { PartnerTasksSection } from "./partner-tasks-section";
 import { ComingSoonSection } from "./coming-soon-section";
 import { HistoryModal } from "./history-modal";
 import { WalletModal } from "./wallet-modal";
-import { BuyItemModal } from "./buy-item-modal";
 import { WalletConnectModal } from "./wallet-connect-modal";
 import { GRAM_COIN_IMAGE, SQUAD_BANNER_IMAGE } from "@/lib/tier-art";
-import { useTonAddress } from "@tonconnect/ui-react";
+import { useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
 
 export function BalanceScreen({
   state,
@@ -24,9 +23,19 @@ export function BalanceScreen({
   const { t } = useLanguage();
   const [historyOpen, setHistoryOpen] = useState(false);
   const [walletMode, setWalletMode] = useState<"deposit" | "withdraw" | null>(null);
-  const [shopOpen, setShopOpen] = useState(false);
   const [walletConnectOpen, setWalletConnectOpen] = useState(false);
+  const [tonConnectUI] = useTonConnectUI();
   const tonAddress = useTonAddress();
+
+  // Not connected -> jump straight into TonConnect's own pairing modal.
+  // Connected -> our modal (status/disconnect + the TON deposit form).
+  function handleWalletButtonClick() {
+    if (tonAddress) {
+      setWalletConnectOpen(true);
+    } else {
+      tonConnectUI.openModal();
+    }
+  }
 
   const balance = state.wallet.balance ?? 0;
   const totalEarned = state.wallet.total_earned ?? 0;
@@ -53,7 +62,7 @@ export function BalanceScreen({
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-4 gap-2">
         <button
           type="button"
           onClick={() => setWalletMode("deposit")}
@@ -72,15 +81,7 @@ export function BalanceScreen({
         </button>
         <button
           type="button"
-          onClick={() => setShopOpen(true)}
-          className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-3 text-xs"
-        >
-          <span className="text-lg">💎</span>
-          {t("shop.navLabel")}
-        </button>
-        <button
-          type="button"
-          onClick={() => setWalletConnectOpen(true)}
+          onClick={handleWalletButtonClick}
           className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-3 text-xs"
         >
           <span className="text-lg">{tonAddress ? "✅" : "👛"}</span>
@@ -147,11 +148,11 @@ export function BalanceScreen({
           onClose={() => setWalletMode(null)}
         />
       )}
-      {shopOpen && (
-        <BuyItemModal onStateChange={onStateChange} onClose={() => setShopOpen(false)} />
-      )}
       {walletConnectOpen && (
-        <WalletConnectModal onClose={() => setWalletConnectOpen(false)} />
+        <WalletConnectModal
+          onStateChange={onStateChange}
+          onClose={() => setWalletConnectOpen(false)}
+        />
       )}
     </div>
   );

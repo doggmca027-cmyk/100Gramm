@@ -83,39 +83,25 @@ export function withdrawGram(amount: number) {
   });
 }
 
-export interface ShopPack {
-  id: string;
-  title: string;
-  gram_amount: number;
-  price_ton: number;
-}
-
-export function fetchShopPacks() {
-  return request<{ packs: ShopPack[] }>("/api/shop/packs");
-}
-
-export interface PreparedPurchase {
-  packId: string;
-  gramAmount: number;
-  priceTon: number;
+export interface PreparedTonDeposit {
   /** Nanotons, decimal string — pass straight through as the TON Connect message's `amount`. */
   amountNano: string;
-  /** Exact text to attach as the transfer comment — binds the payment to this user + pack. */
+  /** Exact text to attach as the transfer comment — binds the payment to this user. */
   comment: string;
   /** Unix seconds — use as the TON Connect message's `validUntil`. */
   validUntil: number;
 }
 
-export function prepareShopPurchase(packId: string) {
-  return request<PreparedPurchase>("/api/shop/prepare-purchase", {
+/** GRAM is this game's branded name for TON itself — deposits credit 1:1, no packs/pricing involved. */
+export function prepareTonDeposit(amountTon: number) {
+  return request<PreparedTonDeposit>("/api/wallet/ton-deposit/prepare", {
     method: "POST",
-    body: JSON.stringify({ packId }),
+    body: JSON.stringify({ amountTon }),
   });
 }
 
-export interface ShopPurchaseResult {
+export interface TonDepositResult {
   id: string;
-  pack_id: string;
   gram_amount: number;
   amount_ton: number;
   tx_hash: string;
@@ -125,17 +111,17 @@ export interface ShopPurchaseResult {
  * Confirms a TON Connect payment already broadcast by the wallet. The
  * on-chain transfer can take a few seconds to confirm and get indexed by
  * TonAPI, so the server may reply `payment_not_found` while it's still
- * pending — this polls verify-purchase itself for a while before giving up,
- * on top of the short poll the server already does per call.
+ * pending — this polls verify itself for a while before giving up, on top
+ * of the short poll the server already does per call.
  */
-export async function verifyShopPurchase(
-  input: { packId: string; boc: string },
+export async function verifyTonDeposit(
+  input: { amountTon: number; boc: string },
   { attempts = 6, delayMs = 3000 }: { attempts?: number; delayMs?: number } = {},
-): Promise<{ result: ShopPurchaseResult; state: PlayerState }> {
+): Promise<{ result: TonDepositResult; state: PlayerState }> {
   for (let attempt = 0; attempt < attempts; attempt++) {
     try {
-      return await request<{ result: ShopPurchaseResult; state: PlayerState }>(
-        "/api/shop/verify-purchase",
+      return await request<{ result: TonDepositResult; state: PlayerState }>(
+        "/api/wallet/ton-deposit/verify",
         { method: "POST", body: JSON.stringify(input) },
       );
     } catch (err) {
