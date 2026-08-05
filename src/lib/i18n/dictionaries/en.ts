@@ -145,6 +145,7 @@ const en: typeof ru = {
     needsWalletDeposit: "Connect a TON wallet to top up your balance",
     needsWalletWithdraw: "Connect a TON wallet to withdraw GRAM — that's where the payout goes",
     payoutTo: "Payout to",
+    withdrawTimingNotice: "Withdrawals are processed within 24 hours",
   },
   walletConnect: {
     navLabel: "Wallet",

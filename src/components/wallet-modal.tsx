@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { beginCell } from "@ton/core";
 import { CHAIN, UserRejectsError, useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
 import type { PlayerState } from "@/lib/types";
@@ -58,6 +58,15 @@ export function WalletModal({
   const [withdrawSubmitting, setWithdrawSubmitting] = useState(false);
   const [withdrawError, setWithdrawError] = useState<string | null>(null);
   const [justSubmitted, setJustSubmitted] = useState<{ amount: number; net: number } | null>(null);
+
+  // Small self-dismissing reminder shown while filling out the withdraw
+  // form — fades out on its own after a few seconds instead of needing to
+  // be closed.
+  const [showTimingNotice, setShowTimingNotice] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setShowTimingNotice(false), 6000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // deposit-mode state (TON amount -> on-chain send)
   const [depositValue, setDepositValue] = useState("");
@@ -277,6 +286,14 @@ export function WalletModal({
             <p className="text-xs text-nav-inactive">
               {t("wallet.balanceLabel")}: {state.wallet.balance.toFixed(2)} {t("common.gram")}
             </p>
+
+            <div
+              className={`overflow-hidden transition-all duration-700 ease-out ${
+                showTimingNotice ? "max-h-6 opacity-100" : "max-h-0 opacity-0"
+              }`}
+            >
+              <p className="text-[11px] text-nav-inactive/70">{t("wallet.withdrawTimingNotice")}</p>
+            </div>
 
             <input
               type="text"

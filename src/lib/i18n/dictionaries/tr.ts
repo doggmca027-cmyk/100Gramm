@@ -145,6 +145,7 @@ const tr: typeof ru = {
     needsWalletDeposit: "Bakiyeni yüklemek için TON cüzdanı bağla",
     needsWalletWithdraw: "GRAM çekmek için TON cüzdanı bağla — ödeme oraya gönderilecek",
     payoutTo: "Ödeme adresi",
+    withdrawTimingNotice: "Para çekme işlemleri 24 saat içinde tamamlanır",
   },
   walletConnect: {
     navLabel: "Cüzdan",

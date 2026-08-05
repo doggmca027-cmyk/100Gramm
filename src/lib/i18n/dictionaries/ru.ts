@@ -143,6 +143,7 @@ const ru = {
     needsWalletDeposit: "Подключи TON-кошелёк, чтобы пополнить баланс",
     needsWalletWithdraw: "Подключи TON-кошелёк, чтобы вывести GRAM — на него придёт выплата",
     payoutTo: "Выплата на",
+    withdrawTimingNotice: "Регламент вывода — до 24 часов",
   },
   walletConnect: {
     navLabel: "Кошелёк",

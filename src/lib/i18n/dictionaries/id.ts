@@ -145,6 +145,7 @@ const id: typeof ru = {
     needsWalletDeposit: "Hubungkan dompet TON untuk isi ulang saldo",
     needsWalletWithdraw: "Hubungkan dompet TON untuk menarik GRAM — di situlah pembayaran akan dikirim",
     payoutTo: "Dibayarkan ke",
+    withdrawTimingNotice: "Penarikan diproses dalam waktu 24 jam",
   },
   walletConnect: {
     navLabel: "Dompet",
