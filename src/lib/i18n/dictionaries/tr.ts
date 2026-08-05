@@ -167,6 +167,7 @@ const tr: typeof ru = {
   },
   leaderboard: {
     title: "🏆 Sezon sıralaması",
+    subtitle: "Bu sezon kazanılan GRAM'a göre sıralama",
     empty: "Henüz kimse yok",
   },
   squad: {

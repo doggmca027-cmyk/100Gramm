@@ -167,6 +167,7 @@ const id: typeof ru = {
   },
   leaderboard: {
     title: "🏆 Papan peringkat musim",
+    subtitle: "Peringkat berdasarkan GRAM yang diperoleh musim ini",
     empty: "Belum ada siapa-siapa",
   },
   squad: {

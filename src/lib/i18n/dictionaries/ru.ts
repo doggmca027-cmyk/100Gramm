@@ -165,6 +165,7 @@ const ru = {
   },
   leaderboard: {
     title: "🏆 Рейтинг сезона",
+    subtitle: "Рейтинг по заработанным GRAM за сезон",
     empty: "Пока никого нет",
   },
   squad: {
