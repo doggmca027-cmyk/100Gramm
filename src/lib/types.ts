@@ -35,6 +35,8 @@ export interface PlayerState {
     pending_withdrawal: PendingWithdrawal | null;
     /** Auto-collect passes keep cycles claiming + relaunching on their own until this moment — null if never activated. */
     auto_collect_until: string | null;
+    /** "Authority" — earned from system tasks only, no gameplay effect yet. */
+    xp: number;
   };
   stats: {
     profit_24h: number;
@@ -52,6 +54,7 @@ export interface PlayerState {
   quests: Quest[];
   containers: Container[];
   partner_tasks: PartnerTask[];
+  system_tasks: SystemTask[];
   squad: {
     invite_code: string;
     referred_count: number;
@@ -192,6 +195,38 @@ export interface PartnerTask {
   reward_amount: number;
   channel_username: string;
   icon_url: string | null;
+  completed: boolean;
+}
+
+export type SystemTaskCategory = "social" | "referral" | "gameplay";
+export type SystemTaskTargetType =
+  | "referrals_level_1"
+  | "cycles_completed"
+  | "tier_reached"
+  | "channel_sub"
+  | "chat_join"
+  | "post_view";
+
+export interface SystemTaskReward {
+  item_type: string;
+  quantity: number;
+}
+
+export interface SystemTask {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  category: SystemTaskCategory;
+  target_type: SystemTaskTargetType;
+  /** Channel/chat username for the two verified social types; the tier number (as text) for tier_reached. */
+  target_value: string | null;
+  /** The referral/cycle count target — 1 for social tasks (nothing to count, just done/not-done). */
+  required_count: number;
+  /** Live-computed current progress toward required_count. */
+  progress: number;
+  reward_xp: number;
+  rewards: SystemTaskReward[];
   completed: boolean;
 }
 

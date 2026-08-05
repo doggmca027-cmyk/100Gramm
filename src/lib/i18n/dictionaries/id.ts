@@ -236,6 +236,12 @@ const id: typeof ru = {
     notSubscribed: "Kamu belum berlangganan kanal ini!",
     checkFailed: "Gagal memeriksa, coba lagi",
   },
+  systemTasks: {
+    title: "🎖️ Tugas Distrik",
+    progress: "{done} / {total}",
+    claim: "Ambil hadiah",
+    notReadyYet: "Syarat belum terpenuhi",
+  },
   languagePicker: {
     title: "Pilih bahasa",
   },

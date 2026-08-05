@@ -1,0 +1,166 @@
+"use client";
+
+import { useState } from "react";
+import { openTelegramLink } from "@telegram-apps/sdk-react";
+import type { PlayerState, SystemTask } from "@/lib/types";
+import { claimSystemTask, ApiError } from "@/lib/api-client";
+import { useLanguage } from "@/lib/i18n/context";
+import { itemIcon, itemNameKey } from "@/lib/combo-items";
+
+type Stage = "todo" | "checking" | "done";
+
+const CATEGORY_ICON: Record<SystemTask["category"], string> = {
+  social: "📡",
+  referral: "🤝",
+  gameplay: "🎯",
+};
+
+function targetUrl(targetValue: string): string {
+  return targetValue.startsWith("http") ? targetValue : `https://t.me/${targetValue}`;
+}
+
+function TaskCard({
+  task,
+  onClaimed,
+}: {
+  task: SystemTask;
+  onClaimed: (state: PlayerState) => void;
+}) {
+  const { t } = useLanguage();
+  const isSocial = task.category === "social";
+  const [stage, setStage] = useState<Stage>(task.completed ? "done" : "todo");
+  const [loading, setLoading] = useState(false);
+  const [errorText, setErrorText] = useState<string | null>(null);
+
+  const progressMet = task.progress >= task.required_count;
+  const canClaim = !isSocial && progressMet;
+
+  function handleOpen() {
+    if (!task.target_value) return;
+    const url = targetUrl(task.target_value);
+    if (openTelegramLink.isAvailable() && url.includes("t.me")) {
+      openTelegramLink(url);
+    } else {
+      window.open(url, "_blank");
+    }
+    setStage("checking");
+    setErrorText(null);
+  }
+
+  async function handleClaim() {
+    setLoading(true);
+    setErrorText(null);
+    try {
+      const { state } = await claimSystemTask(task.slug);
+      onClaimed(state);
+      setStage("done");
+    } catch (err) {
+      setErrorText(
+        err instanceof ApiError && err.code === "not_subscribed"
+          ? t("partnerTasks.notSubscribed")
+          : err instanceof ApiError && err.code === "task_not_claimable"
+            ? t("systemTasks.notReadyYet")
+            : t("partnerTasks.checkFailed"),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="gradient-surface flex flex-col gap-2 rounded-xl p-3">
+      <div className="flex items-start gap-3">
+        <div className="gradient-action flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-xl">
+          {CATEGORY_ICON[task.category]}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold">{task.title}</p>
+          {task.description && (
+            <p className="truncate text-xs text-nav-inactive">{task.description}</p>
+          )}
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+            {task.rewards.map((r) => (
+              <span key={r.item_type} className="flex items-center gap-1 text-gram">
+                {itemIcon(r.item_type)} {t(itemNameKey(r.item_type))}
+                {r.quantity > 1 ? ` ×${r.quantity}` : ""}
+              </span>
+            ))}
+            <span className="text-boost">✨ +{task.reward_xp} XP</span>
+          </div>
+        </div>
+      </div>
+
+      {!isSocial && !task.completed && (
+        <div className="flex flex-col gap-1">
+          <div className="h-1.5 rounded-full bg-progress-bg">
+            <div
+              className="h-1.5 rounded-full bg-progress-fill"
+              style={{ width: `${Math.min(100, (task.progress / task.required_count) * 100)}%` }}
+            />
+          </div>
+          <p className="text-xs text-nav-inactive">
+            {t("systemTasks.progress", { done: Math.min(task.progress, task.required_count), total: task.required_count })}
+          </p>
+        </div>
+      )}
+
+      {errorText && <p className="text-xs text-danger">{errorText}</p>}
+
+      <div className="flex justify-end">
+        {stage === "done" ? (
+          <span className="rounded-full bg-progress-bg px-3 py-1.5 text-xs text-profit">
+            ✓ {t("quests.claimed")}
+          </span>
+        ) : isSocial ? (
+          stage === "todo" ? (
+            <button
+              type="button"
+              onClick={handleOpen}
+              className="gradient-action rounded-full px-3 py-1.5 text-xs font-semibold"
+            >
+              {t("partnerTasks.doIt")}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleClaim}
+              disabled={loading}
+              className="gradient-action rounded-full px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
+            >
+              {t("partnerTasks.check")}
+            </button>
+          )
+        ) : (
+          <button
+            type="button"
+            onClick={handleClaim}
+            disabled={!canClaim || loading}
+            className="gradient-action rounded-full px-3 py-1.5 text-xs font-semibold disabled:opacity-40"
+          >
+            {t("systemTasks.claim")}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function SystemTasksSection({
+  tasks,
+  onStateChange,
+}: {
+  tasks: SystemTask[];
+  onStateChange: (state: PlayerState) => void;
+}) {
+  const { t } = useLanguage();
+  if (tasks.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <h2 className="px-1 text-sm font-semibold text-nav-inactive">{t("systemTasks.title")}</h2>
+      {tasks.map((task) => (
+        <TaskCard key={task.id} task={task} onClaimed={onStateChange} />
+      ))}
+    </div>
+  );
+}

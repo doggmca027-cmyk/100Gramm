@@ -236,6 +236,12 @@ const tr: typeof ru = {
     notSubscribed: "Kanala abone olmadın!",
     checkFailed: "Kontrol edilemedi, tekrar dene",
   },
+  systemTasks: {
+    title: "🎖️ Mahalle Görevleri",
+    progress: "{done} / {total}",
+    claim: "Ödülü al",
+    notReadyYet: "Henüz şart sağlanmadı",
+  },
   languagePicker: {
     title: "Dil seç",
   },

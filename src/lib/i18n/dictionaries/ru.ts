@@ -234,6 +234,12 @@ const ru = {
     notSubscribed: "Вы не подписались на канал!",
     checkFailed: "Не получилось проверить, попробуй ещё раз",
   },
+  systemTasks: {
+    title: "🎖️ Задания района",
+    progress: "{done} / {total}",
+    claim: "Забрать награду",
+    notReadyYet: "Условие ещё не выполнено",
+  },
   languagePicker: {
     title: "Выбери язык",
   },

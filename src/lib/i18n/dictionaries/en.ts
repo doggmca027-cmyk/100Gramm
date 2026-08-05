@@ -236,6 +236,12 @@ const en: typeof ru = {
     notSubscribed: "You haven't subscribed to the channel!",
     checkFailed: "Couldn't check, please try again",
   },
+  systemTasks: {
+    title: "🎖️ District Tasks",
+    progress: "{done} / {total}",
+    claim: "Claim reward",
+    notReadyYet: "Not there yet",
+  },
   languagePicker: {
     title: "Choose language",
   },

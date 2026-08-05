@@ -204,6 +204,19 @@ export function checkPartnerTaskSubscription(taskId: string) {
   });
 }
 
+export interface SystemTaskClaimResult {
+  task_slug: string;
+  reward_xp: number;
+  rewards: { item_type: string; quantity: number }[];
+}
+
+export function claimSystemTask(slug: string) {
+  return request<{ reward: SystemTaskClaimResult; state: PlayerState }>("/api/system-tasks/claim", {
+    method: "POST",
+    body: JSON.stringify({ slug }),
+  });
+}
+
 export interface AdminPartnerTask {
   id: string;
   title: string;

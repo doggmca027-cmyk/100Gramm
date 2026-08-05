@@ -6,6 +6,7 @@ import type { PlayerState } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
 import { QuestList } from "./quest-list";
 import { PartnerTasksSection } from "./partner-tasks-section";
+import { SystemTasksSection } from "./system-tasks-section";
 import { ComingSoonSection } from "./coming-soon-section";
 import { HistoryModal } from "./history-modal";
 import { WalletModal } from "./wallet-modal";
@@ -133,6 +134,7 @@ export function BalanceScreen({
 
       <QuestList quests={state.quests} onStateChange={onStateChange} />
       <PartnerTasksSection tasks={state.partner_tasks} onStateChange={onStateChange} />
+      <SystemTasksSection tasks={state.system_tasks} onStateChange={onStateChange} />
       <ComingSoonSection
         icon="📦"
         title={t("containers.title")}
