@@ -159,6 +159,14 @@ const tr: typeof ru = {
     errorNotConfirmed: "Ödeme henüz zincirde onaylanmadı, bir dakika sonra tekrar dene",
     errorNotConfigured: "Mağaza şu anda kullanılamıyor",
   },
+  walletConnect: {
+    navLabel: "Cüzdan",
+    title: "👛 TON cüzdanı",
+    subtitle: "Mağazada TON ile GRAM satın almak için cüzdan bağla",
+    connectedLabel: "Bağlandı",
+    disconnect: "Cüzdanı bağlantısını kes",
+    copied: "Kopyalandı!",
+  },
   leaderboard: {
     title: "🏆 Sezon sıralaması",
     empty: "Henüz kimse yok",

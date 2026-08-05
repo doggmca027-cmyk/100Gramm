@@ -157,6 +157,14 @@ const ru = {
     errorNotConfirmed: "Платёж пока не подтверждён в сети, попробуй ещё раз через минуту",
     errorNotConfigured: "Магазин временно недоступен",
   },
+  walletConnect: {
+    navLabel: "Кошелёк",
+    title: "👛 TON-кошелёк",
+    subtitle: "Подключи кошелёк, чтобы покупать GRAM за TON в магазине",
+    connectedLabel: "Подключён",
+    disconnect: "Отключить кошелёк",
+    copied: "Скопировано!",
+  },
   leaderboard: {
     title: "🏆 Рейтинг сезона",
     empty: "Пока никого нет",

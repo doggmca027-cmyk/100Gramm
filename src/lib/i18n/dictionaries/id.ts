@@ -159,6 +159,14 @@ const id: typeof ru = {
     errorNotConfirmed: "Pembayaran belum terkonfirmasi on-chain, coba lagi sebentar lagi",
     errorNotConfigured: "Toko sedang tidak tersedia",
   },
+  walletConnect: {
+    navLabel: "Dompet",
+    title: "👛 Dompet TON",
+    subtitle: "Hubungkan dompet untuk membeli GRAM dengan TON di toko",
+    connectedLabel: "Terhubung",
+    disconnect: "Putuskan dompet",
+    copied: "Disalin!",
+  },
   leaderboard: {
     title: "🏆 Papan peringkat musim",
     empty: "Belum ada siapa-siapa",

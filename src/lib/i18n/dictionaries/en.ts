@@ -159,6 +159,14 @@ const en: typeof ru = {
     errorNotConfirmed: "Payment isn't confirmed on-chain yet — try again in a minute",
     errorNotConfigured: "The shop is temporarily unavailable",
   },
+  walletConnect: {
+    navLabel: "Wallet",
+    title: "👛 TON wallet",
+    subtitle: "Connect a wallet to buy GRAM with TON in the shop",
+    connectedLabel: "Connected",
+    disconnect: "Disconnect wallet",
+    copied: "Copied!",
+  },
   leaderboard: {
     title: "🏆 Season leaderboard",
     empty: "No one here yet",
