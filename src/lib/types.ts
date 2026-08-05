@@ -53,6 +53,19 @@ export interface PlayerState {
     earned_total: number;
   };
   daily_combo: DailyCombo | null;
+  boosts: Boost[];
+}
+
+export type BoostStatus = "PENDING" | "ACTIVE" | "USED" | "EXPIRED";
+
+export interface Boost {
+  id: string;
+  status: BoostStatus;
+  source: string;
+  target_tier: number | null;
+  created_at: string;
+  expires_at: string;
+  activated_at: string | null;
 }
 
 export interface ComboCard {
@@ -100,6 +113,9 @@ export interface TierState {
   slots_max: number;
   cycles_to_next_slot: number | null;
   can_buy_max: boolean;
+  /** Extra capacity from ACTIVE boosts on this tier, on top of (not capped by) slots_max. */
+  slots_boost: number;
+  slots_total: number;
 }
 
 export interface ActiveCycle {
@@ -121,6 +137,7 @@ export interface Quest {
   target_count: number;
   progress_count: number;
   reward_amount: number;
+  grants_boost: boolean;
   completed_at: string | null;
   claimed_at: string | null;
 }

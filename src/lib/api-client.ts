@@ -46,9 +46,21 @@ export function openContainer(id: string) {
   });
 }
 
+export interface ClaimQuestResult {
+  reward_amount: number;
+  boost_granted: boolean;
+}
+
 export function claimQuest(id: string) {
-  return request<{ reward: number; state: PlayerState }>(`/api/quests/${id}/claim`, {
+  return request<{ result: ClaimQuestResult; state: PlayerState }>(`/api/quests/${id}/claim`, {
     method: "POST",
+  });
+}
+
+export function applyBoost(boostId: string, tier: number) {
+  return request<{ state: PlayerState }>(`/api/boosts/${boostId}/apply`, {
+    method: "POST",
+    body: JSON.stringify({ tier }),
   });
 }
 

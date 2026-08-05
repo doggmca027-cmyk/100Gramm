@@ -59,6 +59,7 @@ const id: typeof ru = {
     slotsMaxed: "Slot maks — beli grosir terbuka",
     nextSlotIn: "{n} siklus lagi ke slot berikutnya",
     buyMax: "Beli grosir",
+    tempSlotNote: "⚡ Slot sementara (sampai siklus berakhir)",
   },
   productDetail: {
     title: "Tentang usaha ini",
@@ -98,6 +99,16 @@ const id: typeof ru = {
     title: "⏰ Pesanan mendesak",
     claim: "Klaim",
     claimed: "Diklaim",
+    boostGranted: "✨ Dapat boost +1 Slot!",
+  },
+  boosts: {
+    title: "⚡ Boost saya",
+    extraSlot: "+1 Slot",
+    expiresIn: "Kedaluwarsa dalam {time}",
+    appliedTo: "Diterapkan ke: {tier}",
+    apply: "Terapkan",
+    pickItem: "Pilih produk",
+    applyError: "Gagal menerapkan boost",
   },
   containers: {
     title: "Kontainer",

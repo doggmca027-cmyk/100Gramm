@@ -59,6 +59,7 @@ const en: typeof ru = {
     slotsMaxed: "Max slots — wholesale buy unlocked",
     nextSlotIn: "{n} more cycles to next slot",
     buyMax: "Wholesale buy",
+    tempSlotNote: "⚡ Temporary slot (until the cycle ends)",
   },
   productDetail: {
     title: "About this business",
@@ -98,6 +99,16 @@ const en: typeof ru = {
     title: "⏰ Urgent orders",
     claim: "Claim",
     claimed: "Claimed",
+    boostGranted: "✨ Got a +1 Slot boost!",
+  },
+  boosts: {
+    title: "⚡ My boosts",
+    extraSlot: "+1 Slot",
+    expiresIn: "Expires in {time}",
+    appliedTo: "Applied to: {tier}",
+    apply: "Apply",
+    pickItem: "Pick a product",
+    applyError: "Couldn't apply that boost",
   },
   containers: {
     title: "Containers",

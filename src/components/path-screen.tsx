@@ -52,8 +52,8 @@ export function PathScreen({
         tier={openTier}
         activeCycles={state.active_cycles.filter((c) => c.tier === openTier.tier)}
         balance={state.wallet.balance}
-        freeSlots={openTier.slots_open - openTier.slots_used}
-        slotsTotal={openTier.slots_open}
+        freeSlots={openTier.slots_total - openTier.slots_used}
+        slotsTotal={openTier.slots_total}
         onStart={handleStart}
         onBuyMax={handleBuyMax}
         onBack={() => setDetailTier(null)}
@@ -81,7 +81,7 @@ export function PathScreen({
           previousTier={index > 0 ? state.tiers[index - 1] : null}
           activeCycles={state.active_cycles.filter((c) => c.tier === tier.tier)}
           balance={state.wallet.balance}
-          freeSlots={tier.slots_open - tier.slots_used}
+          freeSlots={tier.slots_total - tier.slots_used}
           onStart={handleStart}
           onBuyMax={handleBuyMax}
           onOpenDetail={() => setDetailTier(tier.tier)}

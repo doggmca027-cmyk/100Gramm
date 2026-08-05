@@ -3,14 +3,23 @@
 import type { PlayerState } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
 import { TIER_ICON, TIER_ACCENT } from "@/lib/tier-art";
+import { BoostInventory } from "./boost-inventory";
 
-export function UpgradesScreen({ state }: { state: PlayerState }) {
+export function UpgradesScreen({
+  state,
+  onStateChange,
+}: {
+  state: PlayerState;
+  onStateChange: (state: PlayerState) => void;
+}) {
   const { t, pick } = useLanguage();
   const unlockedTiers = state.tiers.filter((tier) => tier.unlocked);
 
   return (
     <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4 pb-24">
       <p className="px-1 text-sm text-nav-inactive">{t("upgrades.subtitle")}</p>
+
+      <BoostInventory state={state} onStateChange={onStateChange} />
 
       {unlockedTiers.map((tier) => {
         const atCap = tier.can_buy_max;
@@ -30,6 +39,9 @@ export function UpgradesScreen({ state }: { state: PlayerState }) {
               <p className="text-lg font-bold">
                 {tier.slots_open}
                 <span className="text-sm text-nav-inactive">/{tier.slots_max}</span>
+                {tier.slots_boost > 0 && (
+                  <span className="ml-1 text-sm text-boost">+{tier.slots_boost}⚡</span>
+                )}
               </p>
             </div>
 
@@ -49,6 +61,10 @@ export function UpgradesScreen({ state }: { state: PlayerState }) {
                   {t("upgrades.untilNext", { n: tier.cycles_to_next_slot ?? 0 })}
                 </p>
               </>
+            )}
+
+            {tier.slots_boost > 0 && (
+              <p className="mt-2 text-xs text-boost">{t("productCard.tempSlotNote")}</p>
             )}
           </div>
         );

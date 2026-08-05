@@ -12,11 +12,17 @@ export async function POST(
   try {
     const userId = await requireUserId(request);
     const { id } = await params;
+    const body = await request.json().catch(() => null);
+    const tier = Number(body?.tier);
+    if (!Number.isInteger(tier) || tier <= 0) {
+      return NextResponse.json({ error: "invalid_tier" }, { status: 400 });
+    }
 
     const supabase = supabaseServer();
-    const { data: result, error } = await supabase.rpc("claim_quest", {
+    const { error } = await supabase.rpc("apply_boost", {
       p_user_id: userId,
-      p_quest_id: id,
+      p_boost_id: id,
+      p_tier: tier,
     });
     if (error) throw error;
 
@@ -25,7 +31,7 @@ export async function POST(
     });
     if (stateError) throw stateError;
 
-    return NextResponse.json({ result, state });
+    return NextResponse.json({ state });
   } catch (error) {
     return apiErrorResponse(error);
   }

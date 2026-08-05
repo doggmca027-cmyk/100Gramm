@@ -143,9 +143,10 @@ export function ProductCard({
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 text-[11px] text-nav-inactive">
+        <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-nav-inactive">
           <span>
             🎰 {t("productCard.slots")} {tier.slots_open}/{tier.slots_max}
+            {tier.slots_boost > 0 && <span className="text-boost"> +{tier.slots_boost}⚡</span>}
           </span>
           {tier.can_buy_max ? (
             <span className="text-profit">· {t("productCard.slotsMaxed")}</span>
@@ -155,6 +156,9 @@ export function ProductCard({
                 · {t("productCard.nextSlotIn", { n: tier.cycles_to_next_slot })}
               </span>
             )
+          )}
+          {tier.slots_boost > 0 && (
+            <span className="w-full text-boost">{t("productCard.tempSlotNote")}</span>
           )}
         </div>
 

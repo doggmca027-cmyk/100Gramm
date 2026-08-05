@@ -59,6 +59,7 @@ const tr: typeof ru = {
     slotsMaxed: "Maks. slot — toptan alım açık",
     nextSlotIn: "sonraki slota {n} döngü kaldı",
     buyMax: "Toptan alım",
+    tempSlotNote: "⚡ Geçici slot (döngü bitene kadar)",
   },
   productDetail: {
     title: "İşletme hakkında",
@@ -98,6 +99,16 @@ const tr: typeof ru = {
     title: "⏰ Acil siparişler",
     claim: "Al",
     claimed: "Alındı",
+    boostGranted: "✨ +1 Slot bonusu kazandın!",
+  },
+  boosts: {
+    title: "⚡ Bonuslarım",
+    extraSlot: "+1 Slot",
+    expiresIn: "Süresi doluyor: {time}",
+    appliedTo: "Uygulandı: {tier}",
+    apply: "Uygula",
+    pickItem: "Ürün seç",
+    applyError: "Bonus uygulanamadı",
   },
   containers: {
     title: "Konteynerler",

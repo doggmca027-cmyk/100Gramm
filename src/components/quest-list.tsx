@@ -14,13 +14,15 @@ function QuestRow({
 }) {
   const { t, pick } = useLanguage();
   const [claiming, setClaiming] = useState(false);
+  const [boostGranted, setBoostGranted] = useState(false);
   const ready = Boolean(quest.completed_at) && !quest.claimed_at;
 
   async function handleClaim() {
     setClaiming(true);
     try {
-      const result = await claimQuest(quest.id);
-      onClaimed(result.state);
+      const { result, state } = await claimQuest(quest.id);
+      if (result.boost_granted) setBoostGranted(true);
+      onClaimed(state);
     } catch {
       // no-op: button just re-enables
     } finally {
@@ -39,7 +41,11 @@ function QuestRow({
           <span className="text-gram">
             +{quest.reward_amount} {t("common.gram")}
           </span>
+          {quest.grants_boost && <span className="ml-1 text-boost">+1 ⚡</span>}
         </p>
+        {boostGranted && (
+          <p className="mt-1 text-xs font-semibold text-boost">{t("quests.boostGranted")}</p>
+        )}
       </div>
       {quest.claimed_at ? (
         <span className="text-xs text-profit">{t("quests.claimed")}</span>

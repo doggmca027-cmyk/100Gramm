@@ -59,7 +59,9 @@ export default function Home() {
             {tab === "balance" && (
               <BalanceScreen state={state} onStateChange={setState} />
             )}
-            {tab === "upgrades" && <UpgradesScreen state={state} />}
+            {tab === "upgrades" && (
+              <UpgradesScreen state={state} onStateChange={setState} />
+            )}
             {tab === "squad" && <SquadScreen state={state} />}
             {tab === "games" && <GamesScreen state={state} onStateChange={setState} />}
           </main>

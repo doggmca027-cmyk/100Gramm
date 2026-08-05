@@ -57,6 +57,7 @@ const ru = {
     slotsMaxed: "Макс. слотов — доступна оптовая закупка",
     nextSlotIn: "ещё {n} циклов до слота",
     buyMax: "Оптовая закупка",
+    tempSlotNote: "⚡ Временный слот (до конца цикла)",
   },
   productDetail: {
     title: "О предприятии",
@@ -96,6 +97,16 @@ const ru = {
     title: "⏰ Срочные заказы",
     claim: "Забрать",
     claimed: "Получено",
+    boostGranted: "✨ Получен буст +1 Слот!",
+  },
+  boosts: {
+    title: "⚡ Мои бусты",
+    extraSlot: "+1 Слот",
+    expiresIn: "Сгорит через {time}",
+    appliedTo: "Применён к: {tier}",
+    apply: "Применить",
+    pickItem: "Выбери товар",
+    applyError: "Не получилось применить буст",
   },
   containers: {
     title: "Контейнеры",
