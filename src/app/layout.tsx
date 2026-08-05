@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppBootstrap } from "@/components/app-bootstrap";
+import { TonConnectProvider } from "@/components/ton-connect-provider";
 import { LanguageProvider } from "@/lib/i18n/context";
 import "./globals.css";
 
@@ -35,7 +36,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex h-dvh flex-col overflow-hidden bg-bg">
         <LanguageProvider>
-          <AppBootstrap>{children}</AppBootstrap>
+          <TonConnectProvider>
+            <AppBootstrap>{children}</AppBootstrap>
+          </TonConnectProvider>
         </LanguageProvider>
       </body>
     </html>

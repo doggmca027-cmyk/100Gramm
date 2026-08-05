@@ -78,6 +78,74 @@ export function withdrawGram(amount: number) {
   });
 }
 
+export interface ShopPack {
+  id: string;
+  title: string;
+  gram_amount: number;
+  price_ton: number;
+}
+
+export function fetchShopPacks() {
+  return request<{ packs: ShopPack[] }>("/api/shop/packs");
+}
+
+export interface PreparedPurchase {
+  packId: string;
+  gramAmount: number;
+  priceTon: number;
+  /** Nanotons, decimal string — pass straight through as the TON Connect message's `amount`. */
+  amountNano: string;
+  /** Exact text to attach as the transfer comment — binds the payment to this user + pack. */
+  comment: string;
+  /** Unix seconds — use as the TON Connect message's `validUntil`. */
+  validUntil: number;
+}
+
+export function prepareShopPurchase(packId: string) {
+  return request<PreparedPurchase>("/api/shop/prepare-purchase", {
+    method: "POST",
+    body: JSON.stringify({ packId }),
+  });
+}
+
+export interface ShopPurchaseResult {
+  id: string;
+  pack_id: string;
+  gram_amount: number;
+  amount_ton: number;
+  tx_hash: string;
+}
+
+/**
+ * Confirms a TON Connect payment already broadcast by the wallet. The
+ * on-chain transfer can take a few seconds to confirm and get indexed by
+ * TonAPI, so the server may reply `payment_not_found` while it's still
+ * pending — this polls verify-purchase itself for a while before giving up,
+ * on top of the short poll the server already does per call.
+ */
+export async function verifyShopPurchase(
+  input: { packId: string; boc: string },
+  { attempts = 6, delayMs = 3000 }: { attempts?: number; delayMs?: number } = {},
+): Promise<{ result: ShopPurchaseResult; state: PlayerState }> {
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      return await request<{ result: ShopPurchaseResult; state: PlayerState }>(
+        "/api/shop/verify-purchase",
+        { method: "POST", body: JSON.stringify(input) },
+      );
+    } catch (err) {
+      const isLastAttempt = attempt === attempts - 1;
+      if (isLastAttempt || !(err instanceof ApiError) || err.code !== "payment_not_found") {
+        throw err;
+      }
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  // Unreachable — the loop above always returns or throws — but keeps TS happy.
+  throw new ApiError("payment_not_found");
+}
+
 export function applyBoost(boostId: string, tier: number) {
   return request<{ state: PlayerState }>(`/api/boosts/${boostId}/apply`, {
     method: "POST",
