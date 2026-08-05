@@ -178,9 +178,10 @@ const id: typeof ru = {
     teamIncome: "Pendapatan tim",
     description:
       "Sulit bertahan hidup sendirian di dunia ini. Undang teman — dapatkan bagian GRAM dari setiap siklus yang mereka jalankan.",
-    level1: "🥇 Level 1 (rekan) — 10%",
-    level2: "🥈 Level 2 — 5%",
-    level3: "🥉 Level 3 — 2%",
+    level1: "🥇 Level 1 (rekan) — {percent}%",
+    level2: "🥈 Level 2 — {percent}%",
+    level3: "🥉 Level 3 — {percent}%",
+    ambassadorBadge: "⭐ Kamu ambassador — persentase referral lebih tinggi",
     copied: "Disalin!",
     invite: "🍾 Undang ke geng",
   },

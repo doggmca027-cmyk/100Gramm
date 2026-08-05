@@ -178,9 +178,10 @@ const tr: typeof ru = {
     teamIncome: "Ekip geliri",
     description:
       "Bu dünyada tek başına hayatta kalmak zor. Arkadaşlarını davet et — başlattıkları her döngüden GRAM payı al.",
-    level1: "🥇 Seviye 1 (ortaklar) — %10",
-    level2: "🥈 Seviye 2 — %5",
-    level3: "🥉 Seviye 3 — %2",
+    level1: "🥇 Seviye 1 (ortaklar) — %{percent}",
+    level2: "🥈 Seviye 2 — %{percent}",
+    level3: "🥉 Seviye 3 — %{percent}",
+    ambassadorBadge: "⭐ Bir elçisin — artırılmış referans oranları",
     copied: "Kopyalandı!",
     invite: "🍾 Ekibe davet et",
   },
