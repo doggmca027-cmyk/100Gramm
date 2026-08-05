@@ -177,9 +177,10 @@ const en: typeof ru = {
     teamIncome: "Team income",
     description:
       "It's hard to survive alone in this world. Invite friends — get a share of GRAM from every cycle they run.",
-    level1: "🥇 Level 1 (partners) — 10%",
-    level2: "🥈 Level 2 — 5%",
-    level3: "🥉 Level 3 — 2%",
+    level1: "🥇 Level 1 (partners) — {percent}%",
+    level2: "🥈 Level 2 — {percent}%",
+    level3: "🥉 Level 3 — {percent}%",
+    ambassadorBadge: "⭐ You're an ambassador — boosted referral rates",
     copied: "Copied!",
     invite: "🍾 Invite to the crew",
   },
