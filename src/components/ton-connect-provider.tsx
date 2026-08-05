@@ -9,7 +9,7 @@ import { TonConnectUIProvider } from "@tonconnect/ui-react";
  *
  * MUST always render <TonConnectUIProvider> — never skip it. Every
  * useTonConnectUI()/useTonAddress()/useTonWallet() call (BalanceScreen,
- * BuyItemModal, WalletConnectModal) throws TonConnectProviderNotSetError
+ * WalletConnectModal) throws TonConnectProviderNotSetError
  * synchronously if no provider is mounted above it, which crashes the
  * whole render tree (this previously took down the entire Balance tab
  * whenever NEXT_PUBLIC_APP_URL wasn't set in the deployment's env vars).

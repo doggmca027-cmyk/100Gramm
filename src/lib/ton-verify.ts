@@ -122,7 +122,7 @@ async function findMatchingTransaction(
  * `expectedNano` (or more — overpaying is accepted, never partial credit).
  * Kept short (a few seconds) on purpose to stay well inside serverless
  * function time limits — this is one attempt within the client's own retry
- * loop (see verifyShopPurchase in api-client.ts), not the only attempt.
+ * loop (see verifyTonDeposit in api-client.ts), not the only attempt.
  * Returns null (never throws) when nothing matches yet — the caller should
  * treat that as "not confirmed on-chain yet, ask the client to retry" rather
  * than "invalid".
