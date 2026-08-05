@@ -7,18 +7,21 @@ import { TonConnectUIProvider } from "@tonconnect/ui-react";
  * component) because TonConnectUIProvider is client-only — it touches
  * `window`/localStorage to restore the wallet session on mount.
  *
- * manifestUrl points at our own dynamic route (src/app/tonconnect-manifest.json/route.ts)
- * rather than a static /public file, so it always reflects NEXT_PUBLIC_APP_URL
- * for the environment actually running (prod/staging/preview).
+ * MUST always render <TonConnectUIProvider> — never skip it. Every
+ * useTonConnectUI()/useTonAddress()/useTonWallet() call (BalanceScreen,
+ * BuyItemModal, WalletConnectModal) throws TonConnectProviderNotSetError
+ * synchronously if no provider is mounted above it, which crashes the
+ * whole render tree (this previously took down the entire Balance tab
+ * whenever NEXT_PUBLIC_APP_URL wasn't set in the deployment's env vars).
+ *
+ * manifestUrl points at our own dynamic route (src/app/tonconnect-manifest.json/route.ts),
+ * which derives the origin from the incoming request — so this never
+ * depends on NEXT_PUBLIC_APP_URL being configured at all. window.location.origin
+ * here is just the same idea applied client-side.
  */
 export function TonConnectProvider({ children }: { children: React.ReactNode }) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-
-  // No treasury/manifest configured yet (e.g. local dev without .env set up)
-  // — render children without TON Connect rather than crashing the whole app.
-  if (!appUrl) {
-    return <>{children}</>;
-  }
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL || (typeof window !== "undefined" ? window.location.origin : "");
 
   return (
     <TonConnectUIProvider manifestUrl={`${appUrl}/tonconnect-manifest.json`}>

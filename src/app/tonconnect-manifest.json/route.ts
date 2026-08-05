@@ -1,23 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 /**
  * TON Connect manifest (https://github.com/ton-blockchain/ton-connect/blob/main/spec/manifest.md).
  * Wallets fetch this over HTTPS and require every URL inside to be absolute
- * and to actually match the deployed origin — so it's served dynamically
- * from NEXT_PUBLIC_APP_URL instead of a static /public file that's easy to
- * forget updating per-environment (preview deploys, staging, prod).
+ * and to actually match the deployed origin. Derived from the incoming
+ * request's own origin rather than NEXT_PUBLIC_APP_URL, so it's correct on
+ * every environment (prod/staging/preview) with zero config — a missing env
+ * var here previously meant a broken manifest, which is exactly the kind of
+ * misconfiguration that must never be able to crash the app (see
+ * ton-connect-provider.tsx).
  */
-export const dynamic = "force-static";
-
-export async function GET() {
-  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/+$/, "");
-
-  if (!appUrl) {
-    return NextResponse.json(
-      { error: "NEXT_PUBLIC_APP_URL is not set — required to build tonconnect-manifest.json" },
-      { status: 500 },
-    );
-  }
+export async function GET(request: NextRequest) {
+  const appUrl = request.nextUrl.origin;
 
   return NextResponse.json({
     url: appUrl,
