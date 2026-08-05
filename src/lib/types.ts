@@ -55,20 +55,29 @@ export interface PlayerState {
   daily_combo: DailyCombo | null;
 }
 
-export interface DailyComboSlot {
-  found: boolean;
-  tier?: number;
-  name?: string;
-  name_i18n?: Localized;
+export interface ComboCard {
+  tier: number;
+  name: string;
+  name_i18n: Localized;
+}
+
+export interface ComboGuessCard extends ComboCard {
+  correct: boolean;
 }
 
 export interface DailyCombo {
   reward_amount: number;
   is_completed: boolean;
-  found_count: number;
-  total_count: number;
+  attempts_used: number;
+  attempts_max: number;
+  slot_count: number;
   resets_at: string;
-  slots: DailyComboSlot[];
+  /** Always-visible candidate list — a free minigame, not gated by unlocks. */
+  pool: ComboCard[];
+  /** Last submitted guess with per-position correctness, or null before any attempt. */
+  last_guess: ComboGuessCard[] | null;
+  /** The secret combo, only ever populated once is_completed is true. */
+  revealed_tiers: ComboCard[] | null;
 }
 
 export interface TierState {

@@ -52,6 +52,21 @@ export function claimQuest(id: string) {
   });
 }
 
+export interface ComboGuessResult {
+  is_win: boolean;
+  correct: boolean[];
+  attempts_used: number;
+  attempts_max: number;
+  reward_amount: number;
+}
+
+export function submitComboGuess(tiers: number[]) {
+  return request<{ result: ComboGuessResult; state: PlayerState }>("/api/combo/guess", {
+    method: "POST",
+    body: JSON.stringify({ tiers }),
+  });
+}
+
 export function markIntroSeen() {
   return request<{ ok: true }>("/api/intro/seen", { method: "POST" });
 }

@@ -61,9 +61,7 @@ export default function Home() {
             )}
             {tab === "upgrades" && <UpgradesScreen state={state} />}
             {tab === "squad" && <SquadScreen state={state} />}
-            {tab === "games" && (
-              <GamesScreen state={state} onNavigateToPath={() => setTab("path")} />
-            )}
+            {tab === "games" && <GamesScreen state={state} onStateChange={setState} />}
           </main>
           <BottomNav active={tab} onChange={setTab} />
         </>
