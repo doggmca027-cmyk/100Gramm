@@ -77,6 +77,11 @@ export function WithdrawalsAdminSection() {
               {req.admin_note && (
                 <p className="text-xs text-nav-inactive">💬 {req.admin_note}</p>
               )}
+              {req.payout_tx_hash && (
+                <p className="truncate text-xs text-nav-inactive" title={req.payout_tx_hash}>
+                  🔗 {req.payout_tx_hash.slice(0, 12)}…
+                </p>
+              )}
             </div>
             <div className="text-right">
               <p className="font-semibold text-gram">{req.net_amount.toFixed(2)} GRAM</p>

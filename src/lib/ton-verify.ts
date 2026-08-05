@@ -34,6 +34,7 @@ interface TonApiTransaction {
   hash?: string;
   success?: boolean;
   in_msg?: TonApiMessage;
+  out_msgs?: TonApiMessage[];
 }
 
 interface TonApiTransactionsResponse {
@@ -86,6 +87,61 @@ function addressesEqual(a: string | undefined, b: string): boolean {
   } catch {
     return false;
   }
+}
+
+/** Single pass over the treasury's recent outbound transactions looking for a match. */
+async function findOutgoingTransaction(
+  treasuryAddress: string,
+  toAddress: string,
+  expectedComment: string,
+): Promise<VerifiedPayment | null> {
+  const encodedAccount = encodeURIComponent(treasuryAddress);
+  const data = await tonApiFetch<TonApiTransactionsResponse>(
+    `/v2/blockchain/accounts/${encodedAccount}/transactions`,
+    { limit: "20", sort_order: "desc" },
+  );
+
+  for (const tx of data.transactions ?? []) {
+    if (!tx.success || !tx.hash) continue;
+
+    for (const msg of tx.out_msgs ?? []) {
+      if (!addressesEqual(msg.destination?.address, toAddress)) continue;
+      if (decodeComment(msg.raw_body) !== expectedComment) continue;
+
+      return { txHash: tx.hash, valueNano: BigInt(Math.trunc(msg.value ?? 0)) };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Polls TonAPI for the treasury's own outgoing payout matching
+ * `toAddress` + `expectedComment` — used after the server itself broadcasts
+ * a withdrawal payout (see ton-wallet-sender.ts) to recover the resulting
+ * transaction hash for the audit trail. Same "never throws, null means not
+ * indexed yet" contract as pollForTreasuryPayment.
+ */
+export async function pollForOutgoingPayment(
+  treasuryAddress: string,
+  toAddress: string,
+  expectedComment: string,
+  { attempts = 4, delayMs = 2000 }: { attempts?: number; delayMs?: number } = {},
+): Promise<VerifiedPayment | null> {
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      const match = await findOutgoingTransaction(treasuryAddress, toAddress, expectedComment);
+      if (match) return match;
+    } catch (err) {
+      console.error("TonAPI outgoing-payment poll failed:", err);
+    }
+
+    if (attempt < attempts - 1) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  return null;
 }
 
 /** Single pass over the treasury's recent inbound transactions looking for a match. */

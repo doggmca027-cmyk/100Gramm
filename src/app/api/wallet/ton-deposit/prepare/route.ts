@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { toNano } from "@ton/core";
-import { requireUserId } from "@/lib/session";
+import { requireUserId, getTelegramId } from "@/lib/session";
 import { apiErrorResponse } from "@/lib/api-error";
 
 export const runtime = "nodejs";
@@ -13,9 +13,11 @@ const MIN_DEPOSIT_TON = 0.05;
 /**
  * Returns what the client needs to build the TON Connect transfer for a
  * direct deposit: the nanoton amount and the comment to attach. The comment
- * embeds the caller's own session-derived user id — never client-supplied —
- * which is why this exists as a separate call instead of having the client
- * construct the comment itself from data it already has.
+ * is the caller's own Telegram id — resolved server-side from the session,
+ * never client-supplied — chosen over the internal Supabase user id so
+ * it's readable at a glance (same identity already shown to admins on
+ * withdrawal requests) if anyone ever needs to reconcile transfers by hand
+ * against a block explorer.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -27,9 +29,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "amount_too_low", min: MIN_DEPOSIT_TON }, { status: 400 });
     }
 
+    const telegramId = await getTelegramId(userId);
+
     return NextResponse.json({
       amountNano: toNano(String(amountTon)).toString(),
-      comment: userId,
+      comment: telegramId,
       validUntil: Math.floor(Date.now() / 1000) + VALID_SECONDS,
     });
   } catch (error) {

@@ -5,7 +5,7 @@ import { apiErrorResponse } from "@/lib/api-error";
 
 export const runtime = "nodejs";
 
-const VALID_STATUSES = new Set(["pending", "approved", "rejected"]);
+const VALID_STATUSES = new Set(["pending", "processing", "approved", "rejected"]);
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase
       .from("withdrawal_requests")
       .select(
-        "id, amount, fee, net_amount, status, created_at, resolved_at, admin_note, user:users(telegram_id, username, first_name)",
+        "id, amount, fee, net_amount, status, created_at, resolved_at, admin_note, payout_address, payout_tx_hash, user:users(telegram_id, username, first_name)",
       )
       .eq("status", status)
       .order("created_at", { ascending: status === "pending" });

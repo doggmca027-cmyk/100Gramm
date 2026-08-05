@@ -41,3 +41,17 @@ export async function requireAdminUserId(request: NextRequest): Promise<string> 
 
   return userId;
 }
+
+/**
+ * Resolves a Supabase user id to its Telegram id — used as the TON transfer
+ * comment for deposits (see /api/wallet/ton-deposit/*) so it's human-
+ * readable for manual reconciliation, same identity already shown to admins
+ * on withdrawal requests. Never trust a telegram_id the client claims; this
+ * always re-derives it server-side from the session-verified user id.
+ */
+export async function getTelegramId(userId: string): Promise<string> {
+  const supabase = supabaseServer();
+  const { data, error } = await supabase.from("users").select("telegram_id").eq("id", userId).single();
+  if (error) throw error;
+  return String(data.telegram_id);
+}

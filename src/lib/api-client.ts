@@ -1,7 +1,10 @@
 import type { HistoryEntry, PlayerState } from "./types";
 
 export class ApiError extends Error {
-  constructor(public code: string) {
+  constructor(
+    public code: string,
+    public details?: Record<string, unknown>,
+  ) {
     super(code);
   }
 }
@@ -15,7 +18,8 @@ async function request<T>(input: string, init?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new ApiError(body?.error ?? `http_${res.status}`);
+    const { error: code, ...details } = body ?? {};
+    throw new ApiError(code ?? `http_${res.status}`, details);
   }
 
   return res.json() as Promise<T>;
@@ -75,11 +79,16 @@ export interface WithdrawalRequestResult extends WalletTxResult {
   status: "pending";
 }
 
-/** Doesn't pay out — files a pending request an admin has to approve/reject. */
-export function withdrawGram(amount: number) {
+/**
+ * Doesn't pay out on its own — files a pending request an admin has to
+ * approve/reject (approval sends the real TON automatically).
+ * payoutAddress is the player's own connected TON Connect wallet — where
+ * the payout will actually go once approved.
+ */
+export function withdrawGram(amount: number, payoutAddress: string) {
   return request<{ result: WithdrawalRequestResult; state: PlayerState }>("/api/wallet/withdraw", {
     method: "POST",
-    body: JSON.stringify({ amount }),
+    body: JSON.stringify({ amount, payoutAddress }),
   });
 }
 
@@ -307,10 +316,12 @@ export interface AdminWithdrawalRequest {
   amount: number;
   fee: number;
   net_amount: number;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "processing" | "approved" | "rejected";
   created_at: string;
   resolved_at: string | null;
   admin_note: string | null;
+  payout_address: string | null;
+  payout_tx_hash: string | null;
   user: {
     telegram_id: number;
     username: string | null;
@@ -318,7 +329,9 @@ export interface AdminWithdrawalRequest {
   } | null;
 }
 
-export function fetchAdminWithdrawals(status: "pending" | "approved" | "rejected" = "pending") {
+export function fetchAdminWithdrawals(
+  status: "pending" | "processing" | "approved" | "rejected" = "pending",
+) {
   return request<AdminWithdrawalRequest[]>(`/api/admin/withdrawals?status=${status}`);
 }
 

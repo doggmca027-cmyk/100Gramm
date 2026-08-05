@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
 import type { PlayerState } from "@/lib/types";
 import { depositGram, withdrawGram, ApiError } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
@@ -9,6 +10,10 @@ const DEFAULT_WALLET_CONFIG = { deposit_min: 1, withdraw_min: 0.5, withdraw_fee_
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
+}
+
+function truncateAddress(address: string): string {
+  return address.length > 10 ? `${address.slice(0, 5)}…${address.slice(-4)}` : address;
 }
 
 export function WalletModal({
@@ -23,6 +28,8 @@ export function WalletModal({
   onClose: () => void;
 }) {
   const { t } = useLanguage();
+  const [tonConnectUI] = useTonConnectUI();
+  const tonAddress = useTonAddress();
   const [value, setValue] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,13 +38,16 @@ export function WalletModal({
   const wallet = state.season.config.wallet ?? DEFAULT_WALLET_CONFIG;
   const min = mode === "deposit" ? wallet.deposit_min : wallet.withdraw_min;
   const pending = state.wallet.pending_withdrawal;
+  // Withdrawals pay out automatically to whatever wallet is connected —
+  // there's nowhere to send TON without one.
+  const needsWallet = mode === "withdraw" && !tonAddress;
 
   const normalized = value.trim().replace(",", ".");
   const amount = Number(normalized);
   const isValidNumber = normalized !== "" && Number.isFinite(amount) && amount > 0;
   const meetsMin = isValidNumber && amount >= min;
   const hasFunds = mode === "deposit" || (isValidNumber && amount <= state.wallet.balance);
-  const canSubmit = isValidNumber && meetsMin && hasFunds && !submitting;
+  const canSubmit = isValidNumber && meetsMin && hasFunds && !needsWallet && !submitting;
 
   const fee = mode === "withdraw" && isValidNumber ? round2((amount * wallet.withdraw_fee_percent) / 100) : 0;
   const net = mode === "withdraw" && isValidNumber ? round2(amount - fee) : 0;
@@ -55,9 +65,9 @@ export function WalletModal({
       }
 
       // Withdrawals don't pay out on the spot — they file a request an
-      // admin has to approve/reject, so show a "submitted" step instead of
-      // closing right away.
-      const { result, state: newState } = await withdrawGram(amount);
+      // admin has to approve, which then sends the TON automatically to
+      // tonAddress. Show a "submitted" step instead of closing right away.
+      const { result, state: newState } = await withdrawGram(amount, tonAddress);
       onStateChange(newState);
       setJustSubmitted({ amount: result.amount, net: result.net_amount });
     } catch (err) {
@@ -127,6 +137,18 @@ export function WalletModal({
             </div>
             <p className="text-xs text-nav-inactive">{t("wallet.pendingBody")}</p>
           </div>
+        ) : needsWallet ? (
+          <div className="flex flex-col items-center gap-3 py-4 text-center">
+            <span className="text-3xl">👛</span>
+            <p className="text-xs text-nav-inactive">{t("wallet.needsWallet")}</p>
+            <button
+              type="button"
+              onClick={() => tonConnectUI.openModal()}
+              className="gradient-action rounded-full px-6 py-3 text-sm font-semibold"
+            >
+              {t("walletConnect.navLabel")}
+            </button>
+          </div>
         ) : (
           <>
             <p className="text-xs text-nav-inactive">
@@ -171,6 +193,10 @@ export function WalletModal({
                   <span className="text-profit">
                     {net.toFixed(2)} {t("common.gram")}
                   </span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-nav-inactive">{t("wallet.payoutTo")}</span>
+                  <span className="font-mono">{truncateAddress(tonAddress)}</span>
                 </div>
               </div>
             )}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fromNano, toNano } from "@ton/core";
-import { requireUserId } from "@/lib/session";
+import { requireUserId, getTelegramId } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase-server";
 import { apiErrorResponse } from "@/lib/api-error";
 import { pollForTreasuryPayment } from "@/lib/ton-verify";
@@ -37,9 +37,10 @@ export async function POST(request: NextRequest) {
 
     const expectedNano = toNano(String(amountTon));
     // Must exactly match the comment the client was told to attach when it
-    // built the transfer (see WalletConnectModal.tsx) — binds this specific
-    // on-chain payment to this user.
-    const payment = await pollForTreasuryPayment(treasuryAddress, expectedNano, userId);
+    // built the transfer (see prepare/route.ts) — the caller's own Telegram
+    // id, binding this specific on-chain payment to this user.
+    const telegramId = await getTelegramId(userId);
+    const payment = await pollForTreasuryPayment(treasuryAddress, expectedNano, telegramId);
     if (!payment) {
       return NextResponse.json({ error: "payment_not_found" }, { status: 404 });
     }

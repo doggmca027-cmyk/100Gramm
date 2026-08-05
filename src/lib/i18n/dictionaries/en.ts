@@ -142,6 +142,8 @@ const en: typeof ru = {
     gotIt: "Got it",
     pendingTitle: "Request under review",
     pendingBody: "An admin will approve or reject the withdrawal — the status will show up here",
+    needsWallet: "Connect a TON wallet to withdraw GRAM — that's where the payout goes",
+    payoutTo: "Payout to",
   },
   walletConnect: {
     navLabel: "Wallet",

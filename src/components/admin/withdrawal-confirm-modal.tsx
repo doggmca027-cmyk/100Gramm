@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { resolveAdminWithdrawal, type AdminWithdrawalRequest } from "@/lib/api-client";
+import { ApiError, resolveAdminWithdrawal, type AdminWithdrawalRequest } from "@/lib/api-client";
 
 /**
  * Separate confirmation window for a single withdrawal request — deliberately
  * not an inline approve/reject button on the list row, since this moves real
  * money and a stray tap shouldn't be enough to trigger it.
+ *
+ * "Подтвердить" isn't just bookkeeping — it signs and broadcasts a real TON
+ * transfer from the treasury to request.payout_address right then (see
+ * /api/admin/withdrawals/[id]/route.ts + lib/ton-wallet-sender.ts).
  */
 export function WithdrawalConfirmModal({
   request,
@@ -28,8 +32,17 @@ export function WithdrawalConfirmModal({
       const updated = await resolveAdminWithdrawal(request.id, approve, note.trim() || undefined);
       onResolved(updated);
       onClose();
-    } catch {
-      setError("Не получилось выполнить действие, попробуй ещё раз");
+    } catch (err) {
+      const reason = err instanceof ApiError ? String(err.details?.reason ?? "") : "";
+      setError(
+        err instanceof ApiError && err.code === "payout_failed"
+          ? reason === "insufficient_treasury_balance"
+            ? "В казначейском кошельке недостаточно TON для этой выплаты — пополни его и попробуй снова"
+            : `Отправка TON не прошла (${reason || "сеть недоступна"}) — заявка осталась в очереди, попробуй ещё раз`
+          : err instanceof ApiError && err.code === "payout_address_missing"
+            ? "У заявки нет адреса для выплаты (подана до включения авто-выплат) — обработай вручную и отклони её"
+            : "Не получилось выполнить действие, попробуй ещё раз",
+      );
     } finally {
       setBusy(false);
     }
@@ -69,7 +82,15 @@ export function WithdrawalConfirmModal({
           </div>
           <div className="flex items-center justify-between font-semibold">
             <span>К выплате</span>
-            <span className="text-profit">{request.net_amount.toFixed(2)} GRAM</span>
+            <span className="text-profit">{request.net_amount.toFixed(2)} TON</span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-nav-inactive">Кошелёк</span>
+            <span className="truncate font-mono" title={request.payout_address ?? undefined}>
+              {request.payout_address
+                ? `${request.payout_address.slice(0, 6)}…${request.payout_address.slice(-4)}`
+                : "⚠️ не указан"}
+            </span>
           </div>
           <div className="flex items-center justify-between text-xs text-nav-inactive">
             <span>Подана</span>
@@ -77,10 +98,20 @@ export function WithdrawalConfirmModal({
           </div>
         </div>
 
+        {!request.payout_address && (
+          <p className="text-xs text-danger">
+            ⚠️ Без адреса выплаты подтверждение не отправит TON автоматически — обработай вручную.
+          </p>
+        )}
+
+        <p className="text-xs text-nav-inactive">
+          «Подтвердить» сразу же отправит {request.net_amount.toFixed(2)} TON с казначейского кошелька — отменить будет нельзя.
+        </p>
+
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Комментарий (необязательно) — например реквизиты выплаты"
+          placeholder="Комментарий (необязательно)"
           rows={2}
           className="rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none"
         />
@@ -102,7 +133,7 @@ export function WithdrawalConfirmModal({
             disabled={busy}
             className="gradient-action flex-1 rounded-full py-3 text-sm font-semibold disabled:opacity-50"
           >
-            ✓ Подтвердить
+            {busy ? "Отправляем TON..." : "✓ Подтвердить и отправить"}
           </button>
         </div>
       </div>
