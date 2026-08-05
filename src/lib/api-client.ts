@@ -146,12 +146,29 @@ export function applyBoost(boostId: string, tier: number) {
   });
 }
 
+/** Shaves effect_percent% off the target cycle's remaining time, consuming one unit of itemType. */
+export function applyTimeSkipItem(itemType: string, cycleId: string) {
+  return request<{ state: PlayerState }>("/api/inventory/apply-time-skip", {
+    method: "POST",
+    body: JSON.stringify({ itemType, cycleId }),
+  });
+}
+
+/** Extends wallet.auto_collect_until by effect_hours, consuming one unit of itemType. */
+export function applyAutoCollectItem(itemType: string) {
+  return request<{ state: PlayerState }>("/api/inventory/apply-auto-collect", {
+    method: "POST",
+    body: JSON.stringify({ itemType }),
+  });
+}
+
 export interface ComboGuessResult {
   is_win: boolean;
   correct: boolean[];
   attempts_used: number;
   attempts_max: number;
-  reward_amount: number;
+  /** Which item was actually dropped — null on a losing guess. */
+  reward_item_type: string | null;
 }
 
 export function submitComboGuess(tiers: number[]) {
@@ -267,7 +284,6 @@ export interface AdminDailyComboSlot {
 export interface AdminDailyCombo {
   id: string;
   combo_date: string;
-  reward_amount: number;
   tiers: AdminDailyComboSlot[];
   all_tiers: AdminDailyComboSlot[];
 }

@@ -33,6 +33,8 @@ export interface PlayerState {
     total_slots_used: number;
     /** The player's own open withdrawal request, awaiting admin approve/reject — null if none. */
     pending_withdrawal: PendingWithdrawal | null;
+    /** Auto-collect passes keep cycles claiming + relaunching on their own until this moment — null if never activated. */
+    auto_collect_until: string | null;
   };
   stats: {
     profit_24h: number;
@@ -59,6 +61,7 @@ export interface PlayerState {
   };
   daily_combo: DailyCombo | null;
   boosts: Boost[];
+  inventory: InventoryItem[];
 }
 
 export type BoostStatus = "PENDING" | "ACTIVE" | "USED" | "EXPIRED";
@@ -83,8 +86,29 @@ export interface ComboGuessCard extends ComboCard {
   correct: boolean;
 }
 
+export type ComboItemCategory = "time_skip" | "auto_collect";
+
+/** Shared shape for a combo-drop item's rules — no quantity/expiry, that's InventoryItem's job. */
+export interface ComboItemTemplate {
+  item_type: string;
+  category: ComboItemCategory;
+  /** time_skip only — % of the tier's full cycle_hours shaved off on use. */
+  effect_percent: number | null;
+  /** auto_collect only — hours added to wallet.auto_collect_until on use. */
+  effect_hours: number | null;
+}
+
+export interface ComboDropOdds extends ComboItemTemplate {
+  drop_weight: number;
+}
+
+export interface InventoryItem extends ComboItemTemplate {
+  quantity: number;
+  /** Of the owned units, when the soonest one burns — burning drops quantity by exactly 1. */
+  expires_at: string;
+}
+
 export interface DailyCombo {
-  reward_amount: number;
   is_completed: boolean;
   attempts_used: number;
   attempts_max: number;
@@ -96,6 +120,10 @@ export interface DailyCombo {
   last_guess: ComboGuessCard[] | null;
   /** The secret combo, only ever populated once is_completed is true. */
   revealed_tiers: ComboCard[] | null;
+  /** The full drop table, for showing odds before playing. */
+  possible_drops: ComboDropOdds[];
+  /** What today's win actually granted — null until won. */
+  reward_item: ComboItemTemplate | null;
 }
 
 export interface TierState {

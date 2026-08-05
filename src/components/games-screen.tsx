@@ -6,6 +6,7 @@ import { useLanguage } from "@/lib/i18n/context";
 import { useCountdown, formatDuration } from "@/hooks/use-countdown";
 import { TIER_ICON, TIER_ACCENT } from "@/lib/tier-art";
 import { submitComboGuess } from "@/lib/api-client";
+import { itemIcon, itemNameKey } from "@/lib/combo-items";
 
 // Fallback for useCountdown when there's no combo yet (e.g. season just
 // ended) — a fixed far-future placeholder, never actually rendered since the
@@ -98,7 +99,11 @@ export function GamesScreen({
           <div className="gradient-action rounded-xl p-3 text-center">
             <p className="font-semibold">🎉 {t("games.comboCompletedTitle")}</p>
             <p className="text-sm opacity-90">
-              {t("games.comboCompletedBody", { amount: combo.reward_amount.toFixed(2) })}
+              {combo.reward_item
+                ? t("games.comboCompletedBody", {
+                    item: `${itemIcon(combo.reward_item.item_type)} ${t(itemNameKey(combo.reward_item.item_type))}`,
+                  })
+                : t("games.comboCompletedBodyUnknown")}
             </p>
           </div>
           <div className="grid grid-cols-4 gap-2">
@@ -125,14 +130,21 @@ export function GamesScreen({
         </div>
       ) : (
         <>
-          <div className="gradient-surface flex items-center justify-between rounded-xl p-3 text-sm">
-            <span className="text-nav-inactive">
-              {t("games.comboReward")}:{" "}
-              <span className="font-semibold text-gram">
-                +{combo.reward_amount.toFixed(2)} {t("common.gram")}
-              </span>
-            </span>
-            <span className="font-semibold">{t("games.comboAttemptsLeft", { n: attemptsLeft })}</span>
+          <div className="gradient-surface flex flex-col gap-2 rounded-xl p-3 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-nav-inactive">{t("games.comboReward")}</span>
+              <span className="font-semibold">{t("games.comboAttemptsLeft", { n: attemptsLeft })}</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {combo.possible_drops.map((drop) => (
+                <span
+                  key={drop.item_type}
+                  className="flex items-center gap-1 rounded-full bg-progress-bg px-2 py-1 text-[10px] text-nav-inactive"
+                >
+                  {itemIcon(drop.item_type)} {t(itemNameKey(drop.item_type))} · {drop.drop_weight}%
+                </span>
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-4 gap-2">

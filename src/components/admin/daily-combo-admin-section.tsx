@@ -12,7 +12,7 @@ import {
 /** Plain-text summary the admin can copy straight into a Telegram channel post. */
 function shillText(combo: AdminDailyCombo): string {
   const list = combo.tiers.map((t) => `${t.tier}. ${t.name}`).join("\n");
-  return `🎁 Комбо дня (${combo.combo_date}):\n${list}\n\nСобери все 4 — получи +${combo.reward_amount} GRAM!`;
+  return `🎁 Комбо дня (${combo.combo_date}):\n${list}\n\nСобери все 4 — получи случайный буст (ускоритель цикла или автосбор)!`;
 }
 
 export function DailyComboAdminSection() {
@@ -97,7 +97,7 @@ export function DailyComboAdminSection() {
 
       <div className="gradient-surface flex flex-col gap-2 rounded-xl p-3">
         <p className="text-xs text-nav-inactive">
-          Активное комбо сегодня · награда +{combo.reward_amount} GRAM
+          Активное комбо сегодня · награда — случайный буст из инвентаря
         </p>
         <div className="grid grid-cols-2 gap-2">
           {combo.tiers.map((t) => (

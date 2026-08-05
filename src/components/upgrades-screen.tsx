@@ -4,6 +4,7 @@ import type { PlayerState } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
 import { TIER_ICON, TIER_ACCENT } from "@/lib/tier-art";
 import { BoostInventory } from "./boost-inventory";
+import { ItemInventory } from "./item-inventory";
 
 export function UpgradesScreen({
   state,
@@ -20,6 +21,7 @@ export function UpgradesScreen({
       <p className="px-1 text-sm text-nav-inactive">{t("upgrades.subtitle")}</p>
 
       <BoostInventory state={state} onStateChange={onStateChange} />
+      <ItemInventory state={state} onStateChange={onStateChange} />
 
       {unlockedTiers.map((tier) => {
         const atCap = tier.can_buy_max;

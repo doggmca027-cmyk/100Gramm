@@ -21,7 +21,6 @@ export async function loadAdminDailyCombo(seasonId: string) {
   return {
     id: combo.id as string,
     combo_date: combo.combo_date as string,
-    reward_amount: combo.reward_amount as number,
     tiers: (combo.tiers as number[]).map((tier) => ({ tier, name: nameByTier.get(tier) ?? `#${tier}` })),
     all_tiers: allTiers ?? [],
   };

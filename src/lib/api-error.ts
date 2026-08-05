@@ -30,6 +30,9 @@ const KNOWN_RPC_ERRORS: Record<string, number> = {
   payout_address_missing: 400,
   invalid_address: 400,
   payout_failed: 502,
+  unknown_item: 400,
+  item_not_available: 409,
+  cycle_not_found: 404,
 };
 
 /** Postgres wraps a plpgsql `raise exception 'x'` message as `x` (sometimes with a trailing detail). */
