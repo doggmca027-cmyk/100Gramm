@@ -16,8 +16,11 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     url: appUrl,
     name: "100ГРАМ",
-    // Reuses the existing in-app coin art — swap for a dedicated square
-    // app icon (recommended 180x180 PNG) if/when one exists.
-    iconUrl: `${appUrl}/products/gram-coin.jpg`,
+    // Dedicated 256x256 PNG (~90KB) — the coin art it's cropped from is a
+    // ~1.4MB JPEG, which some wallet clients (reported: Volt) apparently
+    // fail to fetch/render in time during pairing, breaking the connect
+    // flow. Manifest icons should be small; see generate script comment
+    // below if this ever needs regenerating from fresh art.
+    iconUrl: `${appUrl}/tonconnect-icon.png`,
   });
 }

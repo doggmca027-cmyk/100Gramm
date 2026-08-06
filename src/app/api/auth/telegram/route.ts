@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   createSessionToken,
+  CSRF_COOKIE_NAME,
+  generateCsrfToken,
   SESSION_COOKIE_MAX_AGE,
   SESSION_COOKIE_NAME,
   validateTelegramInitData,
@@ -42,9 +44,19 @@ export async function POST(request: NextRequest) {
   }
 
   const token = await createSessionToken(userId);
+  const csrfToken = generateCsrfToken();
   const response = NextResponse.json({ ok: true });
   response.cookies.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: SESSION_COOKIE_MAX_AGE,
+    path: "/",
+  });
+  // Not httpOnly on purpose — api-client.ts reads this to echo it back as
+  // the X-CSRF-Token header on every mutating request. See assertCsrfToken.
+  response.cookies.set(CSRF_COOKIE_NAME, csrfToken, {
+    httpOnly: false,
     secure: true,
     sameSite: "none",
     maxAge: SESSION_COOKIE_MAX_AGE,

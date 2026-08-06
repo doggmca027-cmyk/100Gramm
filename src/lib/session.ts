@@ -1,6 +1,6 @@
 import "server-only";
 import type { NextRequest } from "next/server";
-import { SESSION_COOKIE_NAME, verifySessionToken } from "./telegram-auth";
+import { CSRF_COOKIE_NAME, SESSION_COOKIE_NAME, verifySessionToken } from "./telegram-auth";
 import { isAdminTelegramId } from "./admin";
 import { supabaseServer } from "./supabase-server";
 
@@ -42,9 +42,32 @@ function assertTrustedOrigin(request: NextRequest): void {
   }
 }
 
+/**
+ * Double-submit CSRF check, closing the gap assertTrustedOrigin leaves open
+ * on purpose (a missing Origin, or the literal "null" that a sandboxed
+ * iframe sends, is deliberately *not* rejected there — see its comment).
+ * This one doesn't care about Origin at all: it just requires the
+ * X-CSRF-Token header to match the csrf_token cookie the client can only
+ * have obtained by actually running on this app's own origin (cookies
+ * aren't readable cross-origin, and a forged same-site-looking form post
+ * can't attach a custom header). A genuine cross-site attacker — sandboxed
+ * iframe or otherwise — can ride the ambient session cookie but can never
+ * produce a matching token, so this holds even in the "null" Origin case.
+ */
+function assertCsrfToken(request: NextRequest): void {
+  if (request.method === "GET" || request.method === "HEAD") return;
+
+  const cookieToken = request.cookies.get(CSRF_COOKIE_NAME)?.value;
+  const headerToken = request.headers.get("x-csrf-token");
+  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    throw new UnauthorizedError();
+  }
+}
+
 /** Reads and verifies the session cookie, returning the Supabase user id. */
 export async function requireUserId(request: NextRequest): Promise<string> {
   assertTrustedOrigin(request);
+  assertCsrfToken(request);
 
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   if (!token) {

@@ -69,7 +69,7 @@ function PodiumSlot({ entry, rank, t }: { entry: LeaderboardEntry; rank: 1 | 2 |
         {entry.display_name}
       </p>
       <p className="text-xs text-gram">
-        {entry.total_earned.toFixed(0)} {t("common.gram")}
+        {entry.total_earned.toFixed(3)} {t("common.gram")}
       </p>
     </div>
   );
@@ -135,7 +135,7 @@ export function LeaderboardScreen({ onBack }: { onBack: () => void }) {
                 />
                 <span className="flex-1 truncate">{entry.display_name}</span>
                 <span className="shrink-0 text-gram">
-                  {entry.total_earned.toFixed(2)} {t("common.gram")}
+                  {entry.total_earned.toFixed(3)} {t("common.gram")}
                 </span>
               </div>
             ))}

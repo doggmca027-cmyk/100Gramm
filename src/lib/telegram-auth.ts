@@ -1,8 +1,17 @@
 import "server-only";
-import { createHmac } from "node:crypto";
+import { createHmac, randomBytes } from "node:crypto";
 import { SignJWT, jwtVerify } from "jose";
 
 export const SESSION_COOKIE_NAME = "session";
+// Double-submit CSRF cookie, issued alongside the session cookie on every
+// bootstrap. Deliberately *not* httpOnly — the client needs to read it and
+// echo it back as the X-CSRF-Token header (see api-client.ts). Its security
+// doesn't depend on secrecy from the legitimate frontend; it depends on a
+// cross-origin attacker being unable to read *this app's* cookies (browsers
+// never expose another origin's document.cookie to script) or to set custom
+// headers on a plain cross-site form submission. See assertCsrfToken in
+// session.ts for where it's checked.
+export const CSRF_COOKIE_NAME = "csrf_token";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days — covers a full season
 const MAX_INIT_DATA_AGE_SECONDS = 60 * 60 * 24; // 24h, generous for a Mini App that stays open
 
@@ -115,3 +124,7 @@ export async function verifySessionToken(token: string): Promise<string | null> 
 }
 
 export const SESSION_COOKIE_MAX_AGE = SESSION_TTL_SECONDS;
+
+export function generateCsrfToken(): string {
+  return randomBytes(24).toString("hex");
+}

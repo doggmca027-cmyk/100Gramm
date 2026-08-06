@@ -9,11 +9,29 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Reads the double-submit CSRF cookie (set alongside the session cookie by
+ * /api/auth/telegram, deliberately not httpOnly) and echoes it back as a
+ * header — see assertCsrfToken in src/lib/session.ts for why this exists.
+ * Safe to call during SSR/module-eval: returns null when there's no
+ * document.
+ */
+function readCsrfToken(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/(?:^|; )csrf_token=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 async function request<T>(input: string, init?: RequestInit): Promise<T> {
+  const csrfToken = readCsrfToken();
   const res = await fetch(input, {
     ...init,
     credentials: "include",
-    headers: { "Content-Type": "application/json", ...init?.headers },
+    headers: {
+      "Content-Type": "application/json",
+      ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+      ...init?.headers,
+    },
   });
 
   if (!res.ok) {
@@ -414,11 +432,13 @@ export function setAdminDailyComboTiers(tiers: number[]) {
 }
 
 export async function sendBroadcast(form: FormData) {
+  const csrfToken = readCsrfToken();
   const res = await fetch("/api/admin/broadcast", {
     method: "POST",
     credentials: "include",
     // No Content-Type here on purpose — the browser sets
     // multipart/form-data with the correct boundary itself.
+    headers: csrfToken ? { "X-CSRF-Token": csrfToken } : undefined,
     body: form,
   });
 

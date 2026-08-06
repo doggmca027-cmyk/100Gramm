@@ -110,7 +110,7 @@ export function GamesScreen({
             {(combo.revealed_tiers ?? []).map((card, i) => (
               <div
                 key={i}
-                className="gradient-surface flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl p-2"
+                className="gradient-surface flex min-h-24 flex-col items-center justify-center gap-1 rounded-2xl p-2"
                 style={{ boxShadow: `0 0 0 2px ${TIER_ACCENT[card.tier] ?? "#9b35ff"}` }}
               >
                 <span className="text-2xl">{TIER_ICON[card.tier] ?? "🎴"}</span>
@@ -185,7 +185,7 @@ export function GamesScreen({
                   key={card.tier}
                   onClick={() => placeTier(card.tier)}
                   disabled={!canEdit || placed}
-                  className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-2 disabled:opacity-30"
+                  className="gradient-surface flex min-h-24 flex-col items-center justify-center gap-1 rounded-xl p-2 disabled:opacity-30"
                 >
                   <span className="text-2xl">{TIER_ICON[card.tier] ?? "🎴"}</span>
                   <span className="text-center text-[10px] text-nav-inactive">
