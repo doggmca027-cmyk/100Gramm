@@ -6,6 +6,7 @@ import { openTelegramLink } from "@telegram-apps/sdk-react";
 import type { PartnerTask, PlayerState } from "@/lib/types";
 import { checkPartnerTaskSubscription, ApiError } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
+import { formatGramAmount } from "@/lib/format-gram";
 
 type Stage = "todo" | "checking" | "done";
 
@@ -72,7 +73,7 @@ function TaskCard({
           <p className="truncate text-xs text-nav-inactive">{task.description}</p>
         )}
         <p className="text-xs text-gram">
-          +{task.reward_amount.toFixed(2)} {t("common.gram")}
+          +{formatGramAmount(task.reward_amount)} {t("common.gram")}
         </p>
         {errorText && <p className="text-xs text-danger">{errorText}</p>}
       </div>

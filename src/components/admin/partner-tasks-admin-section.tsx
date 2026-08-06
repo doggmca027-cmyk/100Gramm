@@ -8,6 +8,7 @@ import {
   ApiError,
   type AdminPartnerTask,
 } from "@/lib/api-client";
+import { formatGramAmount } from "@/lib/format-gram";
 
 export function PartnerTasksAdminSection() {
   const [tasks, setTasks] = useState<AdminPartnerTask[] | null>(null);
@@ -111,7 +112,7 @@ export function PartnerTasksAdminSection() {
               <div>
                 <p className="text-sm font-semibold">{t.title}</p>
                 <p className="text-xs text-nav-inactive">
-                  @{t.channel_username} · +{t.reward_amount.toFixed(2)} GRAM
+                  @{t.channel_username} · +{formatGramAmount(t.reward_amount)} GRAM
                 </p>
               </div>
               <button
