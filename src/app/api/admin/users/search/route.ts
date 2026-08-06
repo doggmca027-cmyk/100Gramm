@@ -8,7 +8,16 @@ export const runtime = "nodejs";
 export async function GET(request: NextRequest) {
   try {
     await requireAdminUserId(request);
-    const q = request.nextUrl.searchParams.get("q")?.trim() ?? "";
+    const rawQ = request.nextUrl.searchParams.get("q")?.trim() ?? "";
+    // PostgREST's .or() takes a raw filter string — "," separates
+    // conditions and "()" groups them, so those characters are
+    // syntax-significant there. Left unescaped, a crafted q could inject
+    // extra filter clauses (e.g. widen the match, reference other
+    // columns) into a query that otherwise only takes admin-supplied
+    // input, not just narrow the intended ilike search. Stripping them is
+    // enough — nothing about a legitimate username/telegram-id search
+    // legitimately needs those characters.
+    const q = rawQ.replace(/[,()]/g, "");
     if (!q) {
       return NextResponse.json([]);
     }

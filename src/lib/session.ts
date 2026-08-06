@@ -10,8 +10,42 @@ export class UnauthorizedError extends Error {
   }
 }
 
+/**
+ * CSRF guard for the session cookie. The cookie is issued with
+ * `sameSite: "none"` (required — the Mini App runs inside Telegram's own
+ * WebView/iframe, which browsers treat as cross-site relative to this
+ * app's own domain), so browsers *will* attach it to a request from any
+ * origin, not just this app. Without this check, a page on some unrelated
+ * site could POST to a mutating endpoint and ride the ambient cookie.
+ *
+ * Deliberately conservative: only rejects when the browser sent an
+ * `Origin` header that explicitly names a *different, real* origin. A
+ * same-site fetch from this app's own frontend always matches; a missing
+ * Origin, or the literal string "null" (which sandboxed iframes/WebViews
+ * send when their sandbox lacks `allow-same-origin` — plausible for some
+ * Telegram client/platform combination we have no way to test against
+ * here), is let through rather than risk false-positive lockouts. This
+ * still blocks the actual common case — an ordinary, unsandboxed page on
+ * a different domain — since that always sends its own real origin.
+ * GET/HEAD are exempt — they don't mutate anything, so there's nothing
+ * for CSRF to abuse.
+ */
+function assertTrustedOrigin(request: NextRequest): void {
+  if (request.method === "GET" || request.method === "HEAD") return;
+
+  const appOrigin = process.env.NEXT_PUBLIC_APP_URL;
+  if (!appOrigin) return;
+
+  const origin = request.headers.get("origin");
+  if (origin && origin !== "null" && origin !== appOrigin) {
+    throw new UnauthorizedError();
+  }
+}
+
 /** Reads and verifies the session cookie, returning the Supabase user id. */
 export async function requireUserId(request: NextRequest): Promise<string> {
+  assertTrustedOrigin(request);
+
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   if (!token) {
     throw new UnauthorizedError();
