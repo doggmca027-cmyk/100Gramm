@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { toNano } from "@ton/core";
 import { requireUserId, getTelegramId } from "@/lib/session";
 import { apiErrorResponse } from "@/lib/api-error";
+import { MIN_DEPOSIT_GRAM } from "@/lib/deposit-config";
 
 export const runtime = "nodejs";
 
 const VALID_SECONDS = 10 * 60;
 
-/** 1 GRAM = 1 TON, so this is really just "don't let a dust transfer through". */
-const MIN_DEPOSIT_TON = 0.05;
+/** TON is 1:1 with GRAM, so the shared GRAM floor applies directly. */
+const MIN_DEPOSIT_TON = MIN_DEPOSIT_GRAM;
 
 /**
  * Returns what the client needs to build the TON Connect transfer for a

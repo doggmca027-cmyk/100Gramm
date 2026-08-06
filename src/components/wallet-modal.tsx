@@ -6,6 +6,7 @@ import { CHAIN, UserRejectsError, useTonAddress, useTonConnectUI } from "@toncon
 import type { PlayerState } from "@/lib/types";
 import { ApiError, prepareTonDeposit, verifyTonDeposit, withdrawGram } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
+import { MIN_DEPOSIT_GRAM } from "@/lib/deposit-config";
 import { ManualDepositRequisites } from "./manual-deposit-requisites";
 import { UsdtAutoDeposit } from "./usdt-auto-deposit";
 
@@ -13,8 +14,8 @@ type DepositPhase = "idle" | "preparing" | "awaiting-wallet" | "verifying" | "su
 type DepositCurrency = "GRAM" | "USDT";
 
 const DEFAULT_WITHDRAW_CONFIG = { withdraw_min: 0.5, withdraw_fee_percent: 15 };
-/** 1 GRAM = 1 TON, so this is really just "don't let a dust transfer through" — must match MIN_DEPOSIT_TON server-side. */
-const MIN_DEPOSIT_TON = 0.05;
+/** TON is 1:1 with GRAM — the shared floor applies directly, must match MIN_DEPOSIT_TON server-side. */
+const MIN_DEPOSIT_TON = MIN_DEPOSIT_GRAM;
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
@@ -222,7 +223,7 @@ export function WalletModal({
             // below work from *any* wallet or exchange (spec: transactions
             // may come from wallets TON Connect never sees).
             <div className="flex flex-col gap-4">
-              <UsdtAutoDeposit state={state} onStateChange={onStateChange} />
+              <UsdtAutoDeposit onStateChange={onStateChange} />
               <div className="flex flex-col gap-3 border-t border-white/10 pt-3">
                 <ManualDepositRequisites currency="USDT" state={state} onStateChange={onStateChange} />
               </div>
@@ -269,16 +270,6 @@ export function WalletModal({
                     className="rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none disabled:opacity-60"
                     autoFocus
                   />
-
-                  {/* 1 TON = 1 GRAM (see credit_ton_deposit), so the USDT readout for a TON amount
-                      is just that amount times the live GRAM/USDT rate — purely informational,
-                      the transfer itself is still native TON. */}
-                  {isValidDeposit && state.exchange_rate != null && (
-                    <p className="text-[11px] text-nav-inactive/70">
-                      ≈ {(depositAmount * state.exchange_rate.rate).toFixed(2)} USDT ·{" "}
-                      {t("usdtPay.rateBadge", { rate: state.exchange_rate.rate.toFixed(2) })}
-                    </p>
-                  )}
 
                   {depositError && <p className="text-xs text-danger">{depositError}</p>}
 

@@ -5,12 +5,10 @@ import { CHAIN, UserRejectsError, useTonAddress, useTonConnectUI } from "@toncon
 import type { PlayerState } from "@/lib/types";
 import { ApiError, prepareUsdtPayment, verifyUsdtPayment } from "@/lib/api-client";
 import { buildJettonTransferBody, JETTON_TRANSFER_GAS_NANO } from "@/lib/usdt-jetton";
+import { MIN_DEPOSIT_GRAM } from "@/lib/deposit-config";
 import { useLanguage } from "@/lib/i18n/context";
 
 type Phase = "idle" | "preparing" | "awaiting-wallet" | "verifying" | "success";
-
-/** Mirrors MIN_GRAM_AMOUNT in /api/wallet/usdt-payment/prepare/route.ts. */
-const MIN_GRAM_AMOUNT = 0.05;
 
 /**
  * "Автопополнение через кошелёк" — enter a GRAM amount, pay the USDT
@@ -18,13 +16,15 @@ const MIN_GRAM_AMOUNT = 0.05;
  * prepare/verify flow UsdtPayButton uses for a fixed tier price, just with
  * a free-form amount instead. Shown alongside ManualDepositRequisites on
  * the USDT tab, not instead of it — this is for players who *do* have a
- * TON Connect-paired wallet handy and want the one-tap flow.
+ * TON Connect-paired wallet handy and want the one-tap flow. Doesn't show
+ * a computed USDT estimate or rate figure — the live rate can move between
+ * typing and sending, and the connected wallet's own confirmation screen
+ * is the actual source of truth for "how much you're about to send" once
+ * prepareUsdtPayment quotes it server-side.
  */
 export function UsdtAutoDeposit({
-  state,
   onStateChange,
 }: {
-  state: PlayerState;
   onStateChange: (state: PlayerState) => void;
 }) {
   const { t } = useLanguage();
@@ -37,10 +37,8 @@ export function UsdtAutoDeposit({
 
   const normalized = value.trim().replace(",", ".");
   const gramAmount = Number(normalized);
-  const isValid = normalized !== "" && Number.isFinite(gramAmount) && gramAmount >= MIN_GRAM_AMOUNT;
+  const isValid = normalized !== "" && Number.isFinite(gramAmount) && gramAmount >= MIN_DEPOSIT_GRAM;
   const busy = phase === "preparing" || phase === "awaiting-wallet" || phase === "verifying";
-  const usdtEstimate =
-    isValid && state.exchange_rate != null ? (gramAmount * state.exchange_rate.rate).toFixed(2) : null;
 
   async function handlePay() {
     setError(null);
@@ -127,18 +125,10 @@ export function UsdtAutoDeposit({
         inputMode="decimal"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder={t("usdtDeposit.autoPlaceholder", { min: MIN_GRAM_AMOUNT })}
+        placeholder={t("usdtDeposit.autoPlaceholder", { min: MIN_DEPOSIT_GRAM })}
         disabled={busy}
         className="rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none disabled:opacity-60"
       />
-
-      {isValid && usdtEstimate != null && (
-        <p className="text-[11px] text-nav-inactive/70">
-          ≈ {usdtEstimate} USDT
-          {state.exchange_rate != null &&
-            ` · ${t("usdtPay.rateBadge", { rate: state.exchange_rate.rate.toFixed(2) })}`}
-        </p>
-      )}
 
       {error && <p className="text-xs text-danger">{error}</p>}
 
@@ -151,10 +141,7 @@ export function UsdtAutoDeposit({
         {phase === "preparing" && t("walletConnect.preparing")}
         {phase === "awaiting-wallet" && t("walletConnect.awaitingWallet")}
         {phase === "verifying" && t("walletConnect.verifying")}
-        {phase === "idle" &&
-          (!tonAddress
-            ? t("walletConnect.navLabel")
-            : t("usdtDeposit.autoButton", { amount: isValid ? usdtEstimate ?? "0" : "0" }))}
+        {phase === "idle" && (!tonAddress ? t("walletConnect.navLabel") : t("usdtPay.button"))}
       </button>
     </div>
   );

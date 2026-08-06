@@ -5,11 +5,11 @@ import { apiErrorResponse } from "@/lib/api-error";
 import { getGramUsdtRate } from "@/lib/gram-rate";
 import { resolveJettonWalletAddress } from "@/lib/ton-verify";
 import { USDT_JETTON_MASTER, usdtToUnits, JETTON_FORWARD_TON_NANO } from "@/lib/usdt-jetton";
+import { MIN_DEPOSIT_GRAM } from "@/lib/deposit-config";
 
 export const runtime = "nodejs";
 
 const VALID_SECONDS = 10 * 60;
-const MIN_GRAM_AMOUNT = 0.05; // mirrors ton-deposit's "no dust transfers" floor
 
 /**
  * Quotes a direct USDT (Jetton) payment — either a fixed amount for a
@@ -50,8 +50,8 @@ export async function POST(request: NextRequest) {
       gramAmount = Number(product.price);
     } else {
       gramAmount = Number(body?.gramAmount);
-      if (!Number.isFinite(gramAmount) || gramAmount < MIN_GRAM_AMOUNT) {
-        return NextResponse.json({ error: "amount_too_low", min: MIN_GRAM_AMOUNT }, { status: 400 });
+      if (!Number.isFinite(gramAmount) || gramAmount < MIN_DEPOSIT_GRAM) {
+        return NextResponse.json({ error: "amount_too_low", min: MIN_DEPOSIT_GRAM }, { status: 400 });
       }
     }
 

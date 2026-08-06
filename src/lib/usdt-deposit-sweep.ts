@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchRecentJettonTransfersToTreasury } from "./ton-verify";
 import { USDT_JETTON_MASTER, unitsToUsdt } from "./usdt-jetton";
 import { getGramUsdtRate } from "./gram-rate";
+import { MIN_DEPOSIT_GRAM } from "./deposit-config";
 
 /**
  * Passive counterpart to the prompted usdt-payment prepare/verify flow —
@@ -26,8 +27,6 @@ import { getGramUsdtRate } from "./gram-rate";
  */
 
 const MIN_SWEEP_INTERVAL_SECONDS = 30;
-/** Ignore dust below this — mirrors the deposit floors used elsewhere (MIN_DEPOSIT_TON, prepare's MIN_GRAM_AMOUNT). */
-const MIN_USDT_AMOUNT = 0.05;
 
 export async function sweepUsdtDeposits(supabase: SupabaseClient): Promise<void> {
   const treasuryAddress = process.env.NEXT_PUBLIC_GAME_TREASURY_WALLET;
@@ -44,13 +43,17 @@ export async function sweepUsdtDeposits(supabase: SupabaseClient): Promise<void>
     if (transfers.length === 0) return;
 
     const rate = await getGramUsdtRate(supabase);
+    // MIN_DEPOSIT_GRAM is GRAM-denominated — converted to a USDT floor here
+    // via the same live rate everything else in this sweep uses, so "0.5
+    // GRAM или по курсу в USDT" means the same floor regardless of currency.
+    const minUsdtAmount = MIN_DEPOSIT_GRAM * rate.rate;
 
     for (const transfer of transfers) {
       const usdtAmount = unitsToUsdt(transfer.units);
-      if (usdtAmount < MIN_USDT_AMOUNT) continue;
+      if (usdtAmount < minUsdtAmount) continue;
 
-      // The memo is expected to be a bare Telegram id (see
-      // walletConnect.usdtDeposit.memoHint) — anything else can't be
+      // The memo is expected to be a bare Telegram id (same convention
+      // shown in the deposit modal's requisites) — anything else can't be
       // matched to a user and is left for manual admin reconciliation
       // rather than guessed at.
       const telegramId = transfer.comment?.trim();

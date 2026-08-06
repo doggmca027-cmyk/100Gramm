@@ -89,10 +89,6 @@ export function ManualDepositRequisites({
 
       <div className="gradient-surface flex flex-col gap-1 rounded-xl p-3 text-xs text-nav-inactive">
         <p>⚠️ {t(copy.memoWarning)}</p>
-        {currency === "USDT" && state.exchange_rate != null && (
-          <p>{t("usdtPay.rateBadge", { rate: state.exchange_rate.rate.toFixed(2) })}</p>
-        )}
-        {currency === "TON" && <p>{t("tonDeposit.pegNote")}</p>}
       </div>
 
       <button

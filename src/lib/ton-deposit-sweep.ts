@@ -2,6 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { fromNano } from "@ton/core";
 import { fetchRecentIncomingTonTransfersToTreasury } from "./ton-verify";
+import { MIN_DEPOSIT_GRAM } from "./deposit-config";
 
 /**
  * Passive counterpart to the prompted TON Connect deposit flow (prepare +
@@ -23,8 +24,6 @@ import { fetchRecentIncomingTonTransfersToTreasury } from "./ton-verify";
  */
 
 const MIN_SWEEP_INTERVAL_SECONDS = 30;
-/** Mirrors MIN_DEPOSIT_TON in the prompted TON deposit flow (prepare/route.ts). */
-const MIN_TON_AMOUNT = 0.05;
 
 export async function sweepTonDeposits(supabase: SupabaseClient): Promise<void> {
   const treasuryAddress = process.env.NEXT_PUBLIC_GAME_TREASURY_WALLET;
@@ -42,7 +41,7 @@ export async function sweepTonDeposits(supabase: SupabaseClient): Promise<void> 
 
     for (const transfer of transfers) {
       const amountTon = Number(fromNano(transfer.valueNano));
-      if (amountTon < MIN_TON_AMOUNT) continue;
+      if (amountTon < MIN_DEPOSIT_GRAM) continue;
 
       // The memo is expected to be a bare Telegram id (same convention as
       // both the prompted TON deposit and the USDT sweep) — anything else
