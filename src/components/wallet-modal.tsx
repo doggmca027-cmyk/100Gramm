@@ -7,6 +7,7 @@ import type { PlayerState } from "@/lib/types";
 import { ApiError, prepareTonDeposit, verifyTonDeposit, withdrawGram } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
 import { MIN_DEPOSIT_GRAM } from "@/lib/deposit-config";
+import { openTonConnectModal } from "@/lib/ton-connect-open";
 import { ManualDepositRequisites } from "./manual-deposit-requisites";
 import { UsdtAutoDeposit } from "./usdt-auto-deposit";
 
@@ -95,6 +96,15 @@ export function WalletModal({
   const depositAmount = Number(depositNormalized);
   const isValidDeposit = depositNormalized !== "" && Number.isFinite(depositAmount) && depositAmount >= MIN_DEPOSIT_TON;
   const depositBusy = depositPhase === "preparing" || depositPhase === "awaiting-wallet" || depositPhase === "verifying";
+
+  async function handleOpenConnect(setError: (msg: string | null) => void) {
+    try {
+      setError(null);
+      await openTonConnectModal(tonConnectUI);
+    } catch {
+      setError(t("walletConnect.errorConnectFailed"));
+    }
+  }
 
   async function handleWithdraw() {
     if (!canSubmitWithdraw) return;
@@ -250,11 +260,12 @@ export function WalletModal({
                   <p className="text-xs text-nav-inactive">{t("wallet.needsWalletDeposit")}</p>
                   <button
                     type="button"
-                    onClick={() => tonConnectUI.openModal()}
+                    onClick={() => handleOpenConnect(setDepositError)}
                     className="gradient-action rounded-full px-6 py-3 text-sm font-semibold"
                   >
                     {t("walletConnect.navLabel")}
                   </button>
+                  {depositError && <p className="text-xs text-danger">{depositError}</p>}
                 </div>
               ) : (
                 <>
@@ -299,11 +310,12 @@ export function WalletModal({
             <p className="text-xs text-nav-inactive">{t("wallet.needsWalletWithdraw")}</p>
             <button
               type="button"
-              onClick={() => tonConnectUI.openModal()}
+              onClick={() => handleOpenConnect(setWithdrawError)}
               className="gradient-action rounded-full px-6 py-3 text-sm font-semibold"
             >
               {t("walletConnect.navLabel")}
             </button>
+            {withdrawError && <p className="text-xs text-danger">{withdrawError}</p>}
           </div>
         ) : justSubmitted ? (
           <div className="gradient-surface flex flex-col items-center gap-2 rounded-xl p-6 text-center">

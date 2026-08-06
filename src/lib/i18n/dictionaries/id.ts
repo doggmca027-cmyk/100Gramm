@@ -167,6 +167,7 @@ const id: typeof ru = {
     close: "Tutup",
     cancelled: "Pembayaran dibatalkan",
     errorGeneric: "Gagal menyelesaikan transfer, coba lagi",
+    errorConnectFailed: "Gagal membuka jendela hubungkan dompet — coba lagi",
     errorNotConfirmed: "Pembayaran belum terkonfirmasi on-chain, coba lagi sebentar lagi",
     errorNotConfigured: "Isi ulang sedang tidak tersedia",
     errorTooLow: "Jumlah terlalu kecil",

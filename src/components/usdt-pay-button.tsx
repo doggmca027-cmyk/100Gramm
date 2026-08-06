@@ -6,6 +6,7 @@ import type { PlayerState } from "@/lib/types";
 import { ApiError, prepareUsdtPayment, verifyUsdtPayment } from "@/lib/api-client";
 import { buildJettonTransferBody, JETTON_TRANSFER_GAS_NANO } from "@/lib/usdt-jetton";
 import { useLanguage } from "@/lib/i18n/context";
+import { openTonConnectModal } from "@/lib/ton-connect-open";
 
 type Phase = "idle" | "preparing" | "awaiting-wallet" | "verifying";
 
@@ -43,7 +44,11 @@ export function UsdtPayButton({
     setError(null);
 
     if (!tonAddress) {
-      tonConnectUI.openModal();
+      try {
+        await openTonConnectModal(tonConnectUI);
+      } catch {
+        setError(t("walletConnect.errorConnectFailed"));
+      }
       return;
     }
 

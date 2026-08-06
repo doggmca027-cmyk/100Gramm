@@ -7,6 +7,7 @@ import { ApiError, prepareUsdtPayment, verifyUsdtPayment } from "@/lib/api-clien
 import { buildJettonTransferBody, JETTON_TRANSFER_GAS_NANO } from "@/lib/usdt-jetton";
 import { MIN_DEPOSIT_GRAM } from "@/lib/deposit-config";
 import { useLanguage } from "@/lib/i18n/context";
+import { openTonConnectModal } from "@/lib/ton-connect-open";
 
 type Phase = "idle" | "preparing" | "awaiting-wallet" | "verifying" | "success";
 
@@ -45,7 +46,11 @@ export function UsdtAutoDeposit({
     if (!isValid || busy) return;
 
     if (!tonAddress) {
-      tonConnectUI.openModal();
+      try {
+        await openTonConnectModal(tonConnectUI);
+      } catch {
+        setError(t("walletConnect.errorConnectFailed"));
+      }
       return;
     }
 

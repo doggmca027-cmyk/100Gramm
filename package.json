@@ -2,6 +2,9 @@
   "name": "hundred-gram",
   "version": "0.1.0",
   "private": true,
+  "overrides": {
+    "valibot": "1.4.2"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -14,7 +17,7 @@
     "@ton/core": "^0.63.1",
     "@ton/crypto": "^3.3.0",
     "@ton/ton": "^16.3.0",
-    "@tonconnect/ui-react": "^3.0.0",
+    "@tonconnect/ui-react": "^3.0.2",
     "jose": "^6.2.8",
     "next": "16.3.0",
     "react": "19.2.8",

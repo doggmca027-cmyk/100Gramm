@@ -167,6 +167,7 @@ const en: typeof ru = {
     close: "Close",
     cancelled: "Payment cancelled",
     errorGeneric: "Couldn't complete the transfer — try again",
+    errorConnectFailed: "Couldn't open the wallet-connect window — try again",
     errorNotConfirmed: "Payment isn't confirmed on-chain yet — try again in a minute",
     errorNotConfigured: "Top-ups are temporarily unavailable",
     errorTooLow: "That amount is too small",

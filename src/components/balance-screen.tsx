@@ -14,6 +14,7 @@ import { WalletConnectModal } from "./wallet-connect-modal";
 import { GRAM_COIN_IMAGE, SQUAD_BANNER_IMAGE } from "@/lib/tier-art";
 import { REFERRAL_RATES } from "@/lib/referral-rates";
 import { useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
+import { openTonConnectModal } from "@/lib/ton-connect-open";
 
 export function BalanceScreen({
   state,
@@ -29,14 +30,20 @@ export function BalanceScreen({
   const [walletConnectOpen, setWalletConnectOpen] = useState(false);
   const [tonConnectUI] = useTonConnectUI();
   const tonAddress = useTonAddress();
+  const [connectError, setConnectError] = useState<string | null>(null);
 
   // Not connected -> jump straight into TonConnect's own pairing modal.
   // Connected -> our modal (status/disconnect + the TON deposit form).
-  function handleWalletButtonClick() {
+  async function handleWalletButtonClick() {
     if (tonAddress) {
       setWalletConnectOpen(true);
-    } else {
-      tonConnectUI.openModal();
+      return;
+    }
+    setConnectError(null);
+    try {
+      await openTonConnectModal(tonConnectUI);
+    } catch {
+      setConnectError(t("walletConnect.errorConnectFailed"));
     }
   }
 
@@ -99,6 +106,8 @@ export function BalanceScreen({
           {t("balance.history")}
         </button>
       </div>
+
+      {connectError && <p className="px-1 text-xs text-danger">{connectError}</p>}
 
       <div className="flex flex-col gap-2">
         <h2 className="px-1 text-sm font-semibold text-nav-inactive">{t("balance.statistics")}</h2>

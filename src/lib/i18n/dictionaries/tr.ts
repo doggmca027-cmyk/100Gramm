@@ -167,6 +167,7 @@ const tr: typeof ru = {
     close: "Kapat",
     cancelled: "Ödeme iptal edildi",
     errorGeneric: "Transfer tamamlanamadı, tekrar dene",
+    errorConnectFailed: "Cüzdan bağlama penceresi açılamadı — tekrar dene",
     errorNotConfirmed: "Ödeme henüz zincirde onaylanmadı, bir dakika sonra tekrar dene",
     errorNotConfigured: "Yükleme şu anda kullanılamıyor",
     errorTooLow: "Tutar çok düşük",
