@@ -16,11 +16,13 @@ import { getGramUsdtRate } from "./gram-rate";
  * at the live rate" rule as everywhere else in this file's payment paths.
  *
  * Throttled to at most once per MIN_SWEEP_INTERVAL_SECONDS via
- * try_claim_usdt_sweep_slot (an atomic UPDATE...WHERE in Postgres — see
- * 0032_usdt_manual_deposits.sql) so a burst of concurrent /api/state calls
- * doesn't all hit TonAPI at once. Called opportunistically from
- * /api/state and as a backstop from /api/cron/refresh-rate, same pattern
- * getGramUsdtRate itself already uses.
+ * try_claim_deposit_sweep_slot('usdt', ...) (an atomic UPDATE...WHERE in
+ * Postgres — see 0033_ton_deposit_sweep_and_generic_slots.sql) so a burst
+ * of concurrent /api/state calls doesn't all hit TonAPI at once. Called
+ * opportunistically from /api/state and as a backstop from
+ * /api/cron/refresh-rate, same pattern getGramUsdtRate itself already
+ * uses. lib/ton-deposit-sweep.ts is the same thing for native TON
+ * deposits, under its own 'ton' throttle slot.
  */
 
 const MIN_SWEEP_INTERVAL_SECONDS = 30;
@@ -32,7 +34,8 @@ export async function sweepUsdtDeposits(supabase: SupabaseClient): Promise<void>
   if (!treasuryAddress) return;
 
   try {
-    const { data: claimed, error: claimError } = await supabase.rpc("try_claim_usdt_sweep_slot", {
+    const { data: claimed, error: claimError } = await supabase.rpc("try_claim_deposit_sweep_slot", {
+      p_kind: "usdt",
       p_min_interval_seconds: MIN_SWEEP_INTERVAL_SECONDS,
     });
     if (claimError || !claimed) return;

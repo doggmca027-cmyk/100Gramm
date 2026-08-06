@@ -177,12 +177,22 @@ const id: typeof ru = {
     noJettonWallet: "Dompet USDT tidak ditemukan di alamat itu",
   },
   usdtDeposit: {
-    subtitle: "Kirim USDT (TON, TEP-74) ke alamat ini dengan memo di bawah — saldo bertambah otomatis setelah terkonfirmasi on-chain.",
+    subtitle: "Atau kirim USDT (TON, TEP-74) secara manual ke alamat ini dengan memo di bawah — saldo bertambah otomatis setelah terkonfirmasi on-chain.",
     addressLabel: "Alamat dompet",
     memoLabel: "Memo (wajib!)",
     memoWarning: "Tanpa memo, transfer tidak bisa dicocokkan dengan akunmu — saldo tidak akan bertambah otomatis.",
     checkNow: "Periksa sekarang",
     checking: "Memeriksa...",
+    autoSubtitle: "Atau bayar langsung lewat dompet yang terhubung — masukkan jumlah dalam GRAM.",
+    autoPlaceholder: "Jumlah, GRAM (min. {min})",
+    autoButton: "Kirim {amount} USDT",
+  },
+  tonDeposit: {
+    subtitle: "Atau kirim TON secara manual ke alamat ini dengan memo di bawah (1 TON = 1 GRAM) — saldo bertambah otomatis setelah terkonfirmasi on-chain.",
+    addressLabel: "Alamat dompet",
+    memoLabel: "Memo (wajib!)",
+    memoWarning: "Tanpa memo, transfer tidak bisa dicocokkan dengan akunmu — saldo tidak akan bertambah otomatis.",
+    pegNote: "1 TON = 1 GRAM",
   },
   leaderboard: {
     title: "🏆 Papan peringkat musim",

@@ -6,7 +6,8 @@ import { CHAIN, UserRejectsError, useTonAddress, useTonConnectUI } from "@toncon
 import type { PlayerState } from "@/lib/types";
 import { ApiError, prepareTonDeposit, verifyTonDeposit, withdrawGram } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
-import { UsdtDepositRequisites } from "./usdt-deposit-requisites";
+import { ManualDepositRequisites } from "./manual-deposit-requisites";
+import { UsdtAutoDeposit } from "./usdt-auto-deposit";
 
 type DepositPhase = "idle" | "preparing" | "awaiting-wallet" | "verifying" | "success";
 type DepositCurrency = "GRAM" | "USDT";
@@ -193,10 +194,11 @@ export function WalletModal({
         </div>
 
         {mode === "deposit" && (
-          // GRAM (TON via TON Connect) vs USDT (manual address + memo, no
-          // wallet connection required — see UsdtDepositRequisites) —
-          // visible regardless of connection state, since the whole point
-          // of the USDT tab is supporting wallets TON Connect never sees.
+          // GRAM vs USDT — both tabs offer the same two funding paths
+          // (auto via TON Connect + manual address/memo, see
+          // ManualDepositRequisites/UsdtAutoDeposit below). Toggle stays
+          // visible regardless of connection state, since manual top-up
+          // never needs a paired wallet at all.
           <div className="grid grid-cols-2 gap-1 rounded-full bg-progress-bg p-1 text-xs font-semibold">
             {(["GRAM", "USDT"] as const).map((currency) => (
               <button
@@ -213,24 +215,19 @@ export function WalletModal({
           </div>
         )}
 
-        {mode === "deposit" && depositCurrency === "USDT" ? (
-          <UsdtDepositRequisites state={state} onStateChange={onStateChange} />
-        ) : needsWallet ? (
-          <div className="flex flex-col items-center gap-3 py-4 text-center">
-            <span className="text-3xl">👛</span>
-            <p className="text-xs text-nav-inactive">
-              {mode === "deposit" ? t("wallet.needsWalletDeposit") : t("wallet.needsWalletWithdraw")}
-            </p>
-            <button
-              type="button"
-              onClick={() => tonConnectUI.openModal()}
-              className="gradient-action rounded-full px-6 py-3 text-sm font-semibold"
-            >
-              {t("walletConnect.navLabel")}
-            </button>
-          </div>
-        ) : mode === "deposit" ? (
-          depositPhase === "success" ? (
+        {mode === "deposit" ? (
+          depositCurrency === "USDT" ? (
+            // Two independent ways to fund USDT, always both shown: the
+            // auto-flow needs a TON Connect-paired wallet; the requisites
+            // below work from *any* wallet or exchange (spec: transactions
+            // may come from wallets TON Connect never sees).
+            <div className="flex flex-col gap-4">
+              <UsdtAutoDeposit state={state} onStateChange={onStateChange} />
+              <div className="flex flex-col gap-3 border-t border-white/10 pt-3">
+                <ManualDepositRequisites currency="USDT" state={state} onStateChange={onStateChange} />
+              </div>
+            </div>
+          ) : depositPhase === "success" ? (
             <div className="gradient-surface flex flex-col items-center gap-2 rounded-xl p-6 text-center">
               <span className="text-3xl">✅</span>
               <p className="text-sm font-semibold">
@@ -245,46 +242,78 @@ export function WalletModal({
               </button>
             </div>
           ) : (
-            <>
-              <p className="text-xs text-nav-inactive">{t("walletConnect.depositSubtitle")}</p>
+            <div className="flex flex-col gap-4">
+              {needsWallet ? (
+                <div className="flex flex-col items-center gap-3 py-2 text-center">
+                  <span className="text-3xl">👛</span>
+                  <p className="text-xs text-nav-inactive">{t("wallet.needsWalletDeposit")}</p>
+                  <button
+                    type="button"
+                    onClick={() => tonConnectUI.openModal()}
+                    className="gradient-action rounded-full px-6 py-3 text-sm font-semibold"
+                  >
+                    {t("walletConnect.navLabel")}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <p className="text-xs text-nav-inactive">{t("walletConnect.depositSubtitle")}</p>
 
-              <input
-                type="text"
-                inputMode="decimal"
-                value={depositValue}
-                onChange={(e) => setDepositValue(e.target.value)}
-                placeholder={t("walletConnect.depositPlaceholder")}
-                disabled={depositBusy}
-                className="rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none disabled:opacity-60"
-                autoFocus
-              />
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={depositValue}
+                    onChange={(e) => setDepositValue(e.target.value)}
+                    placeholder={t("walletConnect.depositPlaceholder")}
+                    disabled={depositBusy}
+                    className="rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none disabled:opacity-60"
+                    autoFocus
+                  />
 
-              {/* 1 TON = 1 GRAM (see credit_ton_deposit), so the USDT readout for a TON amount
-                  is just that amount times the live GRAM/USDT rate — purely informational,
-                  the transfer itself is still native TON. */}
-              {isValidDeposit && state.exchange_rate != null && (
-                <p className="text-[11px] text-nav-inactive/70">
-                  ≈ {(depositAmount * state.exchange_rate.rate).toFixed(2)} USDT ·{" "}
-                  {t("usdtPay.rateBadge", { rate: state.exchange_rate.rate.toFixed(2) })}
-                </p>
+                  {/* 1 TON = 1 GRAM (see credit_ton_deposit), so the USDT readout for a TON amount
+                      is just that amount times the live GRAM/USDT rate — purely informational,
+                      the transfer itself is still native TON. */}
+                  {isValidDeposit && state.exchange_rate != null && (
+                    <p className="text-[11px] text-nav-inactive/70">
+                      ≈ {(depositAmount * state.exchange_rate.rate).toFixed(2)} USDT ·{" "}
+                      {t("usdtPay.rateBadge", { rate: state.exchange_rate.rate.toFixed(2) })}
+                    </p>
+                  )}
+
+                  {depositError && <p className="text-xs text-danger">{depositError}</p>}
+
+                  <button
+                    type="button"
+                    onClick={handleDeposit}
+                    disabled={!isValidDeposit || depositBusy}
+                    className="gradient-action rounded-full py-3 text-sm font-semibold disabled:opacity-40"
+                  >
+                    {depositPhase === "preparing" && t("walletConnect.preparing")}
+                    {depositPhase === "awaiting-wallet" && t("walletConnect.awaitingWallet")}
+                    {depositPhase === "verifying" && t("walletConnect.verifying")}
+                    {depositPhase === "idle" &&
+                      t("walletConnect.depositButton", { amount: isValidDeposit ? depositAmount : 0 })}
+                  </button>
+                </>
               )}
 
-              {depositError && <p className="text-xs text-danger">{depositError}</p>}
-
-              <button
-                type="button"
-                onClick={handleDeposit}
-                disabled={!isValidDeposit || depositBusy}
-                className="gradient-action rounded-full py-3 text-sm font-semibold disabled:opacity-40"
-              >
-                {depositPhase === "preparing" && t("walletConnect.preparing")}
-                {depositPhase === "awaiting-wallet" && t("walletConnect.awaitingWallet")}
-                {depositPhase === "verifying" && t("walletConnect.verifying")}
-                {depositPhase === "idle" &&
-                  t("walletConnect.depositButton", { amount: isValidDeposit ? depositAmount : 0 })}
-              </button>
-            </>
+              <div className="flex flex-col gap-3 border-t border-white/10 pt-3">
+                <ManualDepositRequisites currency="TON" state={state} onStateChange={onStateChange} />
+              </div>
+            </div>
           )
+        ) : needsWallet ? (
+          <div className="flex flex-col items-center gap-3 py-4 text-center">
+            <span className="text-3xl">👛</span>
+            <p className="text-xs text-nav-inactive">{t("wallet.needsWalletWithdraw")}</p>
+            <button
+              type="button"
+              onClick={() => tonConnectUI.openModal()}
+              className="gradient-action rounded-full px-6 py-3 text-sm font-semibold"
+            >
+              {t("walletConnect.navLabel")}
+            </button>
+          </div>
         ) : justSubmitted ? (
           <div className="gradient-surface flex flex-col items-center gap-2 rounded-xl p-6 text-center">
             <span className="text-3xl">✅</span>

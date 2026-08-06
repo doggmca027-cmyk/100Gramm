@@ -177,12 +177,22 @@ const en: typeof ru = {
     noJettonWallet: "Couldn't find a USDT wallet at that address",
   },
   usdtDeposit: {
-    subtitle: "Send USDT (TON, TEP-74) to this address with the memo below — your balance updates automatically once it's confirmed on-chain.",
+    subtitle: "Or send USDT (TON, TEP-74) to this address manually with the memo below — your balance updates automatically once it's confirmed on-chain.",
     addressLabel: "Wallet address",
     memoLabel: "Memo (required!)",
     memoWarning: "Without the memo, the transfer can't be matched to your account — your balance won't update automatically.",
     checkNow: "Check now",
     checking: "Checking...",
+    autoSubtitle: "Or pay directly through your connected wallet — enter the amount in GRAM.",
+    autoPlaceholder: "Amount, GRAM (min. {min})",
+    autoButton: "Send {amount} USDT",
+  },
+  tonDeposit: {
+    subtitle: "Or send TON to this address manually with the memo below (1 TON = 1 GRAM) — your balance updates automatically once it's confirmed on-chain.",
+    addressLabel: "Wallet address",
+    memoLabel: "Memo (required!)",
+    memoWarning: "Without the memo, the transfer can't be matched to your account — your balance won't update automatically.",
+    pegNote: "1 TON = 1 GRAM",
   },
   leaderboard: {
     title: "🏆 Season leaderboard",

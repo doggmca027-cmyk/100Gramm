@@ -144,32 +144,66 @@ export async function pollForOutgoingPayment(
   return null;
 }
 
+export interface TonTransferEvent {
+  txHash: string;
+  /** Decoded TEP-0 text comment, if any — null means no memo, unmatchable to any user by the passive sweep. */
+  comment: string | null;
+  valueNano: bigint;
+}
+
+/**
+ * All recent successful inbound transfers to `treasuryAddress`, newest
+ * first. The building block for both findMatchingTransaction (knows what
+ * it's looking for in advance — a prompted TON Connect deposit) and the
+ * passive deposit sweep (lib/ton-deposit-sweep.ts — doesn't know who's
+ * paying until it reads each transfer's own comment), same split as the
+ * Jetton-transfer fetch/match pair above.
+ */
+async function fetchRecentIncomingTonTransfers(
+  treasuryAddress: string,
+  limit = 20,
+): Promise<TonTransferEvent[]> {
+  const encodedAccount = encodeURIComponent(treasuryAddress);
+  const data = await tonApiFetch<TonApiTransactionsResponse>(
+    `/v2/blockchain/accounts/${encodedAccount}/transactions`,
+    { limit: String(limit), sort_order: "desc" },
+  );
+
+  const results: TonTransferEvent[] = [];
+  for (const tx of data.transactions ?? []) {
+    const msg = tx.in_msg;
+    if (!tx.success || !msg || !tx.hash) continue;
+    if (!addressesEqual(msg.destination?.address, treasuryAddress)) continue;
+
+    results.push({
+      txHash: tx.hash,
+      comment: decodeComment(msg.raw_body),
+      valueNano: BigInt(Math.trunc(msg.value ?? 0)),
+    });
+  }
+  return results;
+}
+
+/** Every recent inbound TON transfer to `treasuryAddress` — used by the passive deposit sweep. */
+export async function fetchRecentIncomingTonTransfersToTreasury(
+  treasuryAddress: string,
+  limit = 20,
+): Promise<TonTransferEvent[]> {
+  return fetchRecentIncomingTonTransfers(treasuryAddress, limit);
+}
+
 /** Single pass over the treasury's recent inbound transactions looking for a match. */
 async function findMatchingTransaction(
   treasuryAddress: string,
   expectedNano: bigint,
   expectedComment: string,
 ): Promise<VerifiedPayment | null> {
-  const encodedAccount = encodeURIComponent(treasuryAddress);
-  const data = await tonApiFetch<TonApiTransactionsResponse>(
-    `/v2/blockchain/accounts/${encodedAccount}/transactions`,
-    { limit: "20", sort_order: "desc" },
-  );
-
-  for (const tx of data.transactions ?? []) {
-    const msg = tx.in_msg;
-    if (!tx.success || !msg || !tx.hash) continue;
-    if (!addressesEqual(msg.destination?.address, treasuryAddress)) continue;
-
-    const valueNano = BigInt(Math.trunc(msg.value ?? 0));
-    if (valueNano < expectedNano) continue;
-
-    const comment = decodeComment(msg.raw_body);
-    if (comment !== expectedComment) continue;
-
-    return { txHash: tx.hash, valueNano };
+  const transfers = await fetchRecentIncomingTonTransfers(treasuryAddress);
+  for (const transfer of transfers) {
+    if (transfer.valueNano < expectedNano) continue;
+    if (transfer.comment !== expectedComment) continue;
+    return { txHash: transfer.txHash, valueNano: transfer.valueNano };
   }
-
   return null;
 }
 

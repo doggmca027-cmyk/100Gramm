@@ -37,19 +37,23 @@ function CopyRow({ label, value }: { label: string; value: string }) {
 }
 
 /**
- * Manual USDT (Jetton) top-up — address + memo to paste into *any* wallet
- * or exchange, not just a TON Connect-paired one (spec: "транзакции могут
- * проводить с кошельков, которых не предоставляет TON Connect"). No
- * sendTransaction call happens here, so there's nothing to actively verify
- * against — crediting instead relies on the passive background sweep
- * (lib/usdt-deposit-sweep.ts) that scans the treasury's incoming transfers
- * and matches each one's memo back to a user. "Проверить сейчас" just
- * re-fetches state, which piggybacks that same sweep — see /api/state.
+ * Manual top-up — address + memo to paste into *any* wallet or exchange,
+ * not just a TON Connect-paired one (spec: "транзакции могут проводить с
+ * кошельков, которых не предоставляет TON Connect"). No sendTransaction
+ * call happens here, so there's nothing to actively verify against —
+ * crediting instead relies on the passive background sweep
+ * (lib/ton-deposit-sweep.ts / lib/usdt-deposit-sweep.ts) that scans the
+ * treasury's incoming transfers and matches each one's memo back to a
+ * user. "Проверить сейчас" just re-fetches state, which piggybacks that
+ * same sweep — see /api/state. Shown alongside the TON Connect auto-flow
+ * on both currency tabs, not instead of it.
  */
-export function UsdtDepositRequisites({
+export function ManualDepositRequisites({
+  currency,
   state,
   onStateChange,
 }: {
+  currency: "TON" | "USDT";
   state: PlayerState;
   onStateChange: (state: PlayerState) => void;
 }) {
@@ -58,6 +62,7 @@ export function UsdtDepositRequisites({
 
   const treasuryAddress = process.env.NEXT_PUBLIC_GAME_TREASURY_WALLET;
   const memo = state.squad.invite_code;
+  const copy = currency === "TON" ? TON_COPY : USDT_COPY;
 
   async function handleCheckNow() {
     setChecking(true);
@@ -77,16 +82,17 @@ export function UsdtDepositRequisites({
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-xs text-nav-inactive">{t("usdtDeposit.subtitle")}</p>
+      <p className="text-xs text-nav-inactive">{t(copy.subtitle)}</p>
 
-      <CopyRow label={t("usdtDeposit.addressLabel")} value={treasuryAddress} />
-      <CopyRow label={t("usdtDeposit.memoLabel")} value={memo} />
+      <CopyRow label={t(copy.addressLabel)} value={treasuryAddress} />
+      <CopyRow label={t(copy.memoLabel)} value={memo} />
 
       <div className="gradient-surface flex flex-col gap-1 rounded-xl p-3 text-xs text-nav-inactive">
-        <p>⚠️ {t("usdtDeposit.memoWarning")}</p>
-        {state.exchange_rate != null && (
+        <p>⚠️ {t(copy.memoWarning)}</p>
+        {currency === "USDT" && state.exchange_rate != null && (
           <p>{t("usdtPay.rateBadge", { rate: state.exchange_rate.rate.toFixed(2) })}</p>
         )}
+        {currency === "TON" && <p>{t("tonDeposit.pegNote")}</p>}
       </div>
 
       <button
@@ -100,3 +106,17 @@ export function UsdtDepositRequisites({
     </div>
   );
 }
+
+const TON_COPY = {
+  subtitle: "tonDeposit.subtitle",
+  addressLabel: "tonDeposit.addressLabel",
+  memoLabel: "tonDeposit.memoLabel",
+  memoWarning: "tonDeposit.memoWarning",
+} as const;
+
+const USDT_COPY = {
+  subtitle: "usdtDeposit.subtitle",
+  addressLabel: "usdtDeposit.addressLabel",
+  memoLabel: "usdtDeposit.memoLabel",
+  memoWarning: "usdtDeposit.memoWarning",
+} as const;

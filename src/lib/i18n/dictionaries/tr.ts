@@ -177,12 +177,22 @@ const tr: typeof ru = {
     noJettonWallet: "Bu adreste USDT cüzdanı bulunamadı",
   },
   usdtDeposit: {
-    subtitle: "USDT'yi (TON, TEP-74) aşağıdaki memo ile bu adrese gönder — zincirde onaylandığında bakiyen otomatik güncellenir.",
+    subtitle: "Ya da USDT'yi (TON, TEP-74) aşağıdaki memo ile bu adrese elle gönder — zincirde onaylandığında bakiyen otomatik güncellenir.",
     addressLabel: "Cüzdan adresi",
     memoLabel: "Memo (zorunlu!)",
     memoWarning: "Memo olmadan transfer hesabınla eşleştirilemez — bakiyen otomatik güncellenmez.",
     checkNow: "Şimdi kontrol et",
     checking: "Kontrol ediliyor...",
+    autoSubtitle: "Ya da bağlı cüzdanınla doğrudan öde — tutarı GRAM olarak gir.",
+    autoPlaceholder: "Tutar, GRAM (min. {min})",
+    autoButton: "{amount} USDT gönder",
+  },
+  tonDeposit: {
+    subtitle: "Ya da TON'u aşağıdaki memo ile bu adrese elle gönder (1 TON = 1 GRAM) — zincirde onaylandığında bakiyen otomatik güncellenir.",
+    addressLabel: "Cüzdan adresi",
+    memoLabel: "Memo (zorunlu!)",
+    memoWarning: "Memo olmadan transfer hesabınla eşleştirilemez — bakiyen otomatik güncellenmez.",
+    pegNote: "1 TON = 1 GRAM",
   },
   leaderboard: {
     title: "🏆 Sezon sıralaması",
