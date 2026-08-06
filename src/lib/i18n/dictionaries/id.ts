@@ -146,6 +146,8 @@ const id: typeof ru = {
     needsWalletWithdraw: "Hubungkan dompet TON untuk menarik GRAM — di situlah pembayaran akan dikirim",
     payoutTo: "Dibayarkan ke",
     withdrawTimingNotice: "Penarikan diproses dalam waktu 24 jam",
+    currencyGram: "GRAM (TON)",
+    currencyUsdt: "USDT",
   },
   walletConnect: {
     navLabel: "Dompet",
@@ -168,6 +170,19 @@ const id: typeof ru = {
     errorNotConfirmed: "Pembayaran belum terkonfirmasi on-chain, coba lagi sebentar lagi",
     errorNotConfigured: "Isi ulang sedang tidak tersedia",
     errorTooLow: "Jumlah terlalu kecil",
+  },
+  usdtPay: {
+    button: "Bayar dengan USDT",
+    rateBadge: "1 GRAM = {rate} USDT",
+    noJettonWallet: "Dompet USDT tidak ditemukan di alamat itu",
+  },
+  usdtDeposit: {
+    subtitle: "Kirim USDT (TON, TEP-74) ke alamat ini dengan memo di bawah — saldo bertambah otomatis setelah terkonfirmasi on-chain.",
+    addressLabel: "Alamat dompet",
+    memoLabel: "Memo (wajib!)",
+    memoWarning: "Tanpa memo, transfer tidak bisa dicocokkan dengan akunmu — saldo tidak akan bertambah otomatis.",
+    checkNow: "Periksa sekarang",
+    checking: "Memeriksa...",
   },
   leaderboard: {
     title: "🏆 Papan peringkat musim",

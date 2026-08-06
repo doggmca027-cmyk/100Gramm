@@ -54,8 +54,10 @@ export function PathScreen({
         balance={state.wallet.balance}
         freeSlots={openTier.slots_total - openTier.slots_used}
         slotsTotal={openTier.slots_total}
+        exchangeRate={state.exchange_rate?.rate ?? null}
         onStart={handleStart}
         onBuyMax={handleBuyMax}
+        onStateChange={onStateChange}
         onBack={() => setDetailTier(null)}
       />
     );
@@ -82,6 +84,7 @@ export function PathScreen({
           activeCycles={state.active_cycles.filter((c) => c.tier === tier.tier)}
           balance={state.wallet.balance}
           freeSlots={tier.slots_total - tier.slots_used}
+          exchangeRate={state.exchange_rate?.rate ?? null}
           onStart={handleStart}
           onBuyMax={handleBuyMax}
           onOpenDetail={() => setDetailTier(tier.tier)}

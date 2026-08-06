@@ -206,3 +206,164 @@ export async function pollForTreasuryPayment(
 
   return null;
 }
+
+/**
+ * Deterministically resolves `owner`'s Jetton-wallet address for
+ * `jettonMaster`, via TonAPI's generic get-method executor calling the
+ * master contract's own `get_wallet_address`. This works even for an owner
+ * that has never held the jetton before (unlike TonAPI's
+ * /accounts/{a}/jettons/{j} lookup, which 404s until a wallet has actually
+ * been indexed) — the address is pure CREATE2-style computation from the
+ * master's state + owner address, no on-chain deploy required to know it.
+ * Needed both for the treasury (to know where to poll) and for the buyer
+ * (that's the actual `to:` a TON Connect Jetton transfer message goes to).
+ */
+export async function resolveJettonWalletAddress(
+  jettonMaster: string,
+  owner: string,
+): Promise<string | null> {
+  try {
+    const encodedMaster = encodeURIComponent(jettonMaster);
+    const data = await tonApiFetch<{
+      success?: boolean;
+      decoded?: { jetton_wallet_address?: string };
+    }>(`/v2/blockchain/accounts/${encodedMaster}/methods/get_wallet_address`, { args: owner });
+
+    const raw = data.decoded?.jetton_wallet_address;
+    if (!data.success || !raw) return null;
+    return Address.parse(raw).toString();
+  } catch (err) {
+    console.error("TonAPI get_wallet_address failed:", err);
+    return null;
+  }
+}
+
+interface TonApiJettonTransferAction {
+  type?: string;
+  status?: string;
+  JettonTransfer?: {
+    recipient?: { address?: string };
+    amount?: string;
+    comment?: string;
+    jetton?: { address?: string };
+  };
+}
+
+interface TonApiEvent {
+  event_id?: string;
+  actions?: TonApiJettonTransferAction[];
+}
+
+interface TonApiEventsResponse {
+  events?: TonApiEvent[];
+}
+
+export interface JettonTransferEvent {
+  /** Stable per on-chain event — fills the "idempotency key for credit_usdt_payment's unique tx_hash" role. */
+  eventId: string;
+  /** Decoded forward_payload text comment, if the sender attached one — null means no memo, unmatchable to any user. */
+  comment: string | null;
+  units: bigint;
+}
+
+/**
+ * All recent incoming `jettonMaster` transfers to `treasuryOwnerAddress`,
+ * newest first. The building block for both findMatchingJettonTransfer
+ * (knows what it's looking for in advance — a prompted payment) and the
+ * passive deposit sweep (lib/usdt-deposit-sweep.ts — doesn't know who's
+ * paying until it reads each transfer's own comment).
+ */
+async function fetchRecentJettonTransfers(
+  treasuryOwnerAddress: string,
+  jettonMaster: string,
+  limit = 30,
+): Promise<JettonTransferEvent[]> {
+  const encodedAccount = encodeURIComponent(treasuryOwnerAddress);
+  const data = await tonApiFetch<TonApiEventsResponse>(`/v2/accounts/${encodedAccount}/events`, {
+    limit: String(limit),
+  });
+
+  const results: JettonTransferEvent[] = [];
+  for (const event of data.events ?? []) {
+    if (!event.event_id) continue;
+    for (const action of event.actions ?? []) {
+      if (action.type !== "JettonTransfer" || action.status !== "ok") continue;
+      const transfer = action.JettonTransfer;
+      if (!transfer) continue;
+      if (!addressesEqual(transfer.jetton?.address, jettonMaster)) continue;
+      if (!addressesEqual(transfer.recipient?.address, treasuryOwnerAddress)) continue;
+
+      results.push({
+        eventId: event.event_id,
+        comment: transfer.comment ?? null,
+        units: BigInt(transfer.amount ?? "0"),
+      });
+    }
+  }
+  return results;
+}
+
+/**
+ * Every recent incoming `jettonMaster` transfer to `treasuryOwnerAddress` —
+ * used by the passive deposit sweep, which (unlike
+ * pollForTreasuryJettonPayment) doesn't know in advance which comment or
+ * amount to expect and has to read every transfer's own memo to figure out
+ * who it belongs to.
+ */
+export async function fetchRecentJettonTransfersToTreasury(
+  treasuryOwnerAddress: string,
+  jettonMaster: string,
+  limit = 30,
+): Promise<JettonTransferEvent[]> {
+  return fetchRecentJettonTransfers(treasuryOwnerAddress, jettonMaster, limit);
+}
+
+/** Single pass over the treasury owner account's recent decoded events looking for a matching Jetton transfer. */
+async function findMatchingJettonTransfer(
+  treasuryOwnerAddress: string,
+  jettonMaster: string,
+  expectedUnits: bigint,
+  expectedComment: string,
+): Promise<VerifiedPayment | null> {
+  const transfers = await fetchRecentJettonTransfers(treasuryOwnerAddress, jettonMaster);
+  for (const transfer of transfers) {
+    if (transfer.comment !== expectedComment) continue;
+    if (transfer.units < expectedUnits) continue;
+    return { txHash: transfer.eventId, valueNano: transfer.units };
+  }
+  return null;
+}
+
+/**
+ * Polls TonAPI for an incoming Jetton transfer to `treasuryOwnerAddress`
+ * matching `jettonMaster` + `expectedComment`, for at least `expectedUnits`
+ * (base jetton units — 6 decimals for USDT). Same "never throws, null means
+ * not indexed/found yet" contract as pollForTreasuryPayment.
+ */
+export async function pollForTreasuryJettonPayment(
+  treasuryOwnerAddress: string,
+  jettonMaster: string,
+  expectedUnits: bigint,
+  expectedComment: string,
+  { attempts = 3, delayMs = 2000 }: { attempts?: number; delayMs?: number } = {},
+): Promise<VerifiedPayment | null> {
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      const match = await findMatchingJettonTransfer(
+        treasuryOwnerAddress,
+        jettonMaster,
+        expectedUnits,
+        expectedComment,
+      );
+      if (match) return match;
+    } catch (err) {
+      console.error("TonAPI jetton poll failed:", err);
+    }
+
+    if (attempt < attempts - 1) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  return null;
+}

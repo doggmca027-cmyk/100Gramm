@@ -146,6 +146,8 @@ const en: typeof ru = {
     needsWalletWithdraw: "Connect a TON wallet to withdraw GRAM — that's where the payout goes",
     payoutTo: "Payout to",
     withdrawTimingNotice: "Withdrawals are processed within 24 hours",
+    currencyGram: "GRAM (TON)",
+    currencyUsdt: "USDT",
   },
   walletConnect: {
     navLabel: "Wallet",
@@ -168,6 +170,19 @@ const en: typeof ru = {
     errorNotConfirmed: "Payment isn't confirmed on-chain yet — try again in a minute",
     errorNotConfigured: "Top-ups are temporarily unavailable",
     errorTooLow: "That amount is too small",
+  },
+  usdtPay: {
+    button: "Pay with USDT",
+    rateBadge: "1 GRAM = {rate} USDT",
+    noJettonWallet: "Couldn't find a USDT wallet at that address",
+  },
+  usdtDeposit: {
+    subtitle: "Send USDT (TON, TEP-74) to this address with the memo below — your balance updates automatically once it's confirmed on-chain.",
+    addressLabel: "Wallet address",
+    memoLabel: "Memo (required!)",
+    memoWarning: "Without the memo, the transfer can't be matched to your account — your balance won't update automatically.",
+    checkNow: "Check now",
+    checking: "Checking...",
   },
   leaderboard: {
     title: "🏆 Season leaderboard",

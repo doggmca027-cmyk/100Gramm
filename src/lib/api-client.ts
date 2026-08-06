@@ -139,6 +139,90 @@ export async function verifyTonDeposit(
   throw new ApiError("payment_not_found");
 }
 
+export interface ExchangeRate {
+  rate: number;
+  updatedAt: string;
+  source: string;
+  stale: boolean;
+}
+
+/** Live GRAM/USDT readout — the same value carried on state.exchange_rate, fetched on its own when a full state refetch isn't wanted. */
+export function fetchExchangeRate() {
+  return request<ExchangeRate>("/api/exchange-rate");
+}
+
+export interface PreparedUsdtPayment {
+  /** Identifies the locked quote (gram/usdt amount + rate) verifyUsdtPayment checks against — see 0032_usdt_manual_deposits.sql. */
+  quoteId: string;
+  /** `to:` for the TON Connect message — the buyer's own USDT Jetton wallet contract. */
+  jettonWalletAddress: string;
+  /** `destination:` inside the transfer body — the treasury owner address the jettons end up at. */
+  destinationAddress: string;
+  /** `response_destination:` inside the transfer body — refunds leftover TON here. */
+  responseDestination: string;
+  /** Base USDT units (6 decimals), decimal string — pass straight into buildJettonTransferBody. */
+  usdtAmountUnits: string;
+  /** Nanoton, decimal string. */
+  forwardTonAmountNano: string;
+  /** Exact text to attach as the forward_payload comment — binds the payment to this user. */
+  comment: string;
+  gramAmount: number;
+  usdtAmount: number;
+  rate: number;
+  validUntil: number;
+}
+
+/**
+ * Quotes a direct USDT payment: pass `tier` to price a specific cycle
+ * (spec's "прямая оплата циклов"), or `gramAmount` for an arbitrary top-up
+ * (spec's "пополнение"). Either way the amount only ever lands as a GRAM
+ * balance credit once verifyUsdtPayment confirms it — starting a cycle
+ * afterwards is a separate, explicit startCycle() call.
+ */
+export function prepareUsdtPayment(input: { buyerAddress: string; tier?: number; gramAmount?: number }) {
+  return request<PreparedUsdtPayment>("/api/wallet/usdt-payment/prepare", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export interface UsdtPaymentResult {
+  id: string;
+  gram_amount: number;
+  usdt_amount: number;
+  tx_hash: string;
+}
+
+/**
+ * Confirms a USDT Jetton transfer already broadcast by the wallet, checked
+ * against the locked quote from prepareUsdtPayment (quoteId — never a
+ * resubmitted amount, see 0032_usdt_manual_deposits.sql). Same
+ * retry-on-payment_not_found contract as verifyTonDeposit — the on-chain
+ * transfer (plus TonAPI's own indexing) can take a few seconds, so the
+ * server may need a few tries before it shows up.
+ */
+export async function verifyUsdtPayment(
+  quoteId: string,
+  { attempts = 6, delayMs = 3000 }: { attempts?: number; delayMs?: number } = {},
+): Promise<{ result: UsdtPaymentResult; state: PlayerState }> {
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      return await request<{ result: UsdtPaymentResult; state: PlayerState }>(
+        "/api/wallet/usdt-payment/verify",
+        { method: "POST", body: JSON.stringify({ quoteId }) },
+      );
+    } catch (err) {
+      const isLastAttempt = attempt === attempts - 1;
+      if (isLastAttempt || !(err instanceof ApiError) || err.code !== "payment_not_found") {
+        throw err;
+      }
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  throw new ApiError("payment_not_found");
+}
+
 export function applyBoost(boostId: string, tier: number) {
   return request<{ state: PlayerState }>(`/api/boosts/${boostId}/apply`, {
     method: "POST",

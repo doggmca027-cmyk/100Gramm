@@ -23,6 +23,7 @@ export function ProductCard({
   activeCycles,
   balance,
   freeSlots,
+  exchangeRate,
   onStart,
   onBuyMax,
   onOpenDetail,
@@ -32,6 +33,7 @@ export function ProductCard({
   activeCycles: ActiveCycle[];
   balance: number;
   freeSlots: number;
+  exchangeRate: number | null;
   onStart: (tier: number) => Promise<void>;
   onBuyMax: (tier: number) => Promise<void>;
   onOpenDetail: () => void;
@@ -122,8 +124,13 @@ export function ProductCard({
             </p>
             {description && <p className="text-xs text-nav-inactive">{description}</p>}
           </div>
-          <span className="shrink-0 text-sm text-gram">
+          <span className="shrink-0 text-right text-sm text-gram">
             {tier.price} {t("common.gram")}
+            {exchangeRate != null && (
+              <span className="block text-[10px] font-normal text-nav-inactive/70">
+                ≈{(tier.price * exchangeRate).toFixed(2)} USDT
+              </span>
+            )}
           </span>
         </div>
 

@@ -144,6 +144,8 @@ const ru = {
     needsWalletWithdraw: "Подключи TON-кошелёк, чтобы вывести GRAM — на него придёт выплата",
     payoutTo: "Выплата на",
     withdrawTimingNotice: "Регламент вывода — до 24 часов",
+    currencyGram: "GRAM (TON)",
+    currencyUsdt: "USDT",
   },
   walletConnect: {
     navLabel: "Кошелёк",
@@ -166,6 +168,19 @@ const ru = {
     errorNotConfirmed: "Платёж пока не подтверждён в сети, попробуй ещё раз через минуту",
     errorNotConfigured: "Пополнение временно недоступно",
     errorTooLow: "Слишком маленькая сумма",
+  },
+  usdtPay: {
+    button: "Оплатить в USDT",
+    rateBadge: "1 GRAM = {rate} USDT",
+    noJettonWallet: "Не нашли USDT-кошелёк на этом адресе",
+  },
+  usdtDeposit: {
+    subtitle: "Отправь USDT (TON, TEP-74) на этот адрес с указанным мемо — баланс пополнится автоматически после подтверждения в сети.",
+    addressLabel: "Адрес кошелька",
+    memoLabel: "Мемо (обязательно!)",
+    memoWarning: "Без мемо перевод не получится сопоставить с твоим аккаунтом — баланс не пополнится автоматически.",
+    checkNow: "Проверить сейчас",
+    checking: "Проверяем...",
   },
   leaderboard: {
     title: "🏆 Рейтинг сезона",

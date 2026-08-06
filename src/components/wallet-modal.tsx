@@ -6,8 +6,10 @@ import { CHAIN, UserRejectsError, useTonAddress, useTonConnectUI } from "@toncon
 import type { PlayerState } from "@/lib/types";
 import { ApiError, prepareTonDeposit, verifyTonDeposit, withdrawGram } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
+import { UsdtDepositRequisites } from "./usdt-deposit-requisites";
 
 type DepositPhase = "idle" | "preparing" | "awaiting-wallet" | "verifying" | "success";
+type DepositCurrency = "GRAM" | "USDT";
 
 const DEFAULT_WITHDRAW_CONFIG = { withdraw_min: 0.5, withdraw_fee_percent: 15 };
 /** 1 GRAM = 1 TON, so this is really just "don't let a dust transfer through" — must match MIN_DEPOSIT_TON server-side. */
@@ -69,6 +71,7 @@ export function WalletModal({
   }, []);
 
   // deposit-mode state (TON amount -> on-chain send)
+  const [depositCurrency, setDepositCurrency] = useState<DepositCurrency>("GRAM");
   const [depositValue, setDepositValue] = useState("");
   const [depositPhase, setDepositPhase] = useState<DepositPhase>("idle");
   const [depositError, setDepositError] = useState<string | null>(null);
@@ -189,7 +192,30 @@ export function WalletModal({
           </button>
         </div>
 
-        {needsWallet ? (
+        {mode === "deposit" && (
+          // GRAM (TON via TON Connect) vs USDT (manual address + memo, no
+          // wallet connection required — see UsdtDepositRequisites) —
+          // visible regardless of connection state, since the whole point
+          // of the USDT tab is supporting wallets TON Connect never sees.
+          <div className="grid grid-cols-2 gap-1 rounded-full bg-progress-bg p-1 text-xs font-semibold">
+            {(["GRAM", "USDT"] as const).map((currency) => (
+              <button
+                key={currency}
+                type="button"
+                onClick={() => setDepositCurrency(currency)}
+                className={`rounded-full py-2 transition-colors ${
+                  depositCurrency === currency ? "gradient-action" : "text-nav-inactive"
+                }`}
+              >
+                {currency === "GRAM" ? t("wallet.currencyGram") : t("wallet.currencyUsdt")}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {mode === "deposit" && depositCurrency === "USDT" ? (
+          <UsdtDepositRequisites state={state} onStateChange={onStateChange} />
+        ) : needsWallet ? (
           <div className="flex flex-col items-center gap-3 py-4 text-center">
             <span className="text-3xl">👛</span>
             <p className="text-xs text-nav-inactive">
@@ -232,6 +258,16 @@ export function WalletModal({
                 className="rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none disabled:opacity-60"
                 autoFocus
               />
+
+              {/* 1 TON = 1 GRAM (see credit_ton_deposit), so the USDT readout for a TON amount
+                  is just that amount times the live GRAM/USDT rate — purely informational,
+                  the transfer itself is still native TON. */}
+              {isValidDeposit && state.exchange_rate != null && (
+                <p className="text-[11px] text-nav-inactive/70">
+                  ≈ {(depositAmount * state.exchange_rate.rate).toFixed(2)} USDT ·{" "}
+                  {t("usdtPay.rateBadge", { rate: state.exchange_rate.rate.toFixed(2) })}
+                </p>
+              )}
 
               {depositError && <p className="text-xs text-danger">{depositError}</p>}
 

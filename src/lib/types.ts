@@ -65,6 +65,8 @@ export interface PlayerState {
   daily_combo: DailyCombo | null;
   boosts: Boost[];
   inventory: InventoryItem[];
+  /** GRAM/USDT — GRAM *is* TON, so this is really just live TON/USDT, cached ≤60s server-side. */
+  exchange_rate: { pair: string; rate: number; updated_at: string } | null;
 }
 
 export type BoostStatus = "PENDING" | "ACTIVE" | "USED" | "EXPIRED";

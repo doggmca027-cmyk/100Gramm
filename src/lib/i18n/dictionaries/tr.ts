@@ -146,6 +146,8 @@ const tr: typeof ru = {
     needsWalletWithdraw: "GRAM çekmek için TON cüzdanı bağla — ödeme oraya gönderilecek",
     payoutTo: "Ödeme adresi",
     withdrawTimingNotice: "Para çekme işlemleri 24 saat içinde tamamlanır",
+    currencyGram: "GRAM (TON)",
+    currencyUsdt: "USDT",
   },
   walletConnect: {
     navLabel: "Cüzdan",
@@ -168,6 +170,19 @@ const tr: typeof ru = {
     errorNotConfirmed: "Ödeme henüz zincirde onaylanmadı, bir dakika sonra tekrar dene",
     errorNotConfigured: "Yükleme şu anda kullanılamıyor",
     errorTooLow: "Tutar çok düşük",
+  },
+  usdtPay: {
+    button: "USDT ile öde",
+    rateBadge: "1 GRAM = {rate} USDT",
+    noJettonWallet: "Bu adreste USDT cüzdanı bulunamadı",
+  },
+  usdtDeposit: {
+    subtitle: "USDT'yi (TON, TEP-74) aşağıdaki memo ile bu adrese gönder — zincirde onaylandığında bakiyen otomatik güncellenir.",
+    addressLabel: "Cüzdan adresi",
+    memoLabel: "Memo (zorunlu!)",
+    memoWarning: "Memo olmadan transfer hesabınla eşleştirilemez — bakiyen otomatik güncellenmez.",
+    checkNow: "Şimdi kontrol et",
+    checking: "Kontrol ediliyor...",
   },
   leaderboard: {
     title: "🏆 Sezon sıralaması",

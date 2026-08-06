@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { ActiveCycle, TierState } from "@/lib/types";
+import type { ActiveCycle, PlayerState, TierState } from "@/lib/types";
 import { useCountdown, formatDuration } from "@/hooks/use-countdown";
 import { useLanguage } from "@/lib/i18n/context";
 import { TIER_RARITY_KEY } from "@/lib/tier-art";
 import { TierImage } from "./tier-image";
+import { UsdtPayButton } from "./usdt-pay-button";
 
 function SlotTile({ endsAt }: { endsAt: string }) {
   const { t } = useLanguage();
@@ -26,8 +27,10 @@ export function ProductDetailScreen({
   balance,
   freeSlots,
   slotsTotal,
+  exchangeRate,
   onStart,
   onBuyMax,
+  onStateChange,
   onBack,
 }: {
   tier: TierState;
@@ -35,8 +38,10 @@ export function ProductDetailScreen({
   balance: number;
   freeSlots: number;
   slotsTotal: number;
+  exchangeRate: number | null;
   onStart: (tier: number) => Promise<void>;
   onBuyMax: (tier: number) => Promise<void>;
+  onStateChange: (state: PlayerState) => void;
   onBack: () => void;
 }) {
   const { t, pick } = useLanguage();
@@ -95,9 +100,27 @@ export function ProductDetailScreen({
           {description && <p className="mt-1 text-sm text-nav-inactive">{description}</p>}
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="gradient-surface flex items-center justify-between rounded-xl p-3">
+          <div>
+            <p className="text-xs text-nav-inactive">{t("productDetail.price")}</p>
+            <p className="text-sm font-semibold">
+              {tier.price} {t("common.gram")}
+            </p>
+          </div>
+          {exchangeRate != null && (
+            <div className="text-right">
+              <p className="text-xs text-nav-inactive">
+                ≈ {(tier.price * exchangeRate).toFixed(2)} USDT
+              </p>
+              <p className="text-[10px] text-nav-inactive/70">
+                {t("usdtPay.rateBadge", { rate: exchangeRate.toFixed(2) })}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
           {[
-            [t("productDetail.price"), `${tier.price} ${t("common.gram")}`],
             [
               t("productDetail.profit"),
               `+${(tier.price * (1 + tier.payout_percent / 100)).toFixed(2)} ${t("common.gram")}`,
@@ -111,6 +134,19 @@ export function ProductDetailScreen({
             </div>
           ))}
         </div>
+
+        {tier.unlocked && (
+          <UsdtPayButton
+            tier={tier.tier}
+            gramAmount={tier.price}
+            rate={exchangeRate}
+            disabled={freeSlots <= 0}
+            onPaid={(newState) => {
+              onStateChange(newState);
+              void onStart(tier.tier);
+            }}
+          />
+        )}
 
         <div>
           <div className="mb-2 flex items-center justify-between">
