@@ -1,0 +1,58 @@
+-- 100ГРАМ: funds-focused security pass.
+--
+-- ---------------------------------------------------------------------------
+-- 1) Remove the legacy pack-shop machinery — dead, and actively dangerous.
+--
+-- credit_gram_purchase(p_user_id, p_pack_id, p_tx_hash, p_amount_ton) was
+-- replaced by the 1:1 TON deposit flow back in 0024_ton_deposit_1to1.sql
+-- and left in place "just in case". Nothing in the app calls it anymore
+-- (confirmed: no route, no client code references credit_gram_purchase,
+-- gram_packs, or the old /api/shop/* endpoints, which are gone entirely).
+--
+-- But unlike credit_ton_deposit, it never independently verifies the
+-- transaction it's told about actually happened — p_tx_hash only has to be
+-- a non-empty *string*, not a real on-chain hash the server looked up
+-- (that verification lived in the /api/shop/* route this function's
+-- caller used to be, which no longer exists). And p_user_id is a bare
+-- parameter with nothing checking it belongs to whoever's calling. Anyone
+-- able to invoke this function at all — with any Supabase key, not
+-- necessarily the service_role one this app actually uses — could credit
+-- any account an active pack's gram_amount, repeatedly, just by making up
+-- a new p_tx_hash string each time. Removing it (and the gram_packs table
+-- it reads from) closes that off at the source rather than relying only
+-- on the privilege fix below.
+-- ---------------------------------------------------------------------------
+drop function if exists credit_gram_purchase(uuid, text, text, numeric);
+drop table if exists gram_packs cascade;
+
+-- ---------------------------------------------------------------------------
+-- 2) Systemic hardening: this app never uses the Supabase anon/authenticated
+-- roles at all — the Next.js server is the *only* caller of this database,
+-- always via the service_role key (which bypasses grants and RLS
+-- entirely). Every RPC in this schema takes its own p_user_id as a bare
+-- parameter (there's no Supabase Auth integration here — session
+-- verification happens once, in the Next.js layer, before a user_id is
+-- ever passed down), so none of them independently double-check "does
+-- this p_user_id actually belong to whoever's calling" the way a
+-- Supabase-Auth-based RLS setup normally would. That's fine *as long as*
+-- nothing except our own trusted backend can ever call them — but nothing
+-- in this schema's migration history has ever explicitly revoked the
+-- default PUBLIC execute grant Postgres hands out to every function at
+-- creation time. If the project's anon key were ever exposed (leaked,
+-- committed, shared by mistake — it's never referenced anywhere in this
+-- codebase today, but it still exists as a valid credential on the
+-- project regardless), every one of these functions — not just the one
+-- removed above — would be reachable and would trust p_user_id blindly.
+--
+-- This revokes execute from anon/authenticated (and PUBLIC, which they
+-- inherit from) for every function that exists today, and sets the
+-- default for anything created by future migrations too, so this doesn't
+-- need to be re-applied by hand every time. Table grants are untouched —
+-- RLS already governs those correctly (see the "publicly readable" policies
+-- on catalog tables like system_tasks/combo_item_templates/exchange_rates,
+-- which are meant to stay directly readable), and this is specifically
+-- about the "money-mutating logic with no independent identity check"
+-- risk functions carry that plain table reads don't.
+-- ---------------------------------------------------------------------------
+revoke execute on all functions in schema public from public, anon, authenticated;
+alter default privileges in schema public revoke execute on functions from public, anon, authenticated;
