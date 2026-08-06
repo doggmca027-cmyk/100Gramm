@@ -5,14 +5,7 @@ import Image from "next/image";
 import type { PlayerState } from "@/lib/types";
 import { SQUAD_BANNER_IMAGE } from "@/lib/tier-art";
 import { useLanguage } from "@/lib/i18n/context";
-
-// Standard vs ambassador referral rates — must match start_cycle() in
-// 0010_referral_on_start_and_ambassador_rates.sql exactly; these are
-// display-only, the actual payout always comes from the database.
-const REFERRAL_RATES = {
-  standard: [10, 5, 2],
-  ambassador: [15, 9, 5],
-} as const;
+import { REFERRAL_RATES } from "@/lib/referral-rates";
 
 export function SquadScreen({ state }: { state: PlayerState }) {
   const { t } = useLanguage();

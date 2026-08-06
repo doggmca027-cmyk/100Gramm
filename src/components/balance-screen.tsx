@@ -12,6 +12,7 @@ import { HistoryModal } from "./history-modal";
 import { WalletModal } from "./wallet-modal";
 import { WalletConnectModal } from "./wallet-connect-modal";
 import { GRAM_COIN_IMAGE, SQUAD_BANNER_IMAGE } from "@/lib/tier-art";
+import { REFERRAL_RATES } from "@/lib/referral-rates";
 import { useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
 
 export function BalanceScreen({
@@ -23,6 +24,7 @@ export function BalanceScreen({
 }) {
   const { t } = useLanguage();
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [level1Rate] = state.squad.is_ambassador ? REFERRAL_RATES.ambassador : REFERRAL_RATES.standard;
   const [walletMode, setWalletMode] = useState<"deposit" | "withdraw" | null>(null);
   const [walletConnectOpen, setWalletConnectOpen] = useState(false);
   const [tonConnectUI] = useTonConnectUI();
@@ -126,7 +128,8 @@ export function BalanceScreen({
         <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4">
           <p className="text-sm font-semibold">{t("balance.friendBonusTitle")}</p>
           <p className="text-xs text-nav-inactive">
-            {t("balance.friendBonusText")} <span className="font-semibold text-gram">+10%</span>{" "}
+            {t("balance.friendBonusText")}{" "}
+            <span className="font-semibold text-gram">+{level1Rate}%</span>{" "}
             {t("balance.friendBonusSuffix")}
           </p>
         </div>
