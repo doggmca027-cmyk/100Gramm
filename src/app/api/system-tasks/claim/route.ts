@@ -8,6 +8,20 @@ export const runtime = "nodejs";
 const MEMBER_STATUSES = new Set(["member", "administrator", "creator"]);
 
 /**
+ * Telegram's getChatMember only recognizes a username-based chat_id when
+ * it's prefixed with "@" — a bare "GRam100_NEWS" comes back "chat not
+ * found" even though the channel exists. target_value is stored bare
+ * (same value the frontend uses to build the t.me/ link, see
+ * targetUrl() in system-tasks-section.tsx), so it's normalized here
+ * rather than forcing whoever fills in the admin data to remember to type
+ * "@". Already-prefixed usernames and numeric chat ids (private/super
+ * groups look like "-100...") are passed through unchanged.
+ */
+function toChatId(targetValue: string): string {
+  return /^[@-]/.test(targetValue) || /^\d+$/.test(targetValue) ? targetValue : `@${targetValue}`;
+}
+
+/**
  * Claims a system task's reward (see 0028_system_tasks.sql — items + XP,
  * never GRAM). Referral/gameplay tasks are verified entirely inside the
  * claim_system_task RPC (internal data, no external call needed). Social
@@ -58,7 +72,7 @@ export async function POST(request: NextRequest) {
 
       const tgRes = await fetch(
         `https://api.telegram.org/bot${botToken}/getChatMember` +
-          `?chat_id=${encodeURIComponent(task.target_value)}&user_id=${userRow.telegram_id}`,
+          `?chat_id=${encodeURIComponent(toChatId(task.target_value))}&user_id=${userRow.telegram_id}`,
       );
       const tgData = await tgRes.json().catch(() => null);
       const status = tgData?.result?.status;
