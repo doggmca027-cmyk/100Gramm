@@ -1,16 +1,26 @@
 "use client";
 
 import { useState } from "react";
+import type { PlayerState } from "@/lib/types";
 import { PartnerTasksAdminSection } from "./admin/partner-tasks-admin-section";
 import { AmbassadorsAdminSection } from "./admin/ambassadors-admin-section";
 import { NewsAdminSection } from "./admin/news-admin-section";
 import { DailyComboAdminSection } from "./admin/daily-combo-admin-section";
 import { WithdrawalsAdminSection } from "./admin/withdrawals-admin-section";
+import { LeaderboardVisibilityAdminSection } from "./admin/leaderboard-visibility-admin-section";
 import { AmbassadorStatsScreen } from "./ambassador-stats-screen";
 
-type Section = "tasks" | "ambassadors" | "news" | "combo" | "withdrawals";
+type Section = "tasks" | "ambassadors" | "news" | "combo" | "withdrawals" | "profile";
 
-export function AdminScreen({ onBack }: { onBack: () => void }) {
+export function AdminScreen({
+  state,
+  onStateChange,
+  onBack,
+}: {
+  state: PlayerState;
+  onStateChange: (state: PlayerState) => void;
+  onBack: () => void;
+}) {
   const [section, setSection] = useState<Section>("tasks");
   const [statsOpen, setStatsOpen] = useState(false);
 
@@ -73,6 +83,15 @@ export function AdminScreen({ onBack }: { onBack: () => void }) {
         >
           💸 Выводы
         </button>
+        <button
+          type="button"
+          onClick={() => setSection("profile")}
+          className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
+            section === "profile" ? "gradient-action" : "gradient-surface text-nav-inactive"
+          }`}
+        >
+          👤 Профиль
+        </button>
       </div>
 
       <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-4 pb-8">
@@ -83,6 +102,9 @@ export function AdminScreen({ onBack }: { onBack: () => void }) {
         {section === "news" && <NewsAdminSection />}
         {section === "combo" && <DailyComboAdminSection />}
         {section === "withdrawals" && <WithdrawalsAdminSection />}
+        {section === "profile" && (
+          <LeaderboardVisibilityAdminSection state={state} onStateChange={onStateChange} />
+        )}
         {/* Дальнейшие разделы админки добавляются сюда. */}
       </div>
     </div>

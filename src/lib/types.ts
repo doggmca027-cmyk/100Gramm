@@ -22,6 +22,8 @@ export interface PlayerState {
     username: string | null;
     first_name: string | null;
     photo_url: string | null;
+    /** Self-toggled in the admin panel — excludes this profile from get_leaderboard entirely. */
+    hide_from_leaderboard: boolean;
   };
   wallet: {
     balance: number;

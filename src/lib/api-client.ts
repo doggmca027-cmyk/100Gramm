@@ -349,6 +349,14 @@ export function setUserAmbassador(id: string, isAmbassador: boolean) {
   });
 }
 
+/** Hides/unhides the *caller's own* profile from the leaderboard — admin panel only. */
+export function setLeaderboardVisibility(hidden: boolean) {
+  return request<{ state: PlayerState }>("/api/admin/leaderboard-visibility", {
+    method: "PATCH",
+    body: JSON.stringify({ hidden }),
+  });
+}
+
 export interface AmbassadorLevelStats {
   level: number;
   referred_count: number;
