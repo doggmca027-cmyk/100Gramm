@@ -1,4 +1,4 @@
-import type { HistoryEntry, PlayerState } from "./types";
+import type { HistoryEntry, PlayerState, SquadLevel } from "./types";
 
 export class ApiError extends Error {
   constructor(
@@ -279,6 +279,11 @@ export function fetchLeaderboard(metric: "total_earned" | "completed_cycles_tota
 
 export function fetchHistory() {
   return request<HistoryEntry[]>("/api/history");
+}
+
+/** The 3 referral lines (participants, deposits, earnings, member list), fetched on demand by the Squad screen. */
+export function fetchSquadLevels() {
+  return request<SquadLevel[]>("/api/squad/levels");
 }
 
 export function checkPartnerTaskSubscription(taskId: string) {

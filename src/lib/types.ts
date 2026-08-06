@@ -256,3 +256,27 @@ export interface PendingWithdrawal {
   net_amount: number;
   created_at: string;
 }
+
+export interface SquadReferralMember {
+  user_id: string;
+  display_name: string;
+  photo_url: string | null;
+  joined_at: string;
+  /** Sum of amount_in across all their cycles this season — the base their referral bonus was paid on. */
+  total_deposited: number;
+  /** GRAM this specific referral has paid *you* at this level, this season. */
+  earned_from: number;
+}
+
+/** One of the 3 referral lines (get_squad_levels) — fetched on demand by the Squad screen, not part of PlayerState. */
+export interface SquadLevel {
+  level: number;
+  /** This level's payout percent — already ambassador-adjusted. */
+  percent: number;
+  referred_count: number;
+  total_deposits: number;
+  earned_total: number;
+  referrals: SquadReferralMember[];
+  /** True if referred_count exceeds referrals.length — the list was capped, the count wasn't. */
+  truncated: boolean;
+}
