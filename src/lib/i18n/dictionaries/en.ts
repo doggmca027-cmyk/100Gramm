@@ -34,6 +34,7 @@ const en: typeof ru = {
     leaderboard: "Season leaderboard",
     support: "Support",
     language: "Language",
+    tasks: "Tasks",
   },
   nav: {
     path: "Path",
@@ -280,6 +281,14 @@ const en: typeof ru = {
     progress: "{done} / {total}",
     claim: "Claim reward",
     notReadyYet: "Not there yet",
+  },
+  tasksScreen: {
+    title: "Tasks",
+    tabDistrict: "District Tasks",
+    tabAmbassadors: "Overseers",
+    tabPartners: "Neighborhood ties",
+    ambassadorsEmpty: "No overseer channels yet.",
+    partnersEmpty: "No partner tasks yet.",
   },
   languagePicker: {
     title: "Choose language",

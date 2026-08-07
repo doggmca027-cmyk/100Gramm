@@ -32,6 +32,7 @@ const ru = {
     leaderboard: "Рейтинг сезона",
     support: "Поддержка",
     language: "Язык",
+    tasks: "Задания",
   },
   nav: {
     path: "Путь",
@@ -278,6 +279,14 @@ const ru = {
     progress: "{done} / {total}",
     claim: "Забрать награду",
     notReadyYet: "Условие ещё не выполнено",
+  },
+  tasksScreen: {
+    title: "Задания",
+    tabDistrict: "Задания района",
+    tabAmbassadors: "Смотрящие",
+    tabPartners: "Связи на районе",
+    ambassadorsEmpty: "Пока нет каналов смотрящих.",
+    partnersEmpty: "Пока нет партнёрских заданий.",
   },
   languagePicker: {
     title: "Выбери язык",

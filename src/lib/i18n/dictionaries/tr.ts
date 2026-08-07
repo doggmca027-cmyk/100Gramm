@@ -34,6 +34,7 @@ const tr: typeof ru = {
     leaderboard: "Sezon sıralaması",
     support: "Destek",
     language: "Dil",
+    tasks: "Görevler",
   },
   nav: {
     path: "Yol",
@@ -280,6 +281,14 @@ const tr: typeof ru = {
     progress: "{done} / {total}",
     claim: "Ödülü al",
     notReadyYet: "Henüz şart sağlanmadı",
+  },
+  tasksScreen: {
+    title: "Görevler",
+    tabDistrict: "Mahalle Görevleri",
+    tabAmbassadors: "Gözcüler",
+    tabPartners: "Mahalle bağlantıları",
+    ambassadorsEmpty: "Henüz gözcü kanalı yok.",
+    partnersEmpty: "Henüz ortak görevi yok.",
   },
   languagePicker: {
     title: "Dil seç",

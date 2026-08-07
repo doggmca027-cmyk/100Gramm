@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Settings, Trophy, LifeBuoy } from "lucide-react";
+import { Settings, Trophy, LifeBuoy, ClipboardList } from "lucide-react";
 import { openTelegramLink } from "@telegram-apps/sdk-react";
 import { useCountdown, formatDuration } from "@/hooks/use-countdown";
 import type { PlayerState } from "@/lib/types";
@@ -37,10 +37,12 @@ export function AppHeader({
   state,
   onOpenAdmin,
   onOpenLeaderboard,
+  onOpenTasks,
 }: {
   state: PlayerState;
   onOpenAdmin: () => void;
   onOpenLeaderboard: () => void;
+  onOpenTasks: () => void;
 }) {
   const { t, pick } = useLanguage();
   const secondsLeft = useCountdown(state.season.ends_at);
@@ -66,6 +68,9 @@ export function AppHeader({
       <div className="flex items-center gap-2">
         <HeaderIconButton onClick={handleSupport} label={t("header.support")}>
           <LifeBuoy size={18} />
+        </HeaderIconButton>
+        <HeaderIconButton onClick={onOpenTasks} label={t("header.tasks")}>
+          <ClipboardList size={18} />
         </HeaderIconButton>
         <LanguageSwitcher />
         {isAdmin && (

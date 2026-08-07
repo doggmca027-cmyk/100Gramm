@@ -34,6 +34,7 @@ const id: typeof ru = {
     leaderboard: "Papan peringkat musim",
     support: "Dukungan",
     language: "Bahasa",
+    tasks: "Tugas",
   },
   nav: {
     path: "Jalur",
@@ -280,6 +281,14 @@ const id: typeof ru = {
     progress: "{done} / {total}",
     claim: "Ambil hadiah",
     notReadyYet: "Syarat belum terpenuhi",
+  },
+  tasksScreen: {
+    title: "Tugas",
+    tabDistrict: "Tugas Distrik",
+    tabAmbassadors: "Pengawas",
+    tabPartners: "Koneksi lingkungan",
+    ambassadorsEmpty: "Belum ada kanal pengawas.",
+    partnersEmpty: "Belum ada tugas mitra.",
   },
   languagePicker: {
     title: "Pilih bahasa",

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabase
       .from("partner_tasks")
-      .select("id, title, description, reward_amount, channel_username, is_active, sort_order")
+      .select("id, title, description, reward_amount, channel_username, is_active, sort_order, kind")
       .eq("season_id", seasonId)
       .order("sort_order");
     if (error) throw error;
@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
     const username = typeof body?.channelLink === "string"
       ? parseChannelUsername(body.channelLink)
       : null;
+    const kind = body?.kind === "ambassador" ? "ambassador" : "partner";
 
     if (!title) {
       return NextResponse.json({ error: "missing_title" }, { status: 400 });
@@ -69,6 +70,7 @@ export async function POST(request: NextRequest) {
         channel_username: username,
         channel_id: `@${username}`,
         sort_order: count ?? 0,
+        kind,
       })
       .select()
       .single();

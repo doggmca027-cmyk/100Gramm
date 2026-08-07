@@ -13,7 +13,7 @@
 -- future resubscribe starts the wait over from scratch.
 
 alter table user_partner_tasks
-  add column verified_at timestamptz;
+  add column if not exists verified_at timestamptz;
 
 -- Every existing row was created under the old atomic flow, i.e. at the
 -- instant it was both verified and paid — backfill so it satisfies the

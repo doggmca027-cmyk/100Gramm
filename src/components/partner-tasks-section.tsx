@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Handshake, CheckCircle2 } from "lucide-react";
+import { Handshake, CheckCircle2, type LucideIcon } from "lucide-react";
 import { openTelegramLink } from "@telegram-apps/sdk-react";
 import type { PartnerTask, PlayerState } from "@/lib/types";
 import { checkPartnerTaskSubscription, ApiError } from "@/lib/api-client";
@@ -141,22 +141,33 @@ function TaskCard({
   );
 }
 
+/**
+ * Renders one flat list of partner_tasks rows — the caller decides which
+ * `kind` slice to pass in (see TasksScreen, which splits state.partner_tasks
+ * into the "Смотрящие" and "Связи на районе" tabs from the same array).
+ */
 export function PartnerTasksSection({
   tasks,
   onStateChange,
+  title,
+  icon: Icon = Handshake,
+  emptyText,
 }: {
   tasks: PartnerTask[];
   onStateChange: (state: PlayerState) => void;
+  title: string;
+  icon?: LucideIcon;
+  emptyText?: string;
 }) {
-  const { t } = useLanguage();
-  if (tasks.length === 0) return null;
-
   return (
     <div className="flex flex-col gap-2">
       <h2 className="flex items-center gap-1.5 px-1 text-sm font-semibold text-nav-inactive">
-        <Handshake className="h-4 w-4 text-purple-400" />
-        {t("partnerTasks.title")}
+        <Icon className="h-4 w-4 text-purple-400" />
+        {title}
       </h2>
+      {tasks.length === 0 && emptyText && (
+        <p className="px-1 text-sm text-nav-inactive">{emptyText}</p>
+      )}
       {tasks.map((task) => (
         <TaskCard key={task.id} task={task} onClaimed={onStateChange} />
       ))}

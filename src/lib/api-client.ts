@@ -1,4 +1,4 @@
-import type { HistoryEntry, PlayerState, SquadLevel } from "./types";
+import type { HistoryEntry, PartnerTaskKind, PlayerState, SquadLevel } from "./types";
 
 export class ApiError extends Error {
   constructor(
@@ -355,6 +355,7 @@ export interface AdminPartnerTask {
   channel_username: string;
   is_active: boolean;
   sort_order: number;
+  kind: PartnerTaskKind;
 }
 
 export function fetchAdminPartnerTasks() {
@@ -365,6 +366,7 @@ export function createAdminPartnerTask(input: {
   title: string;
   channelLink: string;
   reward: number;
+  kind: PartnerTaskKind;
 }) {
   return request<AdminPartnerTask>("/api/admin/partner-tasks", {
     method: "POST",

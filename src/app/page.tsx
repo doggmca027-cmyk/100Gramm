@@ -12,6 +12,7 @@ import { SquadScreen } from "@/components/squad-screen";
 import { GamesScreen } from "@/components/games-screen";
 import { AdminScreen } from "@/components/admin-screen";
 import { LeaderboardScreen } from "@/components/leaderboard-screen";
+import { TasksScreen } from "@/components/tasks-screen";
 import { useLanguage } from "@/lib/i18n/context";
 
 export default function Home() {
@@ -21,6 +22,7 @@ export default function Home() {
   const [introDone, setIntroDone] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
+  const [tasksOpen, setTasksOpen] = useState(false);
 
   if (loading) {
     return (
@@ -55,11 +57,14 @@ export default function Home() {
         state={state}
         onOpenAdmin={() => setAdminOpen(true)}
         onOpenLeaderboard={() => setLeaderboardOpen(true)}
+        onOpenTasks={() => setTasksOpen(true)}
       />
       {adminOpen ? (
         <AdminScreen state={state} onStateChange={setState} onBack={() => setAdminOpen(false)} />
       ) : leaderboardOpen ? (
         <LeaderboardScreen onBack={() => setLeaderboardOpen(false)} />
+      ) : tasksOpen ? (
+        <TasksScreen state={state} onStateChange={setState} onBack={() => setTasksOpen(false)} />
       ) : (
         <>
           <main className="flex min-h-0 flex-1 flex-col">

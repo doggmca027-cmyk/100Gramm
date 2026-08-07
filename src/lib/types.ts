@@ -192,6 +192,8 @@ export interface Container {
   reward_amount: number | null;
 }
 
+export type PartnerTaskKind = "partner" | "ambassador";
+
 export interface PartnerTask {
   id: string;
   title: string;
@@ -199,6 +201,8 @@ export interface PartnerTask {
   reward_amount: number;
   channel_username: string;
   icon_url: string | null;
+  /** 'ambassador' = channel run by one of our ambassadors ("Смотрящие" tab); 'partner' = everyone else ("Связи на районе"). */
+  kind: PartnerTaskKind;
   /** Reward actually paid — not just subscription-verified, see verified_at/available_at. */
   completed: boolean;
   /** When the subscription check first passed, if it has. */

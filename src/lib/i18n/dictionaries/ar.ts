@@ -32,6 +32,7 @@ const ar = {
     leaderboard: "ترتيب الموسم",
     support: "الدعم",
     language: "اللغة",
+    tasks: "المهام",
   },
   nav: {
     path: "المسار",
@@ -278,6 +279,14 @@ const ar = {
     progress: "{done} / {total}",
     claim: "استلام المكافأة",
     notReadyYet: "الشرط لم يتحقق بعد",
+  },
+  tasksScreen: {
+    title: "المهام",
+    tabDistrict: "مهام الحي",
+    tabAmbassadors: "المراقبون",
+    tabPartners: "علاقات الحي",
+    ambassadorsEmpty: "لا توجد قنوات مراقبين بعد.",
+    partnersEmpty: "لا توجد مهام شركاء بعد.",
   },
   languagePicker: {
     title: "اختر اللغة",
