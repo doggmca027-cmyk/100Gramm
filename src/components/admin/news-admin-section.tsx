@@ -2,7 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Newspaper, Camera, Send } from "lucide-react";
-import { sendBroadcast, ApiError, type BroadcastResult } from "@/lib/api-client";
+import { sendBroadcastBatch, ApiError } from "@/lib/api-client";
+
+type Progress = { sent: number; failed: number; total: number };
+/** Where to resume from if a batch call fails partway through — keeps a retry from re-sending to everyone already reached. */
+type Cursor = { offset: number; fileId: string | null };
 
 export function NewsAdminSection() {
   const [title, setTitle] = useState("");
@@ -10,12 +14,14 @@ export function NewsAdminSection() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [sending, setSending] = useState(false);
-  const [result, setResult] = useState<BroadcastResult | null>(null);
+  const [progress, setProgress] = useState<Progress | null>(null);
+  const [cursor, setCursor] = useState<Cursor | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const maxLen = photoFile ? 1024 : 4096;
   const captionLength = title.length + body.length;
   const hasContent = title.trim() || body.trim();
+  const resuming = cursor !== null;
 
   // Derived, not state — the effect below only owns cleanup (revoking the
   // previous URL), it never calls setState.
@@ -32,20 +38,54 @@ export function NewsAdminSection() {
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     setPhotoFile(e.target.files?.[0] ?? null);
-    setResult(null);
+    setProgress(null);
+    setCursor(null);
   }
 
+  /**
+   * The recipient list is 1000+ users — sending them all from one request
+   * used to time out the serverless function partway through (see
+   * api/admin/broadcast/route.ts), which is why this was failing. Now each
+   * call only sends one batch; this loops it, updating live sent/total
+   * progress, until the server says `done`. If a batch call itself fails
+   * (network hiccup, one bad request), `cursor` keeps the resume point so
+   * hitting "Отправить всем" again continues instead of re-messaging
+   * everyone already reached.
+   */
   async function handleSend() {
+    // Belt-and-suspenders — the buttons that call this are already disabled
+    // while `sending`, but a second guard here means a stray double-call
+    // can never start two overlapping batch loops racing the same cursor.
+    if (sending) return;
     setSending(true);
     setError(null);
-    try {
-      const form = new FormData();
-      form.set("title", title.trim());
-      form.set("body", body.trim());
-      if (photoFile) form.set("photo", photoFile);
 
-      const res = await sendBroadcast(form);
-      setResult(res);
+    let offset = cursor?.offset ?? 0;
+    let fileId = cursor?.fileId ?? null;
+    let sentAcc = progress?.sent ?? 0;
+    let failedAcc = progress?.failed ?? 0;
+
+    try {
+      let done = false;
+      while (!done) {
+        const form = new FormData();
+        form.set("title", title.trim());
+        form.set("body", body.trim());
+        form.set("offset", String(offset));
+        if (fileId) form.set("fileId", fileId);
+        else if (photoFile) form.set("photo", photoFile);
+
+        const batch = await sendBroadcastBatch(form);
+        sentAcc += batch.sent;
+        failedAcc += batch.failed;
+        offset = batch.nextOffset;
+        fileId = batch.fileId;
+        done = batch.done;
+
+        setProgress({ sent: sentAcc, failed: failedAcc, total: batch.total });
+        setCursor(done ? null : { offset, fileId });
+      }
+
       setConfirming(false);
       setTitle("");
       setBody("");
@@ -54,7 +94,7 @@ export function NewsAdminSection() {
       setError(
         err instanceof ApiError && err.code === "content_too_long"
           ? `Слишком длинно — максимум ${maxLen} символов ${photoFile ? "с фото" : "без фото"}.`
-          : "Не получилось отправить рассылку",
+          : `Рассылка прервалась (отправлено ${sentAcc} из ${progress?.total ?? "?"}) — нажми ещё раз, чтобы продолжить с этого места.`,
       );
       setConfirming(false);
     } finally {
@@ -74,27 +114,37 @@ export function NewsAdminSection() {
           value={title}
           onChange={(e) => {
             setTitle(e.target.value);
-            setResult(null);
+            setProgress(null);
+            setCursor(null);
           }}
           placeholder="Заголовок"
-          className="rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none"
+          disabled={resuming || sending}
+          className="rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none disabled:opacity-50"
         />
         <textarea
           value={body}
           onChange={(e) => {
             setBody(e.target.value);
-            setResult(null);
+            setProgress(null);
+            setCursor(null);
           }}
           placeholder="Текст новости"
           rows={4}
-          className="resize-none rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none"
+          disabled={resuming || sending}
+          className="resize-none rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none disabled:opacity-50"
         />
         <label className="flex cursor-pointer items-center justify-between rounded-lg bg-progress-bg px-3 py-2 text-sm text-nav-inactive">
           <span className="flex items-center gap-1.5">
             {!photoFile && <Camera className="h-4 w-4 shrink-0" />}
             {photoFile ? photoFile.name : "Прикрепить фото (необязательно)"}
           </span>
-          <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoChange}
+            disabled={resuming || sending}
+            className="hidden"
+          />
         </label>
         <p className="px-1 text-[11px] text-nav-inactive">
           {captionLength}/{maxLen} символов
@@ -119,22 +169,23 @@ export function NewsAdminSection() {
 
       {error && <p className="px-1 text-xs text-danger">{error}</p>}
 
-      {result && (
+      {progress && (
         <p className="px-1 text-xs text-profit">
-          Отправлено: {result.sent} из {result.total}
-          {result.failed > 0 ? ` · не удалось: ${result.failed}` : ""}
+          Отправлено: {progress.sent} из {progress.total}
+          {progress.failed > 0 ? ` · не удалось: ${progress.failed}` : ""}
+          {sending ? " · отправка..." : resuming ? " · остановлено, можно продолжить" : ""}
         </p>
       )}
 
       {!confirming ? (
         <button
           type="button"
-          onClick={() => setConfirming(true)}
-          disabled={!hasContent || captionLength > maxLen}
+          onClick={() => (resuming ? handleSend() : setConfirming(true))}
+          disabled={sending || ((!hasContent || captionLength > maxLen) && !resuming)}
           className="gradient-action flex items-center justify-center gap-1.5 rounded-full py-2 text-sm font-semibold disabled:opacity-40"
         >
           <Send className="h-4 w-4" />
-          Отправить всем
+          {resuming ? "Продолжить рассылку" : "Отправить всем"}
         </button>
       ) : (
         <div className="gradient-surface flex flex-col gap-2 rounded-xl p-3">

@@ -423,10 +423,15 @@ export function fetchAmbassadorStats() {
   return request<AmbassadorStats[]>("/api/admin/ambassadors/stats");
 }
 
-export interface BroadcastResult {
+export interface BroadcastBatchResult {
   sent: number;
   failed: number;
   total: number;
+  /** Offset to pass as the next batch's `offset` — >= total once done. */
+  nextOffset: number;
+  /** Telegram file_id of the uploaded photo, once known — reuse it on every later batch instead of re-uploading the file. */
+  fileId: string | null;
+  done: boolean;
 }
 
 export interface AdminDailyComboSlot {
@@ -456,7 +461,15 @@ export function setAdminDailyComboTiers(tiers: number[]) {
   });
 }
 
-export async function sendBroadcast(form: FormData) {
+/**
+ * Sends one batch of the broadcast — see 0-arg `offset`/`fileId` in
+ * api/admin/broadcast/route.ts for why this is batched at all (the full
+ * recipient list is 1000+ and won't fit in one serverless invocation).
+ * Caller loops this until `done`, passing the returned `nextOffset`/`fileId`
+ * back in on each subsequent call (and omitting the photo file after the
+ * first, since fileId lets the server reuse Telegram's copy of it).
+ */
+export async function sendBroadcastBatch(form: FormData) {
   const csrfToken = readCsrfToken();
   const res = await fetch("/api/admin/broadcast", {
     method: "POST",
@@ -472,7 +485,7 @@ export async function sendBroadcast(form: FormData) {
     throw new ApiError(body?.error ?? `http_${res.status}`);
   }
 
-  return res.json() as Promise<BroadcastResult>;
+  return res.json() as Promise<BroadcastBatchResult>;
 }
 
 export interface AdminWithdrawalRequest {
