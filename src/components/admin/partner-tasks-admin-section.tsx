@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Handshake } from "lucide-react";
 import {
   fetchAdminPartnerTasks,
   createAdminPartnerTask,
@@ -60,8 +61,9 @@ export function PartnerTasksAdminSection() {
 
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="px-1 text-sm font-semibold text-nav-inactive">
-        🤝 Связи на районе — партнёрские задачи
+      <h2 className="flex items-center gap-1.5 px-1 text-sm font-semibold text-nav-inactive">
+        <Handshake className="h-4 w-4 text-purple-400" />
+        Связи на районе — партнёрские задачи
       </h2>
 
       <form onSubmit={handleSubmit} className="gradient-surface flex flex-col gap-2 rounded-xl p-3">

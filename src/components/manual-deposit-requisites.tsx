@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Copy, AlertTriangle } from "lucide-react";
 import type { PlayerState } from "@/lib/types";
 import { fetchState } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
@@ -28,8 +29,8 @@ function CopyRow({ label, value }: { label: string; value: string }) {
         className="flex w-full items-center justify-between gap-2 rounded-lg bg-progress-bg px-3 py-2 text-left rtl:text-right font-mono text-sm"
       >
         <span dir="ltr" className="truncate">{value}</span>
-        <span className="shrink-0 text-xs text-nav-inactive">
-          {copied ? t("walletConnect.copied") : "📋"}
+        <span className="flex shrink-0 items-center gap-1 text-xs text-nav-inactive">
+          {copied ? t("walletConnect.copied") : <Copy className="h-3.5 w-3.5" />}
         </span>
       </button>
     </div>
@@ -88,7 +89,10 @@ export function ManualDepositRequisites({
       <CopyRow label={t(copy.memoLabel)} value={memo} />
 
       <div className="gradient-surface flex flex-col gap-1 rounded-xl p-3 text-xs text-nav-inactive">
-        <p>⚠️ {t(copy.memoWarning)}</p>
+        <p className="flex items-start gap-1.5">
+          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-400" />
+          {t(copy.memoWarning)}
+        </p>
       </div>
 
       <button

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { Gamepad2, PartyPopper, CheckCircle2, XCircle, Sparkles } from "lucide-react";
 import type { PlayerState } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
 import { useCountdown, formatDuration } from "@/hooks/use-countdown";
-import { TIER_ICON, TIER_ACCENT } from "@/lib/tier-art";
+import { TIER_ICON, TIER_ACCENT, DEFAULT_TIER_ICON } from "@/lib/tier-art";
 import { submitComboGuess } from "@/lib/api-client";
 import { itemIcon, itemNameKey } from "@/lib/combo-items";
 
@@ -43,7 +44,7 @@ export function GamesScreen({
   if (!combo) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
-        <p className="text-3xl">🎮</p>
+        <Gamepad2 className="h-9 w-9 text-purple-400" />
         <p className="font-semibold">{t("games.title")}</p>
         <p className="text-sm text-nav-inactive">{t("games.description")}</p>
       </div>
@@ -90,35 +91,48 @@ export function GamesScreen({
   return (
     <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pb-24">
       <div className="text-center">
-        <p className="text-lg font-bold">{t("games.comboTitle")}</p>
+        <p className="flex items-center justify-center gap-1.5 text-lg font-bold">
+          <Sparkles className="h-5 w-5 text-purple-400" />
+          {t("games.comboTitle")}
+        </p>
         <p className="mt-1 text-sm text-nav-inactive">{t("games.comboSubtitle")}</p>
       </div>
 
       {combo.is_completed ? (
         <>
           <div className="gradient-action rounded-xl p-3 text-center">
-            <p className="font-semibold">🎉 {t("games.comboCompletedTitle")}</p>
-            <p className="text-sm opacity-90">
+            <p className="flex items-center justify-center gap-1.5 font-semibold">
+              <PartyPopper className="h-4 w-4" />
+              {t("games.comboCompletedTitle")}
+            </p>
+            <p className="flex items-center justify-center gap-1.5 text-sm opacity-90">
+              {combo.reward_item && (() => {
+                const RewardIcon = itemIcon(combo.reward_item.item_type);
+                return <RewardIcon className="h-4 w-4 shrink-0" />;
+              })()}
               {combo.reward_item
                 ? t("games.comboCompletedBody", {
-                    item: `${itemIcon(combo.reward_item.item_type)} ${t(itemNameKey(combo.reward_item.item_type))}`,
+                    item: t(itemNameKey(combo.reward_item.item_type)),
                   })
                 : t("games.comboCompletedBodyUnknown")}
             </p>
           </div>
           <div className="grid grid-cols-4 gap-2">
-            {(combo.revealed_tiers ?? []).map((card, i) => (
-              <div
-                key={i}
-                className="gradient-surface flex min-h-24 flex-col items-center justify-center gap-1 rounded-2xl p-2"
-                style={{ boxShadow: `0 0 0 2px ${TIER_ACCENT[card.tier] ?? "#9b35ff"}` }}
-              >
-                <span className="text-2xl">{TIER_ICON[card.tier] ?? "🎴"}</span>
-                <span className="text-center text-[10px] font-semibold">
-                  {pick(card.name_i18n) || card.name}
-                </span>
-              </div>
-            ))}
+            {(combo.revealed_tiers ?? []).map((card, i) => {
+              const CardIcon = TIER_ICON[card.tier] ?? DEFAULT_TIER_ICON;
+              return (
+                <div
+                  key={i}
+                  className="gradient-surface flex min-h-24 flex-col items-center justify-center gap-1 rounded-2xl p-2"
+                  style={{ boxShadow: `0 0 0 2px ${TIER_ACCENT[card.tier] ?? "#9b35ff"}` }}
+                >
+                  <CardIcon className="h-6 w-6 text-amber-400" />
+                  <span className="text-center text-[10px] font-semibold">
+                    {pick(card.name_i18n) || card.name}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </>
       ) : outOfAttempts ? (
@@ -136,14 +150,18 @@ export function GamesScreen({
               <span className="font-semibold">{t("games.comboAttemptsLeft", { n: attemptsLeft })}</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {combo.possible_drops.map((drop) => (
-                <span
-                  key={drop.item_type}
-                  className="flex items-center gap-1 rounded-full bg-progress-bg px-2 py-1 text-[10px] text-nav-inactive"
-                >
-                  {itemIcon(drop.item_type)} {t(itemNameKey(drop.item_type))} · {drop.drop_weight}%
-                </span>
-              ))}
+              {combo.possible_drops.map((drop) => {
+                const DropIcon = itemIcon(drop.item_type);
+                return (
+                  <span
+                    key={drop.item_type}
+                    className="flex items-center gap-1 rounded-full bg-progress-bg px-2 py-1 text-[10px] text-nav-inactive"
+                  >
+                    <DropIcon className="h-3 w-3 shrink-0 text-purple-400" />
+                    {t(itemNameKey(drop.item_type))} · {drop.drop_weight}%
+                  </span>
+                );
+              })}
             </div>
           </div>
 
@@ -152,6 +170,7 @@ export function GamesScreen({
               const isCorrect = feedback ? feedback[i] : null;
               const ring =
                 isCorrect === true ? CORRECT_COLOR : isCorrect === false ? WRONG_COLOR : null;
+              const SlotIcon = tier != null ? (TIER_ICON[tier] ?? DEFAULT_TIER_ICON) : null;
               return (
                 <button
                   type="button"
@@ -161,10 +180,15 @@ export function GamesScreen({
                   className="gradient-surface flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl p-2 disabled:opacity-100"
                   style={ring ? { boxShadow: `0 0 0 2px ${ring}` } : undefined}
                 >
-                  {tier != null ? (
+                  {SlotIcon ? (
                     <>
-                      <span className="text-2xl">{TIER_ICON[tier] ?? "🎴"}</span>
-                      {isCorrect != null && <span className="text-[10px]">{isCorrect ? "✅" : "❌"}</span>}
+                      <SlotIcon className="h-6 w-6 text-amber-400" />
+                      {isCorrect != null &&
+                        (isCorrect ? (
+                          <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+                        ) : (
+                          <XCircle className="h-3 w-3 text-red-400" />
+                        ))}
                     </>
                   ) : (
                     <span className="text-lg font-bold text-nav-inactive">{i + 1}</span>
@@ -179,6 +203,7 @@ export function GamesScreen({
           <div className="grid grid-cols-4 gap-2">
             {combo.pool.map((card) => {
               const placed = placedTiers.has(card.tier);
+              const PoolIcon = TIER_ICON[card.tier] ?? DEFAULT_TIER_ICON;
               return (
                 <button
                   type="button"
@@ -187,7 +212,7 @@ export function GamesScreen({
                   disabled={!canEdit || placed}
                   className="gradient-surface flex min-h-24 flex-col items-center justify-center gap-1 rounded-xl p-2 disabled:opacity-30"
                 >
-                  <span className="text-2xl">{TIER_ICON[card.tier] ?? "🎴"}</span>
+                  <PoolIcon className="h-6 w-6 text-amber-400" />
                   <span className="text-center text-[10px] text-nav-inactive">
                     {pick(card.name_i18n) || card.name}
                   </span>

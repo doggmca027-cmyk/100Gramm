@@ -22,10 +22,13 @@ export function PlayerProfileCard({ state }: { state: PlayerState }) {
           photoUrl={state.profile.photo_url}
           rankIcon={rank?.icon ?? null}
           rankLevel={rank?.level}
+          className="ring-2 ring-purple-500/40 ring-offset-2 ring-offset-surface"
         />
         <div>
-          <p className="font-semibold">{pick(rank?.name_i18n) || t("header.rankFallback")}</p>
-          <p className="text-xs text-nav-inactive">
+          <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-400">
+            {pick(rank?.name_i18n) || t("header.rankFallback")}
+          </span>
+          <p className="mt-1 text-xs text-nav-inactive">
             {t("profileCard.level")} {rank?.level ?? 1}
           </p>
           <div className="mt-1.5 h-1.5 w-28 rounded-full bg-progress-bg">

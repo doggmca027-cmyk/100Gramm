@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Settings, Handshake, Star, Newspaper, Sparkles, Banknote, UserRound, type LucideIcon } from "lucide-react";
 import type { PlayerState } from "@/lib/types";
 import { PartnerTasksAdminSection } from "./admin/partner-tasks-admin-section";
 import { AmbassadorsAdminSection } from "./admin/ambassadors-admin-section";
@@ -11,6 +12,15 @@ import { LeaderboardVisibilityAdminSection } from "./admin/leaderboard-visibilit
 import { AmbassadorStatsScreen } from "./ambassador-stats-screen";
 
 type Section = "tasks" | "ambassadors" | "news" | "combo" | "withdrawals" | "profile";
+
+const SECTION_TABS: { id: Section; label: string; Icon: LucideIcon }[] = [
+  { id: "tasks", label: "Задачи", Icon: Handshake },
+  { id: "ambassadors", label: "Амбассадоры", Icon: Star },
+  { id: "news", label: "Новости", Icon: Newspaper },
+  { id: "combo", label: "Combo", Icon: Sparkles },
+  { id: "withdrawals", label: "Выводы", Icon: Banknote },
+  { id: "profile", label: "Профиль", Icon: UserRound },
+];
 
 export function AdminScreen({
   state,
@@ -34,64 +44,26 @@ export function AdminScreen({
         <button type="button" onClick={onBack} aria-label="Назад" className="inline-block text-lg rtl:rotate-180">
           ←
         </button>
-        <p className="font-semibold">⚙️ Админ-панель</p>
+        <p className="flex items-center gap-1.5 font-semibold">
+          <Settings className="h-4 w-4 text-neutral-400" />
+          Админ-панель
+        </p>
       </header>
 
       <div className="flex gap-2 overflow-x-auto px-4 pt-3">
-        <button
-          type="button"
-          onClick={() => setSection("tasks")}
-          className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
-            section === "tasks" ? "gradient-action" : "gradient-surface text-nav-inactive"
-          }`}
-        >
-          🤝 Задачи
-        </button>
-        <button
-          type="button"
-          onClick={() => setSection("ambassadors")}
-          className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
-            section === "ambassadors" ? "gradient-action" : "gradient-surface text-nav-inactive"
-          }`}
-        >
-          ⭐ Амбассадоры
-        </button>
-        <button
-          type="button"
-          onClick={() => setSection("news")}
-          className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
-            section === "news" ? "gradient-action" : "gradient-surface text-nav-inactive"
-          }`}
-        >
-          📰 Новости
-        </button>
-        <button
-          type="button"
-          onClick={() => setSection("combo")}
-          className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
-            section === "combo" ? "gradient-action" : "gradient-surface text-nav-inactive"
-          }`}
-        >
-          🎴 Combo
-        </button>
-        <button
-          type="button"
-          onClick={() => setSection("withdrawals")}
-          className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
-            section === "withdrawals" ? "gradient-action" : "gradient-surface text-nav-inactive"
-          }`}
-        >
-          💸 Выводы
-        </button>
-        <button
-          type="button"
-          onClick={() => setSection("profile")}
-          className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
-            section === "profile" ? "gradient-action" : "gradient-surface text-nav-inactive"
-          }`}
-        >
-          👤 Профиль
-        </button>
+        {SECTION_TABS.map(({ id, label, Icon }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setSection(id)}
+            className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold ${
+              section === id ? "gradient-action" : "gradient-surface text-nav-inactive"
+            }`}
+          >
+            <Icon className="h-3.5 w-3.5" />
+            {label}
+          </button>
+        ))}
       </div>
 
       <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-4 pb-8">

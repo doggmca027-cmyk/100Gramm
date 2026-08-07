@@ -15,16 +15,32 @@ export const TIER_IMAGE_URL: Partial<Record<number, string>> = {
 export const GRAM_COIN_IMAGE = "/products/gram-coin.jpg";
 export const SQUAD_BANNER_IMAGE = "/products/squad-banner.jpg";
 
-export const TIER_ICON: Record<number, string> = {
-  1: "🍾",
-  2: "📦",
-  3: "🛒",
-  4: "🏚",
-  5: "🍺",
-  6: "🏪",
-  7: "🏢",
-  8: "👑",
+import {
+  Wine,
+  Package,
+  ShoppingCart,
+  Home,
+  Beer,
+  Store,
+  Building2,
+  Crown,
+  Sparkles,
+  type LucideIcon,
+} from "lucide-react";
+
+export const TIER_ICON: Record<number, LucideIcon> = {
+  1: Wine,
+  2: Package,
+  3: ShoppingCart,
+  4: Home,
+  5: Beer,
+  6: Store,
+  7: Building2,
+  8: Crown,
 };
+
+/** Fallback for an out-of-range tier — same "generic tier" role the 🎴 emoji used to play. */
+export const DEFAULT_TIER_ICON: LucideIcon = Sparkles;
 
 export const TIER_ACCENT: Record<number, string> = {
   1: "#8b7765",

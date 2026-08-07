@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { X, ScrollText } from "lucide-react";
 import { fetchHistory } from "@/lib/api-client";
 import type { HistoryEntry } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
@@ -35,14 +36,17 @@ export function HistoryModal({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold">{t("history.title")}</h2>
+          <h2 className="flex items-center gap-1.5 text-base font-semibold">
+            <ScrollText className="h-4 w-4 text-neutral-400" />
+            {t("history.title")}
+          </h2>
           <button
             type="button"
             onClick={onClose}
             className="text-nav-inactive"
             aria-label={t("common.back")}
           >
-            ✕
+            <X className="h-5 w-5" />
           </button>
         </div>
         <div className="gradient-surface flex flex-col divide-y divide-white/5 overflow-y-auto rounded-xl">

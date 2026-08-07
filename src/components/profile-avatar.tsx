@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { UserRound } from "lucide-react";
 import { rankRingGradient } from "@/lib/rank-art";
 
 /**
@@ -14,19 +15,22 @@ export function ProfileAvatar({
   rankLevel,
   sizeClassName = "h-14 w-14",
   emojiClassName = "text-2xl",
+  className = "",
 }: {
   photoUrl: string | null;
   rankIcon: string | null;
   rankLevel: number | undefined;
   sizeClassName?: string;
   emojiClassName?: string;
+  /** Extra classes on the outer ring wrapper — e.g. a decorative ring-* accent layered on top of the rank-colored gradient ring. */
+  className?: string;
 }) {
   const [failed, setFailed] = useState(false);
   const showPhoto = photoUrl && !failed;
 
   return (
     <div
-      className={`${sizeClassName} shrink-0 rounded-full p-[2px]`}
+      className={`${sizeClassName} shrink-0 rounded-full p-[2px] ${className}`}
       style={{ backgroundImage: rankRingGradient(rankLevel) }}
     >
       <div className="h-full w-full overflow-hidden rounded-full bg-bg">
@@ -42,7 +46,11 @@ export function ProfileAvatar({
           />
         ) : (
           <div className="gradient-action flex h-full w-full items-center justify-center">
-            <span className={emojiClassName}>{rankIcon ?? "🥴"}</span>
+            {rankIcon ? (
+              <span className={emojiClassName}>{rankIcon}</span>
+            ) : (
+              <UserRound className="h-1/2 w-1/2 text-white/90" strokeWidth={1.75} />
+            )}
           </div>
         )}
       </div>

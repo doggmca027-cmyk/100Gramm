@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { X, CheckCircle2, Wallet as WalletIcon, Hourglass, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { beginCell } from "@ton/core";
 import { CHAIN, UserRejectsError, useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
 import type { PlayerState } from "@/lib/types";
@@ -212,7 +213,12 @@ export function WalletModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold">
+          <h2 className="flex items-center gap-1.5 text-base font-semibold">
+            {mode === "deposit" ? (
+              <ArrowUpCircle className="h-4 w-4 text-emerald-400" />
+            ) : (
+              <ArrowDownCircle className="h-4 w-4 text-amber-400" />
+            )}
             {mode === "deposit" ? t("wallet.depositTitle") : t("wallet.withdrawTitle")}
           </h2>
           <button
@@ -221,7 +227,7 @@ export function WalletModal({
             className="text-nav-inactive"
             aria-label={t("common.back")}
           >
-            ✕
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -261,7 +267,7 @@ export function WalletModal({
             </div>
           ) : depositPhase === "success" ? (
             <div className="gradient-surface flex flex-col items-center gap-2 rounded-xl p-6 text-center">
-              <span className="text-3xl">✅</span>
+              <CheckCircle2 className="h-10 w-10 text-emerald-400" />
               <p className="text-sm font-semibold">
                 {t("walletConnect.depositSuccess", { amount: creditedAmount ?? 0 })}
               </p>
@@ -277,7 +283,7 @@ export function WalletModal({
             <div className="flex flex-col gap-4">
               {needsWallet ? (
                 <div className="flex flex-col items-center gap-3 py-2 text-center">
-                  <span className="text-3xl">👛</span>
+                  <WalletIcon className="h-10 w-10 text-amber-400" />
                   <p className="text-xs text-nav-inactive">{t("wallet.needsWalletDeposit")}</p>
                   <button
                     type="button"
@@ -328,7 +334,7 @@ export function WalletModal({
           )
         ) : justSubmitted ? (
           <div className="gradient-surface flex flex-col items-center gap-2 rounded-xl p-6 text-center">
-            <span className="text-3xl">✅</span>
+            <CheckCircle2 className="h-10 w-10 text-emerald-400" />
             <p className="text-sm font-semibold">{t("wallet.submittedTitle")}</p>
             <p className="text-xs text-nav-inactive">
               {t("wallet.submittedBody", { net: justSubmitted.net })}
@@ -343,7 +349,10 @@ export function WalletModal({
           </div>
         ) : pending ? (
           <div className="gradient-surface flex flex-col gap-2 rounded-xl p-4 text-sm">
-            <p className="font-semibold">⏳ {t("wallet.pendingTitle")}</p>
+            <p className="flex items-center gap-1.5 font-semibold">
+              <Hourglass className="h-4 w-4 text-amber-400" />
+              {t("wallet.pendingTitle")}
+            </p>
             <div className="flex justify-between">
               <span className="text-nav-inactive">{t("wallet.amountLabel")}</span>
               <span>

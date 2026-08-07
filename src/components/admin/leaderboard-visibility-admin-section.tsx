@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Trophy } from "lucide-react";
 import type { PlayerState } from "@/lib/types";
 import { setLeaderboardVisibility } from "@/lib/api-client";
 
@@ -29,7 +30,10 @@ export function LeaderboardVisibilityAdminSection({
 
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="px-1 text-sm font-semibold text-nav-inactive">🏆 Лидерборд</h2>
+      <h2 className="flex items-center gap-1.5 px-1 text-sm font-semibold text-nav-inactive">
+        <Trophy className="h-4 w-4 text-amber-400" />
+        Лидерборд
+      </h2>
       <div className="gradient-surface flex items-center justify-between gap-3 rounded-xl p-3">
         <div>
           <p className="text-sm font-semibold">Скрыть мой профиль</p>

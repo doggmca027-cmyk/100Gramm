@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CreditCard } from "lucide-react";
 import { CHAIN, UserRejectsError, useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
 import type { PlayerState } from "@/lib/types";
 import { ApiError, prepareUsdtPayment, verifyUsdtPayment } from "@/lib/api-client";
@@ -111,10 +112,11 @@ export function UsdtPayButton({
         {phase === "awaiting-wallet" && t("walletConnect.awaitingWallet")}
         {phase === "verifying" && t("walletConnect.verifying")}
         {phase === "idle" && (
-          <>
-            💵 {t("usdtPay.button")}
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <CreditCard className="h-3.5 w-3.5 text-amber-400" />
+            {t("usdtPay.button")}
             {usdtEstimate ? ` (~${usdtEstimate} USDT)` : ""}
-          </>
+          </span>
         )}
       </button>
       {error && <p className="text-xs text-danger">{error}</p>}

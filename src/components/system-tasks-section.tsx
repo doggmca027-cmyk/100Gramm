@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Radio, Handshake, Target, CheckCircle2, Sparkles, type LucideIcon } from "lucide-react";
 import { openTelegramLink } from "@telegram-apps/sdk-react";
 import type { PlayerState, SystemTask } from "@/lib/types";
 import { claimSystemTask, ApiError } from "@/lib/api-client";
@@ -15,10 +16,10 @@ type Stage = "todo" | "checking" | "pending" | "done";
 // fallback, same idiom as product-card.tsx's EPOCH.
 const EPOCH = "1970-01-01T00:00:00.000Z";
 
-const CATEGORY_ICON: Record<SystemTask["category"], string> = {
-  social: "📡",
-  referral: "🤝",
-  gameplay: "🎯",
+const CATEGORY_ICON: Record<SystemTask["category"], LucideIcon> = {
+  social: Radio,
+  referral: Handshake,
+  gameplay: Target,
 };
 
 function targetUrl(targetValue: string): string {
@@ -50,6 +51,7 @@ function TaskCard({
 
   const progressMet = task.progress >= task.required_count;
   const canClaim = !isSocial && progressMet;
+  const CategoryIcon = CATEGORY_ICON[task.category];
 
   function handleOpen() {
     if (!task.target_value) return;
@@ -104,8 +106,8 @@ function TaskCard({
   return (
     <div className="gradient-surface flex flex-col gap-2 rounded-xl p-3">
       <div className="flex items-start gap-3">
-        <div className="gradient-action flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-xl">
-          {CATEGORY_ICON[task.category]}
+        <div className="gradient-action flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+          <CategoryIcon className="h-6 w-6 text-white" />
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{task.title}</p>
@@ -113,13 +115,20 @@ function TaskCard({
             <p className="truncate text-xs text-nav-inactive">{task.description}</p>
           )}
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-            {task.rewards.map((r) => (
-              <span key={r.item_type} className="flex items-center gap-1 text-gram">
-                {itemIcon(r.item_type)} {t(itemNameKey(r.item_type))}
-                {r.quantity > 1 ? ` ×${r.quantity}` : ""}
-              </span>
-            ))}
-            <span className="text-boost">✨ +{task.reward_xp} XP</span>
+            {task.rewards.map((r) => {
+              const RewardIcon = itemIcon(r.item_type);
+              return (
+                <span key={r.item_type} className="flex items-center gap-1 text-gram">
+                  <RewardIcon className="h-3.5 w-3.5 shrink-0 text-purple-400" />
+                  {t(itemNameKey(r.item_type))}
+                  {r.quantity > 1 ? ` ×${r.quantity}` : ""}
+                </span>
+              );
+            })}
+            <span className="flex items-center gap-1 text-boost">
+              <Sparkles className="h-3.5 w-3.5" />
+              +{task.reward_xp} XP
+            </span>
           </div>
         </div>
       </div>
@@ -148,8 +157,9 @@ function TaskCard({
 
       <div className="flex justify-end">
         {stage === "done" ? (
-          <span className="rounded-full bg-progress-bg px-3 py-1.5 text-xs text-profit">
-            ✓ {t("quests.claimed")}
+          <span className="flex items-center gap-1 rounded-full bg-progress-bg px-3 py-1.5 text-xs text-profit">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            {t("quests.claimed")}
           </span>
         ) : isSocial ? (
           stage === "todo" ? (
@@ -205,7 +215,10 @@ export function SystemTasksSection({
 
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="px-1 text-sm font-semibold text-nav-inactive">{t("systemTasks.title")}</h2>
+      <h2 className="flex items-center gap-1.5 px-1 text-sm font-semibold text-nav-inactive">
+        <Target className="h-4 w-4 text-amber-400" />
+        {t("systemTasks.title")}
+      </h2>
       {tasks.map((task) => (
         <TaskCard key={task.id} task={task} onClaimed={onStateChange} />
       ))}

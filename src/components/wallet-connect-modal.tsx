@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { X, Copy, Wallet } from "lucide-react";
 import { TonConnectButton, useTonAddress, useTonConnectUI, useTonWallet } from "@tonconnect/ui-react";
 import { useLanguage } from "@/lib/i18n/context";
 
@@ -54,9 +55,12 @@ export function WalletConnectModal({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold">{t("walletConnect.title")}</h2>
+          <h2 className="flex items-center gap-1.5 text-base font-semibold">
+            <Wallet className="h-4 w-4 text-amber-400" />
+            {t("walletConnect.title")}
+          </h2>
           <button type="button" onClick={onClose} className="text-nav-inactive" aria-label={t("common.back")}>
-            ✕
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -72,8 +76,8 @@ export function WalletConnectModal({ onClose }: { onClose: () => void }) {
               className="flex items-center justify-between rounded-lg bg-progress-bg px-3 py-2 font-mono text-sm"
             >
               <span dir="ltr">{truncateAddress(address)}</span>
-              <span className="text-xs text-nav-inactive">
-                {copied ? t("walletConnect.copied") : "📋"}
+              <span className="flex items-center gap-1 text-xs text-nav-inactive">
+                {copied ? t("walletConnect.copied") : <Copy className="h-3.5 w-3.5" />}
               </span>
             </button>
             <button
@@ -87,7 +91,7 @@ export function WalletConnectModal({ onClose }: { onClose: () => void }) {
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3 py-4 text-center">
-            <span className="text-3xl">👛</span>
+            <Wallet className="h-10 w-10 text-amber-400" />
             <p className="text-xs text-nav-inactive">{t("walletConnect.subtitle")}</p>
             <TonConnectButton />
           </div>

@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { X, Bot, Boxes, Gift } from "lucide-react";
 import type { InventoryItem, PlayerState } from "@/lib/types";
 import { useCountdown, formatDuration } from "@/hooks/use-countdown";
 import { useLanguage } from "@/lib/i18n/context";
 import { applyAutoCollectItem, applyTimeSkipItem } from "@/lib/api-client";
-import { itemIcon, itemNameKey, itemDescKey } from "@/lib/combo-items";
-import { TIER_ICON } from "@/lib/tier-art";
+import { ITEM_ICON, itemNameKey, itemDescKey } from "@/lib/combo-items";
+import { TIER_ICON, DEFAULT_TIER_ICON } from "@/lib/tier-art";
 
 function ItemCard({
   item,
@@ -25,6 +26,7 @@ function ItemCard({
 
   const hasActiveCycles = state.active_cycles.length > 0;
   const isTimeSkip = item.category === "time_skip";
+  const Icon = ITEM_ICON[item.item_type] ?? Gift;
 
   async function applyTo(cycleId: string) {
     setApplying(true);
@@ -57,7 +59,7 @@ function ItemCard({
     <div className="gradient-surface flex flex-col gap-2 rounded-xl p-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">{itemIcon(item.item_type)}</span>
+          <Icon className="h-6 w-6 shrink-0 text-purple-400" />
           <div>
             <p className="text-sm font-semibold">
               {t(itemNameKey(item.item_type))} <span className="text-nav-inactive">×{item.quantity}</span>
@@ -103,12 +105,13 @@ function ItemCard({
                 className="text-nav-inactive"
                 aria-label={t("common.back")}
               >
-                ✕
+                <X className="h-5 w-5" />
               </button>
             </div>
             <div className="flex flex-col gap-2 overflow-y-auto">
               {state.active_cycles.map((cycle) => {
                 const tierInfo = state.tiers.find((candidate) => candidate.tier === cycle.tier);
+                const CycleIcon = TIER_ICON[cycle.tier] ?? DEFAULT_TIER_ICON;
                 return (
                   <button
                     key={cycle.id}
@@ -118,7 +121,7 @@ function ItemCard({
                     className="gradient-surface flex items-center justify-between rounded-xl p-3 text-left rtl:text-right disabled:opacity-50"
                   >
                     <span className="flex items-center gap-2 text-sm font-semibold">
-                      <span className="text-xl">{TIER_ICON[cycle.tier] ?? "🎴"}</span>
+                      <CycleIcon className="h-5 w-5 shrink-0 text-amber-400" />
                       {cycle.tier}. {tierInfo ? pick(tierInfo.name_i18n) : ""}
                     </span>
                     <span className="text-xs text-nav-inactive">
@@ -150,10 +153,14 @@ export function ItemInventory({
 
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="px-1 text-sm font-semibold text-nav-inactive">{t("items.inventoryTitle")}</h2>
+      <h2 className="flex items-center gap-1.5 px-1 text-sm font-semibold text-nav-inactive">
+        <Boxes className="h-4 w-4 text-neutral-400" />
+        {t("items.inventoryTitle")}
+      </h2>
       {autoCollectActive && (
-        <p className="gradient-surface rounded-xl p-3 text-xs text-profit">
-          🤖 {t("items.autoCollectActiveUntil", { time: new Date(state.wallet.auto_collect_until!).toLocaleString() })}
+        <p className="flex items-center gap-1.5 gradient-surface rounded-xl p-3 text-xs text-profit">
+          <Bot className="h-4 w-4 shrink-0 text-purple-400" />
+          {t("items.autoCollectActiveUntil", { time: new Date(state.wallet.auto_collect_until!).toLocaleString() })}
         </p>
       )}
       {state.inventory.map((item) => (

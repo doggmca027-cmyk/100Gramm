@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { Users, Star, Medal, UserPlus } from "lucide-react";
 import type { PlayerState, SquadLevel } from "@/lib/types";
 import { SQUAD_BANNER_IMAGE } from "@/lib/tier-art";
 import { useLanguage } from "@/lib/i18n/context";
@@ -83,7 +84,10 @@ export function SquadScreen({ state }: { state: PlayerState }) {
           className="h-40 w-full object-cover"
         />
         <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/30 to-transparent p-4">
-          <p className="text-xs text-nav-inactive">{t("squad.title")}</p>
+          <p className="flex items-center gap-1 text-xs text-nav-inactive">
+            <Users className="h-3.5 w-3.5 text-purple-400" />
+            {t("squad.title")}
+          </p>
           <p className="text-2xl font-bold">{state.squad.referred_count}</p>
         </div>
       </div>
@@ -98,12 +102,24 @@ export function SquadScreen({ state }: { state: PlayerState }) {
       <div className="gradient-surface rounded-2xl p-4 text-sm leading-relaxed">
         <p>{t("squad.description")}</p>
         {isAmbassador && (
-          <p className="mt-2 text-xs font-semibold text-gram">{t("squad.ambassadorBadge")}</p>
+          <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-gram">
+            <Star className="h-3.5 w-3.5 text-amber-400" />
+            {t("squad.ambassadorBadge")}
+          </p>
         )}
         <ul className="mt-3 space-y-1 text-xs text-nav-inactive">
-          <li>{t("squad.level1", { percent: rate1 })}</li>
-          <li>{t("squad.level2", { percent: rate2 })}</li>
-          <li>{t("squad.level3", { percent: rate3 })}</li>
+          <li className="flex items-center gap-1.5">
+            <Medal className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+            {t("squad.level1", { percent: rate1 })}
+          </li>
+          <li className="flex items-center gap-1.5">
+            <Medal className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+            {t("squad.level2", { percent: rate2 })}
+          </li>
+          <li className="flex items-center gap-1.5">
+            <Medal className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+            {t("squad.level3", { percent: rate3 })}
+          </li>
         </ul>
       </div>
 
@@ -111,8 +127,9 @@ export function SquadScreen({ state }: { state: PlayerState }) {
         type="button"
         onClick={handleCopy}
         disabled={!inviteLink}
-        className="gradient-action rounded-full py-3 text-sm font-semibold disabled:opacity-40"
+        className="gradient-action flex items-center justify-center gap-1.5 rounded-full py-3 text-sm font-semibold disabled:opacity-40"
       >
+        {!copied && <UserPlus className="h-4 w-4" />}
         {copied ? t("squad.copied") : t("squad.invite")}
       </button>
 
@@ -182,7 +199,7 @@ export function SquadScreen({ state }: { state: PlayerState }) {
                 <div key={member.user_id} className="flex items-center gap-3 p-3 text-sm">
                   <MemberAvatar name={member.display_name} photoUrl={member.photo_url} />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold">{member.display_name}</p>
+                    <p className="truncate font-semibold">{member.display_name?.trim() ? member.display_name.trim() : "Игрок"}</p>
                     <p className="text-xs text-nav-inactive">
                       {t("squad.deposits")}: {formatGramAmount(member.total_deposited)} {t("common.gram")}
                     </p>

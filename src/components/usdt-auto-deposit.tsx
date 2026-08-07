@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { CHAIN, UserRejectsError, useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
 import type { PlayerState } from "@/lib/types";
 import { ApiError, prepareUsdtPayment, verifyUsdtPayment } from "@/lib/api-client";
@@ -106,7 +107,7 @@ export function UsdtAutoDeposit({
   if (phase === "success") {
     return (
       <div className="gradient-surface flex flex-col items-center gap-2 rounded-xl p-4 text-center">
-        <span className="text-2xl">✅</span>
+        <CheckCircle2 className="h-8 w-8 text-emerald-400" />
         <p className="text-sm font-semibold">
           {t("walletConnect.depositSuccess", { amount: creditedAmount ?? 0 })}
         </p>

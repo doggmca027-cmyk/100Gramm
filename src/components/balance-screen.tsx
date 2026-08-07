@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { ArrowUpCircle, ArrowDownCircle, CheckCircle2, Wallet, ScrollText, Users, Boxes } from "lucide-react";
 import type { PlayerState } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
 import { QuestList } from "./quest-list";
@@ -78,7 +79,7 @@ export function BalanceScreen({
           onClick={() => setWalletMode("deposit")}
           className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-3 text-xs"
         >
-          <span className="text-lg">⬆️</span>
+          <ArrowUpCircle className="h-5 w-5 text-emerald-400" />
           {t("balance.topUp")}
         </button>
         <button
@@ -86,7 +87,7 @@ export function BalanceScreen({
           onClick={() => setWalletMode("withdraw")}
           className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-3 text-xs"
         >
-          <span className="text-lg">⬇️</span>
+          <ArrowDownCircle className="h-5 w-5 text-amber-400" />
           {t("balance.withdraw")}
         </button>
         <button
@@ -94,7 +95,11 @@ export function BalanceScreen({
           onClick={handleWalletButtonClick}
           className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-3 text-xs"
         >
-          <span className="text-lg">{tonAddress ? "✅" : "👛"}</span>
+          {tonAddress ? (
+            <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+          ) : (
+            <Wallet className="h-5 w-5 text-amber-400" />
+          )}
           {t("walletConnect.navLabel")}
         </button>
         <button
@@ -102,7 +107,7 @@ export function BalanceScreen({
           onClick={() => setHistoryOpen(true)}
           className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-3 text-xs"
         >
-          <span className="text-lg">📜</span>
+          <ScrollText className="h-5 w-5 text-neutral-400" />
           {t("balance.history")}
         </button>
       </div>
@@ -135,7 +140,10 @@ export function BalanceScreen({
           className="h-32 w-full object-cover"
         />
         <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4">
-          <p className="text-sm font-semibold">{t("balance.friendBonusTitle")}</p>
+          <p className="flex items-center gap-1.5 text-sm font-semibold">
+            <Users className="h-4 w-4 text-purple-400" />
+            {t("balance.friendBonusTitle")}
+          </p>
           <p className="text-xs text-nav-inactive">
             {t("balance.friendBonusText")}{" "}
             <span className="font-semibold text-gram">+{level1Rate}%</span>{" "}
@@ -148,7 +156,7 @@ export function BalanceScreen({
       <PartnerTasksSection tasks={state.partner_tasks} onStateChange={onStateChange} />
       <SystemTasksSection tasks={state.system_tasks} onStateChange={onStateChange} />
       <ComingSoonSection
-        icon="📦"
+        icon={Boxes}
         title={t("containers.title")}
         description={t("containers.comingSoon")}
       />

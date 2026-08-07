@@ -1,15 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Banknote, Hourglass, CheckCircle2, XCircle, MessageSquare, Link as LinkIcon, type LucideIcon } from "lucide-react";
 import { fetchAdminWithdrawals, type AdminWithdrawalRequest } from "@/lib/api-client";
 import { WithdrawalConfirmModal } from "./withdrawal-confirm-modal";
+
+function formatDisplayName(username: string | null, firstName: string | null) {
+  const safeName = [firstName, username].find((value) => typeof value === "string" && value.trim().length > 0);
+  if (!safeName) return "Без имени";
+
+  const normalized = safeName.trim();
+  return normalized.startsWith("@") ? normalized : `@${normalized}`;
+}
 
 type StatusFilter = "pending" | "approved" | "rejected";
 
 const STATUS_LABELS: Record<StatusFilter, string> = {
-  pending: "⏳ Ожидают",
-  approved: "✅ Одобрены",
-  rejected: "❌ Отклонены",
+  pending: "Ожидают",
+  approved: "Одобрены",
+  rejected: "Отклонены",
+};
+
+const STATUS_ICON: Record<StatusFilter, LucideIcon> = {
+  pending: Hourglass,
+  approved: CheckCircle2,
+  rejected: XCircle,
+};
+
+const STATUS_COLOR: Record<StatusFilter, string> = {
+  pending: "text-amber-400",
+  approved: "text-emerald-400",
+  rejected: "text-red-400",
 };
 
 export function WithdrawalsAdminSection() {
@@ -37,21 +58,28 @@ export function WithdrawalsAdminSection() {
 
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="px-1 text-sm font-semibold text-nav-inactive">💸 Заявки на вывод</h2>
+      <h2 className="flex items-center gap-1.5 px-1 text-sm font-semibold text-nav-inactive">
+        <Banknote className="h-4 w-4 text-amber-400" />
+        Заявки на вывод
+      </h2>
 
       <div className="flex gap-2">
-        {(Object.keys(STATUS_LABELS) as StatusFilter[]).map((status) => (
-          <button
-            key={status}
-            type="button"
-            onClick={() => setStatusFilter(status)}
-            className={`flex-1 rounded-full py-2 text-xs font-semibold ${
-              statusFilter === status ? "gradient-action" : "gradient-surface text-nav-inactive"
-            }`}
-          >
-            {STATUS_LABELS[status]}
-          </button>
-        ))}
+        {(Object.keys(STATUS_LABELS) as StatusFilter[]).map((status) => {
+          const StatusIcon = STATUS_ICON[status];
+          return (
+            <button
+              key={status}
+              type="button"
+              onClick={() => setStatusFilter(status)}
+              className={`flex flex-1 items-center justify-center gap-1 rounded-full py-2 text-xs font-semibold ${
+                statusFilter === status ? "gradient-action" : "gradient-surface text-nav-inactive"
+              }`}
+            >
+              <StatusIcon className={`h-3.5 w-3.5 ${statusFilter === status ? "" : STATUS_COLOR[status]}`} />
+              {STATUS_LABELS[status]}
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -69,17 +97,21 @@ export function WithdrawalsAdminSection() {
           >
             <div>
               <p className="text-sm font-semibold">
-                {req.user?.username ? `@${req.user.username}` : (req.user?.first_name ?? "Без имени")}
+                {formatDisplayName(req.user?.username ?? null, req.user?.first_name ?? null)}
               </p>
               <p className="text-xs text-nav-inactive">
                 {new Date(req.created_at).toLocaleString("ru-RU")}
               </p>
               {req.admin_note && (
-                <p className="text-xs text-nav-inactive">💬 {req.admin_note}</p>
+                <p className="flex items-center gap-1 text-xs text-nav-inactive">
+                  <MessageSquare className="h-3 w-3 shrink-0" />
+                  {req.admin_note}
+                </p>
               )}
               {req.payout_tx_hash && (
-                <p className="truncate text-xs text-nav-inactive" title={req.payout_tx_hash}>
-                  🔗 {req.payout_tx_hash.slice(0, 12)}…
+                <p className="flex items-center gap-1 truncate text-xs text-nav-inactive" title={req.payout_tx_hash}>
+                  <LinkIcon className="h-3 w-3 shrink-0" />
+                  {req.payout_tx_hash.slice(0, 12)}…
                 </p>
               )}
             </div>

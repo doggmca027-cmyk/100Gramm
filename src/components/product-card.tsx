@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Lock, Timer, Clock, Layers, Zap, Flame } from "lucide-react";
 import type { ActiveCycle, TierState } from "@/lib/types";
 import { useCountdown, useElapsedPercent, formatDuration } from "@/hooks/use-countdown";
 import { useLanguage } from "@/lib/i18n/context";
@@ -81,7 +82,10 @@ export function ProductCard({
         <TierImage tier={tier.tier} className="h-16 w-16 shrink-0 rounded-xl" />
         <div className="flex flex-1 flex-col justify-center gap-1.5">
           <div className="flex items-center justify-between">
-            <span className="font-semibold">🔒 {pick(tier.name_i18n)}</span>
+            <span className="flex items-center gap-1 font-semibold">
+              <Lock className="h-4 w-4 shrink-0 text-neutral-400" />
+              {pick(tier.name_i18n)}
+            </span>
             <span className="text-sm text-nav-inactive">
               {tier.price} {t("common.gram")}
             </span>
@@ -139,21 +143,29 @@ export function ProductCard({
             +{(tier.price * (1 + tier.payout_percent / 100)).toFixed(2)} {t("common.gram")}
           </span>
           {usedSlots > 0 && soonestEndsAt ? (
-            <span className="font-mono text-nav-inactive">
-              ⏱ {remaining > 0 ? formatDuration(remaining) : t("productCard.ready")}
+            <span className="flex items-center gap-1 font-mono text-nav-inactive">
+              <Timer className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
+              {remaining > 0 ? formatDuration(remaining) : t("productCard.ready")}
               {usedSlots > 1 ? ` ×${usedSlots}` : ""}
             </span>
           ) : (
-            <span className="text-nav-inactive">
-              🕐 {tier.cycle_hours} {t("productCard.hours")}
+            <span className="flex items-center gap-1 text-nav-inactive">
+              <Clock className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
+              {tier.cycle_hours} {t("productCard.hours")}
             </span>
           )}
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-nav-inactive">
-          <span>
-            🎰 {t("productCard.slots")} {tier.slots_open}/{tier.slots_max}
-            {tier.slots_boost > 0 && <span className="text-boost"> +{tier.slots_boost}⚡</span>}
+          <span className="inline-flex items-center gap-1">
+            <Layers className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+            {t("productCard.slots")} {tier.slots_open}/{tier.slots_max}
+            {tier.slots_boost > 0 && (
+              <span className="inline-flex items-center gap-0.5 text-boost">
+                +{tier.slots_boost}
+                <Zap className="h-3 w-3" />
+              </span>
+            )}
           </span>
           {tier.can_buy_max ? (
             <span className="text-profit">· {t("productCard.slotsMaxed")}</span>
@@ -174,20 +186,33 @@ export function ProductCard({
             type="button"
             onClick={handleBuyMax}
             disabled={!canStart}
-            className="gradient-action mt-1 rounded-full py-2 text-sm font-semibold disabled:opacity-40"
+            className={`mt-1 rounded-full py-2 text-sm font-semibold transition-colors ${
+              canStart
+                ? "gradient-action"
+                : "border border-neutral-700/50 bg-neutral-800/60 text-neutral-500"
+            }`}
           >
-            {!canAfford
-              ? t("productCard.insufficientBalance")
-              : freeSlots <= 0
-                ? t("productCard.noFreeSlots")
-                : `🔥 ${t("productCard.buyMax")} ×${launchQuantity}`}
+            {!canAfford ? (
+              t("productCard.insufficientBalance")
+            ) : freeSlots <= 0 ? (
+              t("productCard.noFreeSlots")
+            ) : (
+              <span className="inline-flex items-center justify-center gap-1.5">
+                <Flame className="h-4 w-4" />
+                {t("productCard.buyMax")} ×{launchQuantity}
+              </span>
+            )}
           </button>
         ) : (
           <button
             type="button"
             onClick={handleStart}
             disabled={!canStart}
-            className="gradient-action mt-1 rounded-full py-2 text-sm font-semibold disabled:opacity-40"
+            className={`mt-1 rounded-full py-2 text-sm font-semibold transition-colors ${
+              canStart
+                ? "gradient-action"
+                : "border border-neutral-700/50 bg-neutral-800/60 text-neutral-500"
+            }`}
           >
             {!canAfford
               ? t("productCard.insufficientBalance")

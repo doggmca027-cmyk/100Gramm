@@ -1,8 +1,9 @@
 "use client";
 
+import { Flame, Zap, Wrench } from "lucide-react";
 import type { PlayerState } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
-import { TIER_ICON, TIER_ACCENT } from "@/lib/tier-art";
+import { TIER_ICON, TIER_ACCENT, DEFAULT_TIER_ICON } from "@/lib/tier-art";
 import { BoostInventory } from "./boost-inventory";
 import { ItemInventory } from "./item-inventory";
 
@@ -27,6 +28,7 @@ export function UpgradesScreen({
         const atCap = tier.can_buy_max;
         const cyclesIntoLevel = tier.cycles_to_next_slot != null ? 5 - tier.cycles_to_next_slot : 5;
         const progressPercent = atCap ? 100 : Math.min(100, (cyclesIntoLevel / 5) * 100);
+        const TierIcon = TIER_ICON[tier.tier] ?? DEFAULT_TIER_ICON;
 
         return (
           <div
@@ -35,21 +37,26 @@ export function UpgradesScreen({
             style={{ borderLeft: `3px solid ${TIER_ACCENT[tier.tier] ?? "#8b7765"}` }}
           >
             <div className="flex items-center justify-between">
-              <p className="font-semibold">
-                {TIER_ICON[tier.tier] ?? "🎴"} {tier.tier}. {pick(tier.name_i18n)}
+              <p className="flex items-center gap-1.5 font-semibold">
+                <TierIcon className="h-4 w-4 shrink-0 text-amber-400" />
+                {tier.tier}. {pick(tier.name_i18n)}
               </p>
               <p className="text-lg font-bold">
                 {tier.slots_open}
                 <span className="text-sm text-nav-inactive">/{tier.slots_max}</span>
                 {tier.slots_boost > 0 && (
-                  <span className="ms-1 text-sm text-boost">+{tier.slots_boost}⚡</span>
+                  <span className="ms-1 inline-flex items-center gap-0.5 text-sm text-boost">
+                    +{tier.slots_boost}
+                    <Zap className="h-3.5 w-3.5" />
+                  </span>
                 )}
               </p>
             </div>
 
             {atCap ? (
-              <p className="mt-2 text-xs font-semibold text-profit">
-                🔥 {t("upgrades.maxReached")}
+              <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-profit">
+                <Flame className="h-3.5 w-3.5 text-amber-400" />
+                {t("upgrades.maxReached")}
               </p>
             ) : (
               <>
@@ -72,7 +79,8 @@ export function UpgradesScreen({
         );
       })}
 
-      <div className="gradient-surface rounded-2xl p-5 text-sm text-nav-inactive">
+      <div className="gradient-surface flex items-start gap-2 rounded-2xl p-5 text-sm text-nav-inactive">
+        <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-neutral-400" />
         <p>{t("upgrades.futureNote")}</p>
       </div>
     </div>

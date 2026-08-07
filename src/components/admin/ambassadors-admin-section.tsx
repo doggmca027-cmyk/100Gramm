@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Star, BarChart3, ChevronRight } from "lucide-react";
 import {
   searchAdminUsers,
   setUserAmbassador,
@@ -45,13 +46,18 @@ export function AmbassadorsAdminSection({ onOpenStats }: { onOpenStats: () => vo
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between px-1">
-        <h2 className="text-sm font-semibold text-nav-inactive">⭐ Амбассадоры</h2>
+        <h2 className="flex items-center gap-1.5 text-sm font-semibold text-nav-inactive">
+          <Star className="h-4 w-4 text-amber-400" />
+          Амбассадоры
+        </h2>
         <button
           type="button"
           onClick={onOpenStats}
-          className="text-xs font-semibold text-gram"
+          className="flex items-center gap-1 text-xs font-semibold text-gram"
         >
-          📊 Статистика →
+          <BarChart3 className="h-3.5 w-3.5" />
+          Статистика
+          <ChevronRight className="h-3.5 w-3.5" />
         </button>
       </div>
 
@@ -93,13 +99,14 @@ export function AmbassadorsAdminSection({ onOpenStats }: { onOpenStats: () => vo
               type="button"
               onClick={() => handleToggle(user)}
               disabled={pendingId === user.id}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold disabled:opacity-50 ${
+              className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold disabled:opacity-50 ${
                 user.is_ambassador
                   ? "bg-progress-bg text-profit"
                   : "gradient-action"
               }`}
             >
-              {user.is_ambassador ? "⭐ Амбассадор" : "Сделать амбассадором"}
+              {user.is_ambassador && <Star className="h-3.5 w-3.5" />}
+              {user.is_ambassador ? "Амбассадор" : "Сделать амбассадором"}
             </button>
           </div>
         ))}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AlarmClock, Zap, Sparkles } from "lucide-react";
 import type { PlayerState, Quest } from "@/lib/types";
 import { claimQuest } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
@@ -47,13 +48,19 @@ function QuestRow({
             </>
           )}
           {quest.grants_boost && (
-            <span className={quest.reward_amount > 0 ? "ms-1 text-boost" : "text-boost"}>
-              {quest.reward_amount > 0 ? "+1 ⚡" : " · +1 ⚡"}
+            <span
+              className={`inline-flex items-center gap-0.5 text-boost ${quest.reward_amount > 0 ? "ms-1" : ""}`}
+            >
+              {quest.reward_amount === 0 && "· "}+1
+              <Zap className="h-3 w-3" />
             </span>
           )}
         </p>
         {boostGranted && (
-          <p className="mt-1 text-xs font-semibold text-boost">{t("quests.boostGranted")}</p>
+          <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-boost">
+            <Sparkles className="h-3.5 w-3.5" />
+            {t("quests.boostGranted")}
+          </p>
         )}
       </div>
       {quest.claimed_at ? (
@@ -84,7 +91,10 @@ export function QuestList({
 
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="px-1 text-sm font-semibold text-nav-inactive">{t("quests.title")}</h2>
+      <h2 className="flex items-center gap-1.5 px-1 text-sm font-semibold text-nav-inactive">
+        <AlarmClock className="h-4 w-4 text-amber-400" />
+        {t("quests.title")}
+      </h2>
       {quests.map((quest) => (
         <QuestRow key={quest.id} quest={quest} onClaimed={onStateChange} />
       ))}

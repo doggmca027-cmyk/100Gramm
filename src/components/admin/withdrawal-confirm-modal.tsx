@@ -1,7 +1,23 @@
 "use client";
 
 import { useState } from "react";
+import { Banknote, X, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { ApiError, resolveAdminWithdrawal, type AdminWithdrawalRequest } from "@/lib/api-client";
+
+function formatDisplayName(username: string | null, firstName: string | null) {
+  const safeName = [firstName, username].find((value) => typeof value === "string" && value.trim().length > 0);
+  if (!safeName) return "Без имени";
+
+  const normalized = safeName.trim();
+  return normalized.startsWith("@") ? normalized : `@${normalized}`;
+}
+
+function maskTelegramId(value: number | null | undefined) {
+  if (value == null) return "—";
+  const text = String(value);
+  if (text.length <= 4) return text;
+  return `***${text.slice(-2)}`;
+}
 
 /**
  * Separate confirmation window for a single withdrawal request — deliberately
@@ -55,9 +71,12 @@ export function WithdrawalConfirmModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold">💸 Заявка на вывод</h2>
+          <h2 className="flex items-center gap-1.5 text-base font-semibold">
+            <Banknote className="h-4 w-4 text-amber-400" />
+            Заявка на вывод
+          </h2>
           <button type="button" onClick={onClose} className="text-nav-inactive" aria-label="Назад">
-            ✕
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -65,12 +84,12 @@ export function WithdrawalConfirmModal({
           <div className="flex items-center justify-between">
             <span className="text-nav-inactive">Игрок</span>
             <span className="font-semibold">
-              {request.user?.username ? `@${request.user.username}` : (request.user?.first_name ?? "Без имени")}
+              {formatDisplayName(request.user?.username ?? null, request.user?.first_name ?? null)}
             </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-nav-inactive">Telegram ID</span>
-            <span>{request.user?.telegram_id ?? "—"}</span>
+            <span>{maskTelegramId(request.user?.telegram_id)}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-nav-inactive">Запрошено</span>
@@ -86,10 +105,15 @@ export function WithdrawalConfirmModal({
           </div>
           <div className="flex items-center justify-between text-xs">
             <span className="text-nav-inactive">Кошелёк</span>
-            <span className="truncate font-mono" title={request.payout_address ?? undefined}>
-              {request.payout_address
-                ? `${request.payout_address.slice(0, 6)}…${request.payout_address.slice(-4)}`
-                : "⚠️ не указан"}
+            <span className="flex items-center gap-1 truncate font-mono" title={request.payout_address ?? undefined}>
+              {request.payout_address ? (
+                `${request.payout_address.slice(0, 6)}…${request.payout_address.slice(-4)}`
+              ) : (
+                <>
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+                  не указан
+                </>
+              )}
             </span>
           </div>
           <div className="flex items-center justify-between text-xs text-nav-inactive">
@@ -99,8 +123,9 @@ export function WithdrawalConfirmModal({
         </div>
 
         {!request.payout_address && (
-          <p className="text-xs text-danger">
-            ⚠️ Без адреса выплаты подтверждение не отправит TON автоматически — обработай вручную.
+          <p className="flex items-start gap-1.5 text-xs text-danger">
+            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            Без адреса выплаты подтверждение не отправит TON автоматически — обработай вручную.
           </p>
         )}
 
@@ -123,17 +148,25 @@ export function WithdrawalConfirmModal({
             type="button"
             onClick={() => handleResolve(false)}
             disabled={busy}
-            className="flex-1 rounded-full bg-progress-bg py-3 text-sm font-semibold text-danger disabled:opacity-50"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-progress-bg py-3 text-sm font-semibold text-danger disabled:opacity-50"
           >
-            ✕ Отклонить
+            <X className="h-4 w-4" />
+            Отклонить
           </button>
           <button
             type="button"
             onClick={() => handleResolve(true)}
             disabled={busy}
-            className="gradient-action flex-1 rounded-full py-3 text-sm font-semibold disabled:opacity-50"
+            className="gradient-action flex flex-1 items-center justify-center gap-1.5 rounded-full py-3 text-sm font-semibold disabled:opacity-50"
           >
-            {busy ? "Отправляем TON..." : "✓ Подтвердить и отправить"}
+            {busy ? (
+              "Отправляем TON..."
+            ) : (
+              <>
+                <CheckCircle2 className="h-4 w-4" />
+                Подтвердить и отправить
+              </>
+            )}
           </button>
         </div>
       </div>

@@ -1,12 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BarChart3, Medal } from "lucide-react";
 import { fetchAmbassadorStats, type AmbassadorStats } from "@/lib/api-client";
 
+function formatDisplayName(username: string | null, firstName: string | null) {
+  const safeName = [firstName, username].find((value) => typeof value === "string" && value.trim().length > 0);
+  if (!safeName) return "Без имени";
+
+  const normalized = safeName.trim();
+  return normalized.startsWith("@") ? normalized : `@${normalized}`;
+}
+
+function maskTelegramId(value: number | null | undefined) {
+  if (value == null) return "—";
+  const text = String(value);
+  if (text.length <= 4) return text;
+  return `***${text.slice(-2)}`;
+}
+
 const LEVEL_LABEL: Record<number, string> = {
-  1: "🥇 Уровень 1",
-  2: "🥈 Уровень 2",
-  3: "🥉 Уровень 3",
+  1: "Уровень 1",
+  2: "Уровень 2",
+  3: "Уровень 3",
 };
 
 export function AmbassadorStatsScreen({ onBack }: { onBack: () => void }) {
@@ -24,7 +40,10 @@ export function AmbassadorStatsScreen({ onBack }: { onBack: () => void }) {
         <button type="button" onClick={onBack} aria-label="Назад" className="inline-block text-lg rtl:rotate-180">
           ←
         </button>
-        <p className="font-semibold">📊 Статистика амбассадоров</p>
+        <p className="flex items-center gap-1.5 font-semibold">
+          <BarChart3 className="h-4 w-4 text-purple-400" />
+          Статистика амбассадоров
+        </p>
       </header>
 
       <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4 pb-8">
@@ -39,14 +58,17 @@ export function AmbassadorStatsScreen({ onBack }: { onBack: () => void }) {
           <div key={a.id} className="gradient-surface flex flex-col gap-2 rounded-2xl p-4">
             <div>
               <p className="font-semibold">
-                {a.username ? `@${a.username}` : a.first_name ?? "Без имени"}
+                {formatDisplayName(a.username ?? null, a.first_name ?? null)}
               </p>
-              <p className="text-xs text-nav-inactive">ID: {a.telegram_id}</p>
+              <p className="text-xs text-nav-inactive">ID: {maskTelegramId(a.telegram_id)}</p>
             </div>
             <div className="flex flex-col divide-y divide-white/5 rounded-xl bg-progress-bg">
               {a.levels.map((l) => (
                 <div key={l.level} className="flex items-center justify-between p-3 text-sm">
-                  <span className="text-nav-inactive">{LEVEL_LABEL[l.level] ?? `Уровень ${l.level}`}</span>
+                  <span className="flex items-center gap-1.5 text-nav-inactive">
+                    <Medal className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+                    {LEVEL_LABEL[l.level] ?? `Уровень ${l.level}`}
+                  </span>
                   <span>
                     {l.referred_count} чел. ·{" "}
                     <span className="text-gram">{l.total_deposited.toFixed(2)} GRAM</span>

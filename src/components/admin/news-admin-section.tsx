@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Newspaper, Camera, Send } from "lucide-react";
 import { sendBroadcast, ApiError, type BroadcastResult } from "@/lib/api-client";
 
 export function NewsAdminSection() {
@@ -63,7 +64,10 @@ export function NewsAdminSection() {
 
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="px-1 text-sm font-semibold text-nav-inactive">📰 Новости — рассылка</h2>
+      <h2 className="flex items-center gap-1.5 px-1 text-sm font-semibold text-nav-inactive">
+        <Newspaper className="h-4 w-4 text-neutral-400" />
+        Новости — рассылка
+      </h2>
 
       <div className="gradient-surface flex flex-col gap-2 rounded-xl p-3">
         <input
@@ -86,7 +90,10 @@ export function NewsAdminSection() {
           className="resize-none rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none"
         />
         <label className="flex cursor-pointer items-center justify-between rounded-lg bg-progress-bg px-3 py-2 text-sm text-nav-inactive">
-          <span>{photoFile ? photoFile.name : "📷 Прикрепить фото (необязательно)"}</span>
+          <span className="flex items-center gap-1.5">
+            {!photoFile && <Camera className="h-4 w-4 shrink-0" />}
+            {photoFile ? photoFile.name : "Прикрепить фото (необязательно)"}
+          </span>
           <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
         </label>
         <p className="px-1 text-[11px] text-nav-inactive">
@@ -124,9 +131,10 @@ export function NewsAdminSection() {
           type="button"
           onClick={() => setConfirming(true)}
           disabled={!hasContent || captionLength > maxLen}
-          className="gradient-action rounded-full py-2 text-sm font-semibold disabled:opacity-40"
+          className="gradient-action flex items-center justify-center gap-1.5 rounded-full py-2 text-sm font-semibold disabled:opacity-40"
         >
-          📤 Отправить всем
+          <Send className="h-4 w-4" />
+          Отправить всем
         </button>
       ) : (
         <div className="gradient-surface flex flex-col gap-2 rounded-xl p-3">

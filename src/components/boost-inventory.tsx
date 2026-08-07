@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { Zap, X } from "lucide-react";
 import type { Boost, PlayerState } from "@/lib/types";
 import { useCountdown, formatDuration } from "@/hooks/use-countdown";
 import { useLanguage } from "@/lib/i18n/context";
 import { applyBoost } from "@/lib/api-client";
-import { TIER_ICON } from "@/lib/tier-art";
+import { TIER_ICON, DEFAULT_TIER_ICON } from "@/lib/tier-art";
 
 function BoostRow({
   boost,
@@ -44,7 +45,7 @@ function BoostRow({
   return (
     <div className="gradient-surface flex items-center justify-between rounded-xl p-3">
       <div className="flex items-center gap-2">
-        <span className="text-2xl">⚡</span>
+        <Zap className="h-6 w-6 shrink-0 text-amber-400" />
         <div>
           <p className="text-sm font-semibold">{t("boosts.extraSlot")}</p>
           {boost.status === "PENDING" ? (
@@ -88,27 +89,30 @@ function BoostRow({
                 className="text-nav-inactive"
                 aria-label={t("common.back")}
               >
-                ✕
+                <X className="h-5 w-5" />
               </button>
             </div>
             {error && <p className="text-xs text-danger">{error}</p>}
             <div className="flex flex-col gap-2 overflow-y-auto">
               {state.tiers
                 .filter((tier) => tier.unlocked)
-                .map((tier) => (
-                  <button
-                    key={tier.tier}
-                    type="button"
-                    onClick={() => handlePick(tier.tier)}
-                    disabled={applying}
-                    className="gradient-surface flex items-center gap-3 rounded-xl p-3 text-left rtl:text-right disabled:opacity-50"
-                  >
-                    <span className="text-2xl">{TIER_ICON[tier.tier] ?? "🎴"}</span>
-                    <span className="text-sm font-semibold">
-                      {tier.tier}. {pick(tier.name_i18n)}
-                    </span>
-                  </button>
-                ))}
+                .map((tier) => {
+                  const Icon = TIER_ICON[tier.tier] ?? DEFAULT_TIER_ICON;
+                  return (
+                    <button
+                      key={tier.tier}
+                      type="button"
+                      onClick={() => handlePick(tier.tier)}
+                      disabled={applying}
+                      className="gradient-surface flex items-center gap-3 rounded-xl p-3 text-left rtl:text-right disabled:opacity-50"
+                    >
+                      <Icon className="h-6 w-6 shrink-0 text-amber-400" />
+                      <span className="text-sm font-semibold">
+                        {tier.tier}. {pick(tier.name_i18n)}
+                      </span>
+                    </button>
+                  );
+                })}
             </div>
           </div>
         </div>
@@ -129,7 +133,10 @@ export function BoostInventory({
 
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="px-1 text-sm font-semibold text-nav-inactive">{t("boosts.title")}</h2>
+      <h2 className="flex items-center gap-1.5 px-1 text-sm font-semibold text-nav-inactive">
+        <Zap className="h-4 w-4 text-amber-400" />
+        {t("boosts.title")}
+      </h2>
       {state.boosts.map((boost) => (
         <BoostRow key={boost.id} boost={boost} state={state} onStateChange={onStateChange} />
       ))}

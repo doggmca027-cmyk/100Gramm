@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Crown, Trophy } from "lucide-react";
 import { fetchLeaderboard, type LeaderboardEntry } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
 
@@ -51,7 +52,7 @@ function PodiumSlot({ entry, rank, t }: { entry: LeaderboardEntry; rank: 1 | 2 |
 
   return (
     <div className={`flex flex-col items-center gap-1 ${isFirst ? "" : "pb-3"}`}>
-      {isFirst && <span className="text-xl leading-none">👑</span>}
+      {isFirst && <Crown className="h-5 w-5 text-amber-400" />}
       <div className="relative">
         <LeaderboardAvatar
           name={entry.display_name}
@@ -66,7 +67,7 @@ function PodiumSlot({ entry, rank, t }: { entry: LeaderboardEntry; rank: 1 | 2 |
         </span>
       </div>
       <p className={`max-w-[84px] truncate text-center font-semibold ${isFirst ? "text-sm" : "text-xs"}`}>
-        {entry.display_name}
+        {entry.display_name?.trim() ? entry.display_name.trim() : "Игрок"}
       </p>
       <p className="text-xs text-gram">
         {entry.total_earned.toFixed(3)} {t("common.gram")}
@@ -94,7 +95,10 @@ export function LeaderboardScreen({ onBack }: { onBack: () => void }) {
         <button type="button" onClick={onBack} aria-label={t("common.back")} className="inline-block text-lg rtl:rotate-180">
           ←
         </button>
-        <p className="font-semibold">{t("leaderboard.title")}</p>
+        <p className="flex items-center gap-1.5 font-semibold">
+          <Trophy className="h-4 w-4 text-amber-400" />
+          {t("leaderboard.title")}
+        </p>
       </header>
 
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pb-8">
@@ -133,7 +137,7 @@ export function LeaderboardScreen({ onBack }: { onBack: () => void }) {
                   sizeClassName="h-9 w-9"
                   textClassName="text-sm"
                 />
-                <span className="flex-1 truncate">{entry.display_name}</span>
+                <span className="flex-1 truncate">{entry.display_name?.trim() ? entry.display_name.trim() : "Игрок"}</span>
                 <span className="shrink-0 text-gram">
                   {entry.total_earned.toFixed(3)} {t("common.gram")}
                 </span>

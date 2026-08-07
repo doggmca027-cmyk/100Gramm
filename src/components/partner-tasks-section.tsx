@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { Handshake, CheckCircle2 } from "lucide-react";
 import { openTelegramLink } from "@telegram-apps/sdk-react";
 import type { PartnerTask, PlayerState } from "@/lib/types";
 import { checkPartnerTaskSubscription, ApiError } from "@/lib/api-client";
@@ -97,8 +98,8 @@ function TaskCard({
           className="h-12 w-12 shrink-0 rounded-xl object-cover"
         />
       ) : (
-        <div className="gradient-action flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-xl">
-          🤝
+        <div className="gradient-action flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+          <Handshake className="h-6 w-6 text-white" />
         </div>
       )}
 
@@ -119,8 +120,9 @@ function TaskCard({
       </div>
 
       {stage === "done" ? (
-        <button type="button" disabled className="shrink-0 rounded-full bg-progress-bg px-3 py-1.5 text-xs text-profit">
-          ✓ {t("quests.claimed")}
+        <button type="button" disabled className="flex shrink-0 items-center gap-1 rounded-full bg-progress-bg px-3 py-1.5 text-xs text-profit">
+          <CheckCircle2 className="h-3.5 w-3.5" />
+          {t("quests.claimed")}
         </button>
       ) : stage === "todo" ? (
         <button type="button" onClick={handleOpen} className="gradient-action shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold">
@@ -151,7 +153,10 @@ export function PartnerTasksSection({
 
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="px-1 text-sm font-semibold text-nav-inactive">{t("partnerTasks.title")}</h2>
+      <h2 className="flex items-center gap-1.5 px-1 text-sm font-semibold text-nav-inactive">
+        <Handshake className="h-4 w-4 text-purple-400" />
+        {t("partnerTasks.title")}
+      </h2>
       {tasks.map((task) => (
         <TaskCard key={task.id} task={task} onClaimed={onStateChange} />
       ))}

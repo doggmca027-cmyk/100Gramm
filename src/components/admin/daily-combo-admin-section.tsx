@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Sparkles, Copy, CheckCircle2, RefreshCw } from "lucide-react";
 import {
   fetchAdminDailyCombo,
   regenerateAdminDailyCombo,
@@ -91,8 +92,9 @@ export function DailyComboAdminSection() {
 
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="px-1 text-sm font-semibold text-nav-inactive">
-        🎴 Daily Combo — комбо на {combo.combo_date}
+      <h2 className="flex items-center gap-1.5 px-1 text-sm font-semibold text-nav-inactive">
+        <Sparkles className="h-4 w-4 text-purple-400" />
+        Daily Combo — комбо на {combo.combo_date}
       </h2>
 
       <div className="gradient-surface flex flex-col gap-2 rounded-xl p-3">
@@ -109,17 +111,19 @@ export function DailyComboAdminSection() {
         <button
           type="button"
           onClick={handleCopy}
-          className="gradient-action rounded-full py-2 text-sm font-semibold"
+          className="gradient-action flex items-center justify-center gap-1.5 rounded-full py-2 text-sm font-semibold"
         >
-          {copied ? "Скопировано ✓" : "📋 Скопировать текст для шилла"}
+          {copied ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          {copied ? "Скопировано" : "Скопировать текст для шилла"}
         </button>
         <button
           type="button"
           onClick={handleRegenerate}
           disabled={busy}
-          className="rounded-full bg-progress-bg py-2 text-sm font-semibold text-danger disabled:opacity-50"
+          className="flex items-center justify-center gap-1.5 rounded-full bg-progress-bg py-2 text-sm font-semibold text-danger disabled:opacity-50"
         >
-          🔄 Перегенерировать (сбросит прогресс всех игроков за сегодня)
+          <RefreshCw className="h-4 w-4" />
+          Перегенерировать (сбросит прогресс всех игроков за сегодня)
         </button>
       </div>
 

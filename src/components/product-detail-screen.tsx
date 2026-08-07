@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Hourglass, Flame, Lock } from "lucide-react";
 import type { ActiveCycle, PlayerState, TierState } from "@/lib/types";
 import { useCountdown, formatDuration } from "@/hooks/use-countdown";
 import { useLanguage } from "@/lib/i18n/context";
@@ -13,7 +14,7 @@ function SlotTile({ endsAt }: { endsAt: string }) {
   const remaining = useCountdown(endsAt);
   return (
     <div className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-2">
-      <span className="text-lg">🍾</span>
+      <Hourglass className="h-4 w-4 text-amber-400" />
       <span className="font-mono text-[11px] text-nav-inactive">
         {remaining > 0 ? formatDuration(remaining) : t("productCard.ready")}
       </span>
@@ -86,7 +87,7 @@ export function ProductDetailScreen({
       </header>
 
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pb-40">
-        <TierImage tier={tier.tier} className="aspect-square w-full rounded-2xl" emojiClassName="text-6xl" />
+        <TierImage tier={tier.tier} className="aspect-square w-full rounded-2xl" iconClassName="h-16 w-16" />
 
         <div>
           <div className="flex items-center gap-2">
@@ -154,8 +155,9 @@ export function ProductDetailScreen({
               {t("productDetail.slots")} ({usedSlots}/{slotsTotal})
             </h2>
             {tier.can_buy_max ? (
-              <span className="text-xs font-semibold text-profit">
-                🔥 {t("productCard.slotsMaxed")}
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-profit">
+                <Flame className="h-3.5 w-3.5 text-amber-400" />
+                {t("productCard.slotsMaxed")}
               </span>
             ) : (
               tier.cycles_to_next_slot != null && (
@@ -177,7 +179,7 @@ export function ProductDetailScreen({
                 key={`locked-${i}`}
                 className="flex flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-border p-2 text-nav-inactive opacity-50"
               >
-                <span className="text-lg">🔒</span>
+                <Lock className="h-4 w-4 text-neutral-500" />
                 <span className="text-[10px]">{t("productDetail.lockedSlot")}</span>
               </div>
             ))}
@@ -193,11 +195,16 @@ export function ProductDetailScreen({
             disabled={!canStart}
             className="gradient-action w-full rounded-full py-3 text-sm font-semibold disabled:opacity-40"
           >
-            {!canAfford
-              ? t("productCard.insufficientBalance")
-              : freeSlots <= 0
-                ? t("productCard.noFreeSlots")
-                : `🔥 ${t("productCard.buyMax")} ×${launchQuantity} (${totalPrice.toFixed(2)} ${t("common.gram")})`}
+            {!canAfford ? (
+              t("productCard.insufficientBalance")
+            ) : freeSlots <= 0 ? (
+              t("productCard.noFreeSlots")
+            ) : (
+              <span className="inline-flex items-center justify-center gap-1.5">
+                <Flame className="h-4 w-4" />
+                {t("productCard.buyMax")} ×{launchQuantity} ({totalPrice.toFixed(2)} {t("common.gram")})
+              </span>
+            )}
           </button>
         ) : (
           <button

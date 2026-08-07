@@ -1,17 +1,18 @@
 import Image from "next/image";
-import { TIER_ACCENT, TIER_ICON, TIER_IMAGE_URL } from "@/lib/tier-art";
+import { TIER_ACCENT, TIER_ICON, TIER_IMAGE_URL, DEFAULT_TIER_ICON } from "@/lib/tier-art";
 
 export function TierImage({
   tier,
   className,
-  emojiClassName = "text-3xl",
+  iconClassName = "h-8 w-8",
 }: {
   tier: number;
   className: string;
-  emojiClassName?: string;
+  iconClassName?: string;
 }) {
   const url = TIER_IMAGE_URL[tier];
   const accent = TIER_ACCENT[tier] ?? "#8b7765";
+  const Icon = TIER_ICON[tier] ?? DEFAULT_TIER_ICON;
 
   if (url) {
     return (
@@ -30,7 +31,7 @@ export function TierImage({
       className={`${className} flex items-center justify-center`}
       style={{ backgroundImage: `linear-gradient(160deg, ${accent}55, ${accent}15)` }}
     >
-      <span className={emojiClassName}>{TIER_ICON[tier] ?? "🍾"}</span>
+      <Icon className={`${iconClassName} text-amber-400`} strokeWidth={1.75} />
     </div>
   );
 }
