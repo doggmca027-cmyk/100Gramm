@@ -13,7 +13,11 @@ export const TIER_IMAGE_URL: Partial<Record<number, string>> = {
 };
 
 export const GRAM_COIN_IMAGE = "/products/gram-coin.jpg";
-export const SQUAD_BANNER_IMAGE = "/products/squad-banner.jpg";
+// "-v2" isn't a version bump for its own sake — the filename changed on
+// purpose so any client that cached the old (broken, mislabeled-PNG)
+// squad-banner.jpg under its old URL is forced to fetch fresh instead of
+// serving a stale copy from that cache forever.
+export const SQUAD_BANNER_IMAGE = "/products/squad-banner-v2.jpg";
 
 import {
   Wine,

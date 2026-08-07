@@ -75,7 +75,10 @@ export function SquadScreen({ state }: { state: PlayerState }) {
 
   return (
     <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pb-24">
-      <div className="relative overflow-hidden rounded-2xl">
+      {/* Explicit h-40 on the wrapper (not just the <Image>) — if the image
+          ever fails to load, the block still reserves its height instead of
+          collapsing to 0 and taking the overlaid income text down with it. */}
+      <div className="relative h-40 overflow-hidden rounded-2xl">
         <Image
           src={SQUAD_BANNER_IMAGE}
           alt=""

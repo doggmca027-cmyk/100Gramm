@@ -128,7 +128,10 @@ export function BalanceScreen({
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-2xl">
+      {/* Explicit h-32 on the wrapper (not just the <Image>) — same reasoning
+          as squad-screen.tsx: never let a failed image load collapse this
+          block and take the overlaid text down with it. */}
+      <div className="relative h-32 overflow-hidden rounded-2xl">
         <Image
           src={SQUAD_BANNER_IMAGE}
           alt=""
