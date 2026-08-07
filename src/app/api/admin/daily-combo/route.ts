@@ -3,8 +3,10 @@ import { requireAdminUserId } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase-server";
 import { apiErrorResponse } from "@/lib/api-error";
 import { loadAdminDailyCombo } from "@/lib/daily-combo";
+import { notifyAmbassadorsOfDailyCombo } from "@/lib/notify-ambassadors-combo";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   try {
@@ -46,7 +48,17 @@ export async function PATCH(request: NextRequest) {
     });
     if (error) throw error;
 
-    return NextResponse.json(await loadAdminDailyCombo(seasonId));
+    const result = await loadAdminDailyCombo(seasonId);
+
+    // Manually picking tiers changes today's correct answer too — same
+    // re-notify as regenerate, same best-effort (non-fatal) handling.
+    try {
+      await notifyAmbassadorsOfDailyCombo();
+    } catch (notifyError) {
+      console.error("Failed to notify ambassadors after combo tiers set:", notifyError);
+    }
+
+    return NextResponse.json(result);
   } catch (error) {
     return apiErrorResponse(error);
   }

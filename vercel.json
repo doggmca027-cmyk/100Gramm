@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/refresh-rate",
       "schedule": "30 0 * * *"
+    },
+    {
+      "path": "/api/cron/notify-ambassadors-combo",
+      "schedule": "5 0 * * *"
     }
   ]
 }
