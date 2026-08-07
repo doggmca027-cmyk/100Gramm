@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { Users, Star, Medal, UserPlus } from "lucide-react";
 import type { PlayerState, SquadLevel } from "@/lib/types";
-import { SQUAD_BANNER_IMAGE } from "@/lib/tier-art";
 import { useLanguage } from "@/lib/i18n/context";
 import { REFERRAL_RATES } from "@/lib/referral-rates";
 import { fetchSquadLevels } from "@/lib/api-client";
@@ -75,26 +73,14 @@ export function SquadScreen({ state }: { state: PlayerState }) {
 
   return (
     <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pb-24">
-      {/* Explicit h-40 on the wrapper (not just the <Image>) — if the image
-          ever fails to load, the block still reserves its height instead of
-          collapsing to 0 and taking the overlaid income text down with it. */}
-      <div className="relative h-40 overflow-hidden rounded-2xl">
-        <Image
-          src={SQUAD_BANNER_IMAGE}
-          alt=""
-          width={800}
-          height={450}
-          className="h-40 w-full object-cover"
-        />
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/55 p-4 text-center">
-          <p className="flex items-center gap-1 text-xs text-nav-inactive">
-            <Users className="h-3.5 w-3.5 text-purple-400" />
-            {t("squad.teamIncome")}
-          </p>
-          <p className="gradient-gram bg-clip-text text-2xl font-bold text-transparent">
-            {state.squad.earned_total.toFixed(2)} {t("common.gram")}
-          </p>
-        </div>
+      <div className="gradient-surface rounded-2xl p-5 text-center">
+        <p className="flex items-center justify-center gap-1 text-xs text-nav-inactive">
+          <Users className="h-3.5 w-3.5 text-purple-400" />
+          {t("squad.teamIncome")}
+        </p>
+        <p className="gradient-gram bg-clip-text text-2xl font-bold text-transparent">
+          {state.squad.earned_total.toFixed(2)} {t("common.gram")}
+        </p>
       </div>
 
       <div className="gradient-surface rounded-2xl p-4 text-sm leading-relaxed">

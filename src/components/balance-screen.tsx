@@ -9,7 +9,7 @@ import { ComingSoonSection } from "./coming-soon-section";
 import { HistoryModal } from "./history-modal";
 import { WalletModal } from "./wallet-modal";
 import { WalletConnectModal } from "./wallet-connect-modal";
-import { GRAM_COIN_IMAGE, SQUAD_BANNER_IMAGE } from "@/lib/tier-art";
+import { GRAM_COIN_IMAGE } from "@/lib/tier-art";
 import { REFERRAL_RATES } from "@/lib/referral-rates";
 import { useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
 import { openTonConnectModal } from "@/lib/ton-connect-open";
@@ -128,28 +128,16 @@ export function BalanceScreen({
         </div>
       </div>
 
-      {/* Explicit h-32 on the wrapper (not just the <Image>) — same reasoning
-          as squad-screen.tsx: never let a failed image load collapse this
-          block and take the overlaid text down with it. */}
-      <div className="relative h-32 overflow-hidden rounded-2xl">
-        <Image
-          src={SQUAD_BANNER_IMAGE}
-          alt=""
-          width={600}
-          height={300}
-          className="h-32 w-full object-cover"
-        />
-        <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4">
-          <p className="flex items-center gap-1.5 text-sm font-semibold">
-            <Users className="h-4 w-4 text-purple-400" />
-            {t("balance.friendBonusTitle")}
-          </p>
-          <p className="text-xs text-nav-inactive">
-            {t("balance.friendBonusText")}{" "}
-            <span className="font-semibold text-gram">+{level1Rate}%</span>{" "}
-            {t("balance.friendBonusSuffix")}
-          </p>
-        </div>
+      <div className="gradient-surface rounded-2xl p-4">
+        <p className="flex items-center gap-1.5 text-sm font-semibold">
+          <Users className="h-4 w-4 text-purple-400" />
+          {t("balance.friendBonusTitle")}
+        </p>
+        <p className="mt-1 text-xs text-nav-inactive">
+          {t("balance.friendBonusText")}{" "}
+          <span className="font-semibold text-gram">+{level1Rate}%</span>{" "}
+          {t("balance.friendBonusSuffix")}
+        </p>
       </div>
 
       <ComingSoonSection
