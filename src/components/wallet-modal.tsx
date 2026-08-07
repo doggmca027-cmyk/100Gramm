@@ -35,12 +35,17 @@ function buildCommentPayload(comment: string): string {
  * Both directions of the real GRAM wallet live here: deposit sends TON
  * on-chain to the treasury (credited 1:1 once confirmed — see
  * lib/ton-verify.ts), withdraw escrows GRAM and files an admin-approval
- * request that pays out to the same connected wallet. Both need a
- * connected TON Connect wallet up front — there's no such thing as a
- * deposit or a payout without one — see the shared needsWallet branch
- * below. The old instant self-credit "deposit" (no real TON involved) has
- * been removed entirely: it was a straight balance-minting exploit, not a
- * feature.
+ * request that pays out to a payout address. Deposit still needs a
+ * connected TON Connect wallet up front for its one-tap flow (see the
+ * needsWallet branch below) — but withdraw doesn't: the address is a plain
+ * typed field (payoutAddressInput), optionally pre-filled from tonAddress
+ * as a convenience. That's deliberate, not a gap — the server never
+ * verified TonConnect ownership of the payout address either way (it only
+ * ever checked the address parses, see /api/wallet/withdraw), so gating
+ * the UI on a connection was never real proof of anything; it just broke
+ * withdrawal entirely for anyone whose wallet app wouldn't pair. The old
+ * instant self-credit "deposit" (no real TON involved) has been removed
+ * entirely: it was a straight balance-minting exploit, not a feature.
  */
 export function WalletModal({
   mode,
