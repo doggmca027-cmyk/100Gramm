@@ -83,20 +83,15 @@ export function SquadScreen({ state }: { state: PlayerState }) {
           height={450}
           className="h-40 w-full object-cover"
         />
-        <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/30 to-transparent p-4">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/55 p-4 text-center">
           <p className="flex items-center gap-1 text-xs text-nav-inactive">
             <Users className="h-3.5 w-3.5 text-purple-400" />
-            {t("squad.title")}
+            {t("squad.teamIncome")}
           </p>
-          <p className="text-2xl font-bold">{state.squad.referred_count}</p>
+          <p className="gradient-gram bg-clip-text text-2xl font-bold text-transparent">
+            {state.squad.earned_total.toFixed(2)} {t("common.gram")}
+          </p>
         </div>
-      </div>
-
-      <div className="gradient-surface rounded-2xl p-5 text-center">
-        <p className="text-xs text-nav-inactive">{t("squad.teamIncome")}</p>
-        <p className="gradient-gram bg-clip-text text-2xl font-bold text-transparent">
-          {state.squad.earned_total.toFixed(2)} {t("common.gram")}
-        </p>
       </div>
 
       <div className="gradient-surface rounded-2xl p-4 text-sm leading-relaxed">
