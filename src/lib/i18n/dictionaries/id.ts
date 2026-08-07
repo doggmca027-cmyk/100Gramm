@@ -35,6 +35,7 @@ const id: typeof ru = {
     support: "Dukungan",
     language: "Bahasa",
     tasks: "Tugas",
+    supportLanguage: "Dukungan & bahasa",
   },
   nav: {
     path: "Jalur",

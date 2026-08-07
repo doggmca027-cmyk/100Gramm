@@ -33,6 +33,7 @@ const ru = {
     support: "Поддержка",
     language: "Язык",
     tasks: "Задания",
+    supportLanguage: "Поддержка и язык",
   },
   nav: {
     path: "Путь",

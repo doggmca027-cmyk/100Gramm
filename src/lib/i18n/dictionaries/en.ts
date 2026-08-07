@@ -35,6 +35,7 @@ const en: typeof ru = {
     support: "Support",
     language: "Language",
     tasks: "Tasks",
+    supportLanguage: "Support & language",
   },
   nav: {
     path: "Path",

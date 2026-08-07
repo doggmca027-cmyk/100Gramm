@@ -33,6 +33,7 @@ const ar = {
     support: "الدعم",
     language: "اللغة",
     tasks: "المهام",
+    supportLanguage: "الدعم واللغة",
   },
   nav: {
     path: "المسار",

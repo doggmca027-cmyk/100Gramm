@@ -1,15 +1,12 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Settings, Trophy, LifeBuoy, ClipboardList } from "lucide-react";
-import { openTelegramLink } from "@telegram-apps/sdk-react";
+import { Settings, Trophy, ClipboardList } from "lucide-react";
 import { useCountdown, formatDuration } from "@/hooks/use-countdown";
 import type { PlayerState } from "@/lib/types";
 import { isAdminTelegramId } from "@/lib/admin";
 import { useLanguage } from "@/lib/i18n/context";
-import { LanguageSwitcher } from "./language-switcher";
-
-const SUPPORT_BOT_URL = "https://t.me/GrammSupportBot";
+import { SupportLanguageMenu } from "./support-language-menu";
 
 /** Muted "Web3 panel" icon button — ambient purple glow at rest, brightens to amber on hover/press. */
 function HeaderIconButton({
@@ -49,14 +46,6 @@ export function AppHeader({
   const daysLeft = Math.floor(secondsLeft / 86400);
   const isAdmin = isAdminTelegramId(state.squad.invite_code);
 
-  function handleSupport() {
-    if (openTelegramLink.isAvailable()) {
-      openTelegramLink(SUPPORT_BOT_URL);
-    } else {
-      window.open(SUPPORT_BOT_URL, "_blank");
-    }
-  }
-
   return (
     <header className="bg-header flex items-center justify-between px-4 py-3">
       <div>
@@ -66,13 +55,10 @@ export function AppHeader({
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <HeaderIconButton onClick={handleSupport} label={t("header.support")}>
-          <LifeBuoy size={18} />
-        </HeaderIconButton>
         <HeaderIconButton onClick={onOpenTasks} label={t("header.tasks")}>
           <ClipboardList size={18} />
         </HeaderIconButton>
-        <LanguageSwitcher />
+        <SupportLanguageMenu />
         {isAdmin && (
           <HeaderIconButton onClick={onOpenAdmin} label={t("header.admin")}>
             <Settings size={18} />

@@ -35,6 +35,7 @@ const tr: typeof ru = {
     support: "Destek",
     language: "Dil",
     tasks: "Görevler",
+    supportLanguage: "Destek ve dil",
   },
   nav: {
     path: "Yol",
