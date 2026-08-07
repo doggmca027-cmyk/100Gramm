@@ -7,14 +7,25 @@ function secondsUntil(iso: string): number {
 }
 
 export function useCountdown(endsAt: string): number {
-  const [remaining, setRemaining] = useState(() => secondsUntil(endsAt));
+  // `tick` only exists to force a re-render every second — the actual
+  // returned value is always computed fresh from the current `endsAt` on
+  // every render, never stored in state itself. That's deliberate: an
+  // earlier version cached `remaining` in useState (seeded once via a lazy
+  // initializer), which meant that when `endsAt` changed on an
+  // already-mounted component — e.g. a task moving straight from
+  // "unverified" to "pending" with a real available_at — the stale cached
+  // value stuck around for up to ~1s, until the interval's first tick.
+  // Computing at render time removes that lag entirely, and keeps the
+  // effect itself doing only what effects should (a subscription/timer),
+  // not a synchronous setState in the effect body.
+  const [, setTick] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => setRemaining(secondsUntil(endsAt)), 1000);
+    const interval = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(interval);
-  }, [endsAt]);
+  }, []);
 
-  return remaining;
+  return secondsUntil(endsAt);
 }
 
 function elapsedPercent(startIso: string, totalHours: number): number {
@@ -25,17 +36,17 @@ function elapsedPercent(startIso: string, totalHours: number): number {
 
 /** 0-100 progress from `startIso` towards `startIso + totalHours`, ticking. */
 export function useElapsedPercent(startIso: string, totalHours: number): number {
-  const [percent, setPercent] = useState(() => elapsedPercent(startIso, totalHours));
+  // Same render-time-computation approach as useCountdown above, and for
+  // the same reason — no cached value that can go stale for up to 30s
+  // when startIso/totalHours change on an already-mounted component.
+  const [, setTick] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(
-      () => setPercent(elapsedPercent(startIso, totalHours)),
-      30_000,
-    );
+    const interval = setInterval(() => setTick((t) => t + 1), 30_000);
     return () => clearInterval(interval);
-  }, [startIso, totalHours]);
+  }, []);
 
-  return percent;
+  return elapsedPercent(startIso, totalHours);
 }
 
 export function formatDuration(totalSeconds: number): string {

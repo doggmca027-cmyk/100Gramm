@@ -71,6 +71,13 @@ function TaskCard({
         // start over from "todo" instead of leaving a stuck button.
         if (stage === "pending") setStage("todo");
         setErrorText(t("partnerTasks.notSubscribed"));
+      } else if (err instanceof ApiError && err.code === "too_early" && typeof err.details?.available_at === "string") {
+        // Only reachable via a race (e.g. a double-tap landing within the
+        // same ~1s window useCountdown needs to resync after the first
+        // check) — the server already knows the real available_at, so
+        // resync to it instead of showing a generic, misleading error.
+        setAvailableAt(err.details.available_at);
+        setStage("pending");
       } else {
         setErrorText(t("partnerTasks.checkFailed"));
       }

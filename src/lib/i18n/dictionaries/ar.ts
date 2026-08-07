@@ -141,7 +141,6 @@ const ar = {
     pendingTitle: "الطلب قيد المراجعة",
     pendingBody: "سيقوم المسؤول بتأكيد أو رفض السحب — ستظهر الحالة هنا",
     needsWalletDeposit: "اربط محفظة TON لإيداع الرصيد",
-    needsWalletWithdraw: "اربط محفظة TON لسحب GRAM — ستصلك الدفعة إليها",
     payoutTo: "الدفع إلى",
     withdrawTimingNotice: "مدة معالجة السحب — حتى 24 ساعة",
     currencyGram: "GRAM (TON)",

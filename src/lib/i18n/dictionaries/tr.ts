@@ -143,7 +143,6 @@ const tr: typeof ru = {
     pendingTitle: "Talep inceleniyor",
     pendingBody: "Yönetici para çekme talebini onaylayacak veya reddedecek — durum burada görünecek",
     needsWalletDeposit: "Bakiyeni yüklemek için TON cüzdanı bağla",
-    needsWalletWithdraw: "GRAM çekmek için TON cüzdanı bağla — ödeme oraya gönderilecek",
     payoutTo: "Ödeme adresi",
     withdrawTimingNotice: "Para çekme işlemleri 24 saat içinde tamamlanır",
     currencyGram: "GRAM (TON)",

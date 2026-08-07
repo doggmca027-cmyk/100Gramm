@@ -143,7 +143,6 @@ const en: typeof ru = {
     pendingTitle: "Request under review",
     pendingBody: "An admin will approve or reject the withdrawal — the status will show up here",
     needsWalletDeposit: "Connect a TON wallet to top up your balance",
-    needsWalletWithdraw: "Connect a TON wallet to withdraw GRAM — that's where the payout goes",
     payoutTo: "Payout to",
     withdrawTimingNotice: "Withdrawals are processed within 24 hours",
     currencyGram: "GRAM (TON)",
