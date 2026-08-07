@@ -124,7 +124,7 @@ export function ProductCard({
             </p>
             {description && <p className="text-xs text-nav-inactive">{description}</p>}
           </div>
-          <span className="shrink-0 text-right text-sm text-gram">
+          <span className="shrink-0 text-right rtl:text-left text-sm text-gram">
             {tier.price} {t("common.gram")}
             {exchangeRate != null && (
               <span className="block text-[10px] font-normal text-nav-inactive/70">

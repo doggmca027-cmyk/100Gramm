@@ -39,7 +39,7 @@ export function PlayerProfileCard({ state }: { state: PlayerState }) {
           </p>
         </div>
       </div>
-      <div className="text-right">
+      <div className="text-right rtl:text-left">
         <p className="text-xs text-nav-inactive">{t("profileCard.balance")}</p>
         <p className="gradient-gram bg-clip-text text-xl font-bold text-transparent">
           {state.wallet.balance.toFixed(2)}

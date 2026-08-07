@@ -3,8 +3,9 @@ import ru from "./dictionaries/ru";
 import en from "./dictionaries/en";
 import tr from "./dictionaries/tr";
 import id from "./dictionaries/id";
+import ar from "./dictionaries/ar";
 
-export const DICTIONARIES: Record<Language, typeof ru> = { ru, en, tr, id };
+export const DICTIONARIES: Record<Language, typeof ru> = { ru, en, tr, id, ar };
 
 type Section = keyof typeof ru;
 

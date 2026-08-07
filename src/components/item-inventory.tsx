@@ -115,7 +115,7 @@ function ItemCard({
                     type="button"
                     onClick={() => applyTo(cycle.id)}
                     disabled={applying}
-                    className="gradient-surface flex items-center justify-between rounded-xl p-3 text-left disabled:opacity-50"
+                    className="gradient-surface flex items-center justify-between rounded-xl p-3 text-left rtl:text-right disabled:opacity-50"
                   >
                     <span className="flex items-center gap-2 text-sm font-semibold">
                       <span className="text-xl">{TIER_ICON[cycle.tier] ?? "🎴"}</span>

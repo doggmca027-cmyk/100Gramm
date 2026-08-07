@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { LANGUAGES, type Language, type Localized } from "./types";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { LANGUAGES, RTL_LANGUAGES, type Language, type Localized } from "./types";
 import { translate } from "./dictionary";
 
 const STORAGE_KEY = "100gram_lang";
@@ -32,6 +32,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       window.localStorage.setItem(STORAGE_KEY, next);
     }
   }, []);
+
+  // <html lang>/<html dir> can't be set server-side (layout.tsx is a server
+  // component with no access to this client-only, localStorage-backed
+  // state) — sync them here instead. dir="rtl" is what every rtl: Tailwind
+  // variant and the logical-property fallbacks in globals.css key off of.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = RTL_LANGUAGES.includes(lang) ? "rtl" : "ltr";
+  }, [lang]);
 
   const value = useMemo<LanguageContextValue>(
     () => ({

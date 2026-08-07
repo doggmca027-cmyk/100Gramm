@@ -64,7 +64,7 @@ export function WithdrawalsAdminSection() {
             key={req.id}
             type="button"
             onClick={() => statusFilter === "pending" && setSelected(req)}
-            className="gradient-surface flex items-center justify-between rounded-xl p-3 text-left disabled:opacity-70"
+            className="gradient-surface flex items-center justify-between rounded-xl p-3 text-left rtl:text-right disabled:opacity-70"
             disabled={statusFilter !== "pending"}
           >
             <div>
@@ -83,7 +83,7 @@ export function WithdrawalsAdminSection() {
                 </p>
               )}
             </div>
-            <div className="text-right">
+            <div className="text-right rtl:text-left">
               <p className="font-semibold text-gram">{req.net_amount.toFixed(2)} GRAM</p>
               <p className="text-xs text-nav-inactive">запрос {req.amount.toFixed(2)}</p>
             </div>

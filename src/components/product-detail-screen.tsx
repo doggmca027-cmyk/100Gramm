@@ -79,7 +79,7 @@ export function ProductDetailScreen({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <header className="bg-header flex items-center gap-3 px-4 py-3">
-        <button type="button" onClick={onBack} aria-label={t("common.back")} className="text-lg">
+        <button type="button" onClick={onBack} aria-label={t("common.back")} className="inline-block text-lg rtl:rotate-180">
           ←
         </button>
         <p className="font-semibold">{t("productDetail.title")}</p>
@@ -108,7 +108,7 @@ export function ProductDetailScreen({
             </p>
           </div>
           {exchangeRate != null && (
-            <div className="text-right">
+            <div className="text-right rtl:text-left">
               <p className="text-xs text-nav-inactive">
                 ≈ {(tier.price * exchangeRate).toFixed(2)} USDT
               </p>

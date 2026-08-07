@@ -71,7 +71,7 @@ export function WalletConnectModal({ onClose }: { onClose: () => void }) {
               onClick={handleCopy}
               className="flex items-center justify-between rounded-lg bg-progress-bg px-3 py-2 font-mono text-sm"
             >
-              <span>{truncateAddress(address)}</span>
+              <span dir="ltr">{truncateAddress(address)}</span>
               <span className="text-xs text-nav-inactive">
                 {copied ? t("walletConnect.copied") : "📋"}
               </span>

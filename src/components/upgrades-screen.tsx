@@ -42,7 +42,7 @@ export function UpgradesScreen({
                 {tier.slots_open}
                 <span className="text-sm text-nav-inactive">/{tier.slots_max}</span>
                 {tier.slots_boost > 0 && (
-                  <span className="ml-1 text-sm text-boost">+{tier.slots_boost}⚡</span>
+                  <span className="ms-1 text-sm text-boost">+{tier.slots_boost}⚡</span>
                 )}
               </p>
             </div>

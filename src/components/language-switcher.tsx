@@ -47,7 +47,7 @@ export function LanguageSwitcher() {
                   setLang(code);
                   setOpen(false);
                 }}
-                className={`flex items-center gap-3 rounded-xl p-3 text-left text-sm ${
+                className={`flex items-center gap-3 rounded-xl p-3 text-left rtl:text-right text-sm ${
                   code === lang ? "gradient-action" : "gradient-surface"
                 }`}
               >

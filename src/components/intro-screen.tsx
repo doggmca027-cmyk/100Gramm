@@ -21,7 +21,7 @@ export function IntroScreen({ onDone }: { onDone: () => void }) {
     <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-6 text-center">
       <h1 className="text-3xl font-bold">🍾 100ГРАМ</h1>
 
-      <div className="gradient-surface rounded-2xl p-5 text-left text-[15px] leading-relaxed">
+      <div className="gradient-surface rounded-2xl p-5 text-left rtl:text-right text-[15px] leading-relaxed">
         <p>{t("intro.p1")}</p>
         <p className="mt-3">{t("intro.p2")}</p>
         <p className="mt-4 font-semibold">{t("intro.day1Title")}</p>

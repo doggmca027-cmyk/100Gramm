@@ -101,7 +101,7 @@ function BoostRow({
                     type="button"
                     onClick={() => handlePick(tier.tier)}
                     disabled={applying}
-                    className="gradient-surface flex items-center gap-3 rounded-xl p-3 text-left disabled:opacity-50"
+                    className="gradient-surface flex items-center gap-3 rounded-xl p-3 text-left rtl:text-right disabled:opacity-50"
                   >
                     <span className="text-2xl">{TIER_ICON[tier.tier] ?? "🎴"}</span>
                     <span className="text-sm font-semibold">

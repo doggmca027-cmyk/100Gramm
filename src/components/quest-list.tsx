@@ -47,7 +47,7 @@ function QuestRow({
             </>
           )}
           {quest.grants_boost && (
-            <span className={quest.reward_amount > 0 ? "ml-1 text-boost" : "text-boost"}>
+            <span className={quest.reward_amount > 0 ? "ms-1 text-boost" : "text-boost"}>
               {quest.reward_amount > 0 ? "+1 ⚡" : " · +1 ⚡"}
             </span>
           )}

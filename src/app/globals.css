@@ -38,6 +38,13 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Geist has no Arabic glyphs (latin/cyrillic subsets only, see
+   layout.tsx) — swap the base sans font for Tajawal whenever the active
+   language is RTL. dir is set on <html> by LanguageProvider's effect. */
+html[dir="rtl"] {
+  --font-sans: var(--font-tajawal), var(--font-geist-sans);
+}
+
 body {
   background: var(--bg);
   color: #ffffff;

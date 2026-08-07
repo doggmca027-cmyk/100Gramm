@@ -295,6 +295,7 @@ export function WalletModal({
                   <input
                     type="text"
                     inputMode="decimal"
+                    dir="ltr"
                     value={depositValue}
                     onChange={(e) => setDepositValue(e.target.value)}
                     placeholder={t("walletConnect.depositPlaceholder")}
@@ -377,6 +378,7 @@ export function WalletModal({
               </label>
               <input
                 type="text"
+                dir="ltr"
                 value={payoutAddressInput}
                 onChange={(e) => setPayoutAddressInput(e.target.value)}
                 placeholder={t("wallet.addressPlaceholder")}
@@ -409,6 +411,7 @@ export function WalletModal({
             <input
               type="text"
               inputMode="decimal"
+              dir="ltr"
               value={withdrawValue}
               onChange={(e) => setWithdrawValue(e.target.value)}
               placeholder={t("wallet.amountPlaceholder", { min: withdrawConfig.withdraw_min })}
@@ -448,7 +451,7 @@ export function WalletModal({
               {trimmedPayoutAddress && (
                 <div className="flex justify-between text-xs">
                   <span className="text-nav-inactive">{t("wallet.payoutTo")}</span>
-                  <span className="font-mono">{truncateAddress(trimmedPayoutAddress)}</span>
+                  <span dir="ltr" className="font-mono">{truncateAddress(trimmedPayoutAddress)}</span>
                 </div>
               )}
             </div>

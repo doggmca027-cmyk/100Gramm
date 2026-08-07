@@ -187,7 +187,7 @@ export function SquadScreen({ state }: { state: PlayerState }) {
                       {t("squad.deposits")}: {formatGramAmount(member.total_deposited)} {t("common.gram")}
                     </p>
                   </div>
-                  <div className="shrink-0 text-right">
+                  <div className="shrink-0 text-right rtl:text-left">
                     <p className="text-[10px] text-nav-inactive">{t("squad.yourIncome")}</p>
                     <p className="font-semibold text-gram">
                       {formatGramAmount(member.earned_from)} {t("common.gram")}

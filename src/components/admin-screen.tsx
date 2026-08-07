@@ -31,7 +31,7 @@ export function AdminScreen({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <header className="bg-header flex items-center gap-3 px-4 py-3">
-        <button type="button" onClick={onBack} aria-label="Назад" className="text-lg">
+        <button type="button" onClick={onBack} aria-label="Назад" className="inline-block text-lg rtl:rotate-180">
           ←
         </button>
         <p className="font-semibold">⚙️ Админ-панель</p>

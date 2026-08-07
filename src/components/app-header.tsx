@@ -67,7 +67,7 @@ export function AppHeader({
         >
           🏆
         </button>
-        <div className="text-right">
+        <div className="text-right rtl:text-left">
           <p className="gradient-gram bg-clip-text text-lg font-bold text-transparent">
             {state.wallet.balance.toFixed(2)} {t("common.gram")}
           </p>

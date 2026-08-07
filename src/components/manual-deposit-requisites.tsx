@@ -25,9 +25,9 @@ function CopyRow({ label, value }: { label: string; value: string }) {
       <button
         type="button"
         onClick={handleCopy}
-        className="flex w-full items-center justify-between gap-2 rounded-lg bg-progress-bg px-3 py-2 text-left font-mono text-sm"
+        className="flex w-full items-center justify-between gap-2 rounded-lg bg-progress-bg px-3 py-2 text-left rtl:text-right font-mono text-sm"
       >
-        <span className="truncate">{value}</span>
+        <span dir="ltr" className="truncate">{value}</span>
         <span className="shrink-0 text-xs text-nav-inactive">
           {copied ? t("walletConnect.copied") : "📋"}
         </span>

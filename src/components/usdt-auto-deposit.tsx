@@ -128,6 +128,7 @@ export function UsdtAutoDeposit({
       <input
         type="text"
         inputMode="decimal"
+        dir="ltr"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder={t("usdtDeposit.autoPlaceholder", { min: MIN_DEPOSIT_GRAM })}
