@@ -34,6 +34,8 @@ const KNOWN_RPC_ERRORS: Record<string, number> = {
   item_not_available: 409,
   cycle_not_found: 404,
   task_not_claimable: 409,
+  not_verified: 409,
+  too_early: 409,
 };
 
 /** Postgres wraps a plpgsql `raise exception 'x'` message as `x` (sometimes with a trailing detail). */

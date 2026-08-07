@@ -274,6 +274,7 @@ const tr: typeof ru = {
     check: "Kontrol et",
     notSubscribed: "Kanala abone olmadın!",
     checkFailed: "Kontrol edilemedi, tekrar dene",
+    availableIn: "Abonelik onaylandı — ödül {time} sonra açılacak",
   },
   systemTasks: {
     title: "🎖️ Mahalle Görevleri",

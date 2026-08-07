@@ -274,6 +274,7 @@ const id: typeof ru = {
     check: "Periksa",
     notSubscribed: "Kamu belum berlangganan kanal ini!",
     checkFailed: "Gagal memeriksa, coba lagi",
+    availableIn: "Langganan terkonfirmasi — hadiah tersedia dalam {time}",
   },
   systemTasks: {
     title: "🎖️ Tugas Distrik",

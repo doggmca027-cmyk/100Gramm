@@ -199,7 +199,12 @@ export interface PartnerTask {
   reward_amount: number;
   channel_username: string;
   icon_url: string | null;
+  /** Reward actually paid — not just subscription-verified, see verified_at/available_at. */
   completed: boolean;
+  /** When the subscription check first passed, if it has. */
+  verified_at: string | null;
+  /** verified_at + 24h — the "Проверить" button stays disabled until this passes. Null once not yet verified, or once completed. */
+  available_at: string | null;
 }
 
 export type SystemTaskCategory = "social" | "referral" | "gameplay";
@@ -231,7 +236,12 @@ export interface SystemTask {
   progress: number;
   reward_xp: number;
   rewards: SystemTaskReward[];
+  /** Reward actually paid — for channel_sub/chat_join this is 24h after verified_at, not immediate. */
   completed: boolean;
+  /** When a channel_sub/chat_join check first passed, if it has. Null for every other target_type. */
+  verified_at: string | null;
+  /** verified_at + 24h — the check button stays disabled until this passes. Null once not yet verified, or once completed. */
+  available_at: string | null;
 }
 
 export interface HistoryEntry {

@@ -304,8 +304,19 @@ export function fetchSquadLevels() {
   return request<SquadLevel[]>("/api/squad/levels");
 }
 
+export type PartnerTaskCheckResult =
+  | { status: "pending"; available_at: string; state: PlayerState }
+  | { status: "claimed"; reward: number; state: PlayerState };
+
+/**
+ * First successful call after a task's channel link is opened only
+ * records that the subscription check passed (status "pending") — the
+ * reward isn't paid until a second call, no earlier than available_at,
+ * re-confirms the user is still subscribed (status "claimed"). See
+ * 0044_partner_task_delayed_reward.sql.
+ */
 export function checkPartnerTaskSubscription(taskId: string) {
-  return request<{ reward: number; state: PlayerState }>("/api/tasks/check-sub", {
+  return request<PartnerTaskCheckResult>("/api/tasks/check-sub", {
     method: "POST",
     body: JSON.stringify({ taskId }),
   });
@@ -317,8 +328,20 @@ export interface SystemTaskClaimResult {
   rewards: { item_type: string; quantity: number }[];
 }
 
+export type SystemTaskCheckResult =
+  | { status: "pending"; available_at: string; state: PlayerState }
+  | { status: "claimed"; reward: SystemTaskClaimResult; state: PlayerState };
+
+/**
+ * For channel_sub/chat_join tasks, the first successful call only records
+ * that the subscription check passed (status "pending") — the reward
+ * isn't paid until a second call, no earlier than available_at, re-confirms
+ * the user is still subscribed (status "claimed"). Every other task
+ * category claims instantly on the first call (always "claimed"). See
+ * 0045_system_task_delayed_reward.sql.
+ */
 export function claimSystemTask(slug: string) {
-  return request<{ reward: SystemTaskClaimResult; state: PlayerState }>("/api/system-tasks/claim", {
+  return request<SystemTaskCheckResult>("/api/system-tasks/claim", {
     method: "POST",
     body: JSON.stringify({ slug }),
   });

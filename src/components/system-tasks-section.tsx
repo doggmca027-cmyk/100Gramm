@@ -6,8 +6,14 @@ import type { PlayerState, SystemTask } from "@/lib/types";
 import { claimSystemTask, ApiError } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
 import { itemIcon, itemNameKey } from "@/lib/combo-items";
+import { useCountdown, formatDuration } from "@/hooks/use-countdown";
 
-type Stage = "todo" | "checking" | "done";
+type Stage = "todo" | "checking" | "pending" | "done";
+
+// Placeholder for useCountdown when there's no available_at yet — avoids
+// computing `new Date()` (impure) during render just to produce an unused
+// fallback, same idiom as product-card.tsx's EPOCH.
+const EPOCH = "1970-01-01T00:00:00.000Z";
 
 const CATEGORY_ICON: Record<SystemTask["category"], string> = {
   social: "📡",
@@ -19,6 +25,12 @@ function targetUrl(targetValue: string): string {
   return targetValue.startsWith("http") ? targetValue : `https://t.me/${targetValue}`;
 }
 
+function initialStage(task: SystemTask): Stage {
+  if (task.completed) return "done";
+  if (task.available_at) return "pending";
+  return "todo";
+}
+
 function TaskCard({
   task,
   onClaimed,
@@ -28,9 +40,13 @@ function TaskCard({
 }) {
   const { t } = useLanguage();
   const isSocial = task.category === "social";
-  const [stage, setStage] = useState<Stage>(task.completed ? "done" : "todo");
+  const [stage, setStage] = useState<Stage>(() => initialStage(task));
+  const [availableAt, setAvailableAt] = useState<string | null>(task.available_at);
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
+
+  const remaining = useCountdown(availableAt ?? EPOCH);
+  const waiting = stage === "pending" && remaining > 0;
 
   const progressMet = task.progress >= task.required_count;
   const canClaim = !isSocial && progressMet;
@@ -51,17 +67,28 @@ function TaskCard({
     setLoading(true);
     setErrorText(null);
     try {
-      const { state } = await claimSystemTask(task.slug);
-      onClaimed(state);
-      setStage("done");
+      const result = await claimSystemTask(task.slug);
+      onClaimed(result.state);
+      if (result.status === "claimed") {
+        setStage("done");
+      } else {
+        // channel_sub/chat_join, first pass — verified, but the reward
+        // only unlocks 24h from now.
+        setAvailableAt(result.available_at);
+        setStage("pending");
+      }
     } catch (err) {
-      setErrorText(
-        err instanceof ApiError && err.code === "not_subscribed"
-          ? t("partnerTasks.notSubscribed")
-          : err instanceof ApiError && err.code === "task_not_claimable"
-            ? t("systemTasks.notReadyYet")
-            : t("partnerTasks.checkFailed"),
-      );
+      if (err instanceof ApiError && err.code === "not_subscribed") {
+        // If this was the 24h-later re-check and the server found the
+        // subscription gone, it already wiped the pending verification —
+        // start over from "todo" instead of leaving a stuck button.
+        if (stage === "pending") setStage("todo");
+        setErrorText(t("partnerTasks.notSubscribed"));
+      } else if (err instanceof ApiError && err.code === "task_not_claimable") {
+        setErrorText(t("systemTasks.notReadyYet"));
+      } else {
+        setErrorText(t("partnerTasks.checkFailed"));
+      }
     } finally {
       setLoading(false);
     }
@@ -104,6 +131,12 @@ function TaskCard({
         </div>
       )}
 
+      {waiting && (
+        <p className="text-xs text-boost">
+          {t("partnerTasks.availableIn", { time: formatDuration(remaining) })}
+        </p>
+      )}
+
       {errorText && <p className="text-xs text-danger">{errorText}</p>}
 
       <div className="flex justify-end">
@@ -119,6 +152,14 @@ function TaskCard({
               className="gradient-action rounded-full px-3 py-1.5 text-xs font-semibold"
             >
               {t("partnerTasks.doIt")}
+            </button>
+          ) : waiting ? (
+            <button
+              type="button"
+              disabled
+              className="rounded-full bg-progress-bg px-3 py-1.5 text-xs text-nav-inactive disabled:opacity-50"
+            >
+              {t("partnerTasks.check")}
             </button>
           ) : (
             <button

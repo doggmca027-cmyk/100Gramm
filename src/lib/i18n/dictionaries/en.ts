@@ -274,6 +274,7 @@ const en: typeof ru = {
     check: "Check",
     notSubscribed: "You haven't subscribed to the channel!",
     checkFailed: "Couldn't check, please try again",
+    availableIn: "Subscription confirmed — the reward unlocks in {time}",
   },
   systemTasks: {
     title: "🎖️ District Tasks",
