@@ -148,6 +148,11 @@ const tr: typeof ru = {
     withdrawTimingNotice: "Para çekme işlemleri 24 saat içinde tamamlanır",
     currencyGram: "GRAM (TON)",
     currencyUsdt: "USDT",
+    addressLabel: "Cüzdan adresi (TON)",
+    addressPlaceholder: "EQ... veya UQ... (40+ karakter)",
+    useConnectedWallet: "Bağlı cüzdanımdan doldur",
+    connectInsteadOfTyping: "veya adresi yazmak yerine bir cüzdan bağla",
+    errorInvalidAddress: "Cüzdan adresini kontrol et — eksik veya geçersiz görünüyor",
   },
   walletConnect: {
     navLabel: "Cüzdan",

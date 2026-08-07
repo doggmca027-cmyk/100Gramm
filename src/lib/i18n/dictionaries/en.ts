@@ -148,6 +148,11 @@ const en: typeof ru = {
     withdrawTimingNotice: "Withdrawals are processed within 24 hours",
     currencyGram: "GRAM (TON)",
     currencyUsdt: "USDT",
+    addressLabel: "Wallet address (TON)",
+    addressPlaceholder: "EQ... or UQ... (40+ characters)",
+    useConnectedWallet: "Fill in from my connected wallet",
+    connectInsteadOfTyping: "or connect a wallet instead of typing the address",
+    errorInvalidAddress: "Check that wallet address — it looks incomplete or invalid",
   },
   walletConnect: {
     navLabel: "Wallet",

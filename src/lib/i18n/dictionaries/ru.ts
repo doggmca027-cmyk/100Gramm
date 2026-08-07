@@ -146,6 +146,11 @@ const ru = {
     withdrawTimingNotice: "Регламент вывода — до 24 часов",
     currencyGram: "GRAM (TON)",
     currencyUsdt: "USDT",
+    addressLabel: "Адрес кошелька (TON)",
+    addressPlaceholder: "EQ... или UQ... (мин. 40 символов)",
+    useConnectedWallet: "Подставить адрес из подключённого кошелька",
+    connectInsteadOfTyping: "или подключи кошелёк, чтобы не вводить адрес вручную",
+    errorInvalidAddress: "Проверь адрес кошелька — похоже, он неполный или неверный",
   },
   walletConnect: {
     navLabel: "Кошелёк",

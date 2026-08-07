@@ -60,6 +60,13 @@ export function WalletModal({
 
   // withdraw-mode state (GRAM amount -> escrowed request)
   const [withdrawValue, setWithdrawValue] = useState("");
+  // Manual address entry — a TonConnect pairing is no longer required to
+  // withdraw (it never actually proved ownership server-side either, see
+  // /api/wallet/withdraw's Address.parse-only check). Pre-filled from a
+  // connected wallet as a convenience when one's already paired, but always
+  // editable — this is the only way withdrawal keeps working for anyone
+  // whose wallet app won't pair via TonConnect at all.
+  const [payoutAddressInput, setPayoutAddressInput] = useState(tonAddress);
   const [withdrawSubmitting, setWithdrawSubmitting] = useState(false);
   const [withdrawError, setWithdrawError] = useState<string | null>(null);
   const [justSubmitted, setJustSubmitted] = useState<{ amount: number; net: number } | null>(null);
@@ -88,7 +95,13 @@ export function WalletModal({
   const isValidWithdraw = withdrawNormalized !== "" && Number.isFinite(withdrawAmount) && withdrawAmount > 0;
   const meetsWithdrawMin = isValidWithdraw && withdrawAmount >= withdrawConfig.withdraw_min;
   const hasFunds = isValidWithdraw && withdrawAmount <= state.wallet.balance;
-  const canSubmitWithdraw = isValidWithdraw && meetsWithdrawMin && hasFunds && !needsWallet && !withdrawSubmitting;
+  const trimmedPayoutAddress = payoutAddressInput.trim();
+  // Just a UX gate so the button doesn't light up on an obviously-empty or
+  // truncated address — the server's Address.parse is the real check
+  // (invalid_address error, handled below).
+  const looksLikeAddress = trimmedPayoutAddress.length >= 40;
+  const canSubmitWithdraw =
+    isValidWithdraw && meetsWithdrawMin && hasFunds && looksLikeAddress && !withdrawSubmitting;
   const fee = isValidWithdraw ? round2((withdrawAmount * withdrawConfig.withdraw_fee_percent) / 100) : 0;
   const net = isValidWithdraw ? round2(withdrawAmount - fee) : 0;
 
@@ -113,8 +126,9 @@ export function WalletModal({
     try {
       // Withdrawals don't pay out on the spot — they file a request an
       // admin has to approve, which then sends the TON automatically to
-      // tonAddress. Show a "submitted" step instead of closing right away.
-      const { result, state: newState } = await withdrawGram(withdrawAmount, tonAddress);
+      // whatever address was typed in. Show a "submitted" step instead of
+      // closing right away.
+      const { result, state: newState } = await withdrawGram(withdrawAmount, trimmedPayoutAddress);
       onStateChange(newState);
       setJustSubmitted({ amount: result.amount, net: result.net_amount });
     } catch (err) {
@@ -125,7 +139,9 @@ export function WalletModal({
             ? t("wallet.errorInsufficientBalance")
             : err instanceof ApiError && err.code === "withdrawal_already_pending"
               ? t("wallet.errorAlreadyPending")
-              : t("wallet.errorGeneric"),
+              : err instanceof ApiError && err.code === "invalid_address"
+                ? t("wallet.errorInvalidAddress")
+                : t("wallet.errorGeneric"),
       );
     } finally {
       setWithdrawSubmitting(false);
@@ -304,19 +320,6 @@ export function WalletModal({
               </div>
             </div>
           )
-        ) : needsWallet ? (
-          <div className="flex flex-col items-center gap-3 py-4 text-center">
-            <span className="text-3xl">👛</span>
-            <p className="text-xs text-nav-inactive">{t("wallet.needsWalletWithdraw")}</p>
-            <button
-              type="button"
-              onClick={() => handleOpenConnect(setWithdrawError)}
-              className="gradient-action rounded-full px-6 py-3 text-sm font-semibold"
-            >
-              {t("walletConnect.navLabel")}
-            </button>
-            {withdrawError && <p className="text-xs text-danger">{withdrawError}</p>}
-          </div>
         ) : justSubmitted ? (
           <div className="gradient-surface flex flex-col items-center gap-2 rounded-xl p-6 text-center">
             <span className="text-3xl">✅</span>
@@ -363,6 +366,41 @@ export function WalletModal({
               <p className="text-[11px] text-nav-inactive/70">{t("wallet.withdrawTimingNotice")}</p>
             </div>
 
+            <div className="flex flex-col gap-1">
+              <label className="px-1 text-xs font-semibold text-nav-inactive">
+                {t("wallet.addressLabel")}
+              </label>
+              <input
+                type="text"
+                value={payoutAddressInput}
+                onChange={(e) => setPayoutAddressInput(e.target.value)}
+                placeholder={t("wallet.addressPlaceholder")}
+                spellCheck={false}
+                autoCapitalize="off"
+                autoCorrect="off"
+                className="rounded-lg bg-progress-bg px-3 py-2 font-mono text-xs outline-none"
+                autoFocus
+              />
+              {tonAddress && tonAddress !== trimmedPayoutAddress && (
+                <button
+                  type="button"
+                  onClick={() => setPayoutAddressInput(tonAddress)}
+                  className="self-start px-1 text-xs text-boost underline underline-offset-2"
+                >
+                  {t("wallet.useConnectedWallet")}
+                </button>
+              )}
+              {!tonAddress && (
+                <button
+                  type="button"
+                  onClick={() => handleOpenConnect(setWithdrawError)}
+                  className="self-start px-1 text-xs text-nav-inactive underline underline-offset-2"
+                >
+                  {t("wallet.connectInsteadOfTyping")}
+                </button>
+              )}
+            </div>
+
             <input
               type="text"
               inputMode="decimal"
@@ -370,7 +408,6 @@ export function WalletModal({
               onChange={(e) => setWithdrawValue(e.target.value)}
               placeholder={t("wallet.amountPlaceholder", { min: withdrawConfig.withdraw_min })}
               className="rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none"
-              autoFocus
             />
 
             {isValidWithdraw && !meetsWithdrawMin && (
@@ -403,10 +440,12 @@ export function WalletModal({
                   {net.toFixed(2)} {t("common.gram")}
                 </span>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-nav-inactive">{t("wallet.payoutTo")}</span>
-                <span className="font-mono">{truncateAddress(tonAddress)}</span>
-              </div>
+              {trimmedPayoutAddress && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-nav-inactive">{t("wallet.payoutTo")}</span>
+                  <span className="font-mono">{truncateAddress(trimmedPayoutAddress)}</span>
+                </div>
+              )}
             </div>
 
             {withdrawError && <p className="text-xs text-danger">{withdrawError}</p>}

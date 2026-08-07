@@ -41,9 +41,19 @@ export async function PATCH(
       });
       if (lockError) throw lockError;
 
+      // The on-chain comment doubles as the payout's audit trail: it's what
+      // findOutgoingTransaction (lib/ton-verify.ts) matches on, exactly, to
+      // recover this transfer's tx hash afterwards. It has to stay unique
+      // per request (two withdrawals of the same amount to the same
+      // address, days apart, would otherwise be indistinguishable in the
+      // treasury's recent-transactions list) — hence the short id suffix
+      // riding along with the friendly "Накатил ..." text the recipient
+      // actually sees in their wallet.
+      const payoutMemo = `Накатил ${locked.net_amount.toFixed(2)} ГРАМ #${id.slice(0, 8)}`;
+
       let payoutTxHash: string | null = null;
       try {
-        const payout = await sendTonPayout(locked.payout_address, locked.net_amount, id);
+        const payout = await sendTonPayout(locked.payout_address, locked.net_amount, payoutMemo);
         payoutTxHash = payout.txHash;
       } catch (sendError) {
         console.error(`Payout send failed for withdrawal ${id}:`, sendError);

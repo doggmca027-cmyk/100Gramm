@@ -148,6 +148,11 @@ const id: typeof ru = {
     withdrawTimingNotice: "Penarikan diproses dalam waktu 24 jam",
     currencyGram: "GRAM (TON)",
     currencyUsdt: "USDT",
+    addressLabel: "Alamat dompet (TON)",
+    addressPlaceholder: "EQ... atau UQ... (40+ karakter)",
+    useConnectedWallet: "Isi dari dompet yang terhubung",
+    connectInsteadOfTyping: "atau hubungkan dompet daripada mengetik alamat",
+    errorInvalidAddress: "Periksa alamat dompetnya — sepertinya tidak lengkap atau tidak valid",
   },
   walletConnect: {
     navLabel: "Dompet",
