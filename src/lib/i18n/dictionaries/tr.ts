@@ -202,6 +202,10 @@ const tr: typeof ru = {
   leaderboard: {
     title: "Sezon sıralaması",
     subtitle: "Bu sezon kazanılan GRAM'a göre sıralama",
+    subtitleCycles: "Tüm zamanlar başlatılan döngülere göre sıralama",
+    tabEarned: "Kazanca göre",
+    tabCycles: "Döngülere göre",
+    cyclesUnit: "döngü",
     empty: "Henüz kimse yok",
   },
   squad: {

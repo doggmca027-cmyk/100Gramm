@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Crown, Trophy } from "lucide-react";
-import { fetchLeaderboard, type LeaderboardEntry } from "@/lib/api-client";
+import { Crown, Trophy, Coins, RotateCw, type LucideIcon } from "lucide-react";
+import { fetchLeaderboard, type LeaderboardEntry, type LeaderboardMetric } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
 
 const RANK_BADGE_CLASS: Record<number, string> = {
@@ -10,6 +10,23 @@ const RANK_BADGE_CLASS: Record<number, string> = {
   2: "bg-[#c9ccd6] text-bg",
   3: "bg-[#cd8a4f] text-bg",
 };
+
+const TABS: { metric: LeaderboardMetric; labelKey: "leaderboard.tabEarned" | "leaderboard.tabCycles"; Icon: LucideIcon }[] = [
+  { metric: "total_earned", labelKey: "leaderboard.tabEarned", Icon: Coins },
+  { metric: "cycles_launched_total", labelKey: "leaderboard.tabCycles", Icon: RotateCw },
+];
+
+/** Score text for one entry, matching whichever metric the active tab is ranked by. */
+function scoreText(
+  entry: LeaderboardEntry,
+  metric: LeaderboardMetric,
+  t: ReturnType<typeof useLanguage>["t"],
+): string {
+  if (metric === "cycles_launched_total") {
+    return `${entry.cycles_launched_total} ${t("leaderboard.cyclesUnit")}`;
+  }
+  return `${entry.total_earned.toFixed(3)} ${t("common.gram")}`;
+}
 
 /** Telegram photo if we have one and it loads; otherwise the name's first letter. */
 function LeaderboardAvatar({
@@ -47,7 +64,17 @@ function LeaderboardAvatar({
   );
 }
 
-function PodiumSlot({ entry, rank, t }: { entry: LeaderboardEntry; rank: 1 | 2 | 3; t: ReturnType<typeof useLanguage>["t"] }) {
+function PodiumSlot({
+  entry,
+  rank,
+  metric,
+  t,
+}: {
+  entry: LeaderboardEntry;
+  rank: 1 | 2 | 3;
+  metric: LeaderboardMetric;
+  t: ReturnType<typeof useLanguage>["t"];
+}) {
   const isFirst = rank === 1;
 
   return (
@@ -69,22 +96,43 @@ function PodiumSlot({ entry, rank, t }: { entry: LeaderboardEntry; rank: 1 | 2 |
       <p className={`max-w-[84px] truncate text-center font-semibold ${isFirst ? "text-sm" : "text-xs"}`}>
         {entry.display_name?.trim() ? entry.display_name.trim() : "Игрок"}
       </p>
-      <p className="text-xs text-gram">
-        {entry.total_earned.toFixed(3)} {t("common.gram")}
-      </p>
+      <p className="text-xs text-gram">{scoreText(entry, metric, t)}</p>
     </div>
   );
 }
 
 export function LeaderboardScreen({ onBack }: { onBack: () => void }) {
   const { t } = useLanguage();
+  const [metric, setMetric] = useState<LeaderboardMetric>("total_earned");
   const [entries, setEntries] = useState<LeaderboardEntry[] | null>(null);
 
   useEffect(() => {
-    fetchLeaderboard("total_earned")
-      .then(setEntries)
-      .catch(() => setEntries([]));
-  }, []);
+    // Guards against a stale response landing after the user has already
+    // switched tabs again — without this, a slow "cycles" request that
+    // resolves after a later "earnings" request would overwrite the
+    // earnings tab with cycles-ranked data. Same idiom as use-player-state.ts.
+    let cancelled = false;
+    fetchLeaderboard(metric)
+      .then((data) => {
+        if (!cancelled) setEntries(data);
+      })
+      .catch(() => {
+        if (!cancelled) setEntries([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [metric]);
+
+  // Reset to the loading state from the tab click itself (a real event
+  // handler) rather than synchronously inside the effect above — keeps the
+  // effect a pure "sync entries with metric" and avoids the extra render
+  // that setting state at the top of an effect body would cause.
+  function selectMetric(next: LeaderboardMetric) {
+    if (next === metric) return;
+    setMetric(next);
+    setEntries(null);
+  }
 
   const podium = entries?.slice(0, 3) ?? [];
   const rest = entries?.slice(3) ?? [];
@@ -101,6 +149,22 @@ export function LeaderboardScreen({ onBack }: { onBack: () => void }) {
         </p>
       </header>
 
+      <div className="flex gap-2 px-4 pt-3">
+        {TABS.map(({ metric: m, labelKey, Icon }) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => selectMetric(m)}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-xs font-semibold transition-colors ${
+              metric === m ? "gradient-action" : "gradient-surface text-nav-inactive"
+            }`}
+          >
+            <Icon className="h-3.5 w-3.5" />
+            {t(labelKey)}
+          </button>
+        ))}
+      </div>
+
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pb-8">
         {entries === null && (
           <p className="p-3 text-center text-sm text-nav-inactive">{t("common.loading")}</p>
@@ -111,15 +175,15 @@ export function LeaderboardScreen({ onBack }: { onBack: () => void }) {
 
         {podium.length > 0 && (
           <div className="flex items-end justify-center gap-4 pt-2">
-            {podium[1] && <PodiumSlot entry={podium[1]} rank={2} t={t} />}
-            {podium[0] && <PodiumSlot entry={podium[0]} rank={1} t={t} />}
-            {podium[2] && <PodiumSlot entry={podium[2]} rank={3} t={t} />}
+            {podium[1] && <PodiumSlot entry={podium[1]} rank={2} metric={metric} t={t} />}
+            {podium[0] && <PodiumSlot entry={podium[0]} rank={1} metric={metric} t={t} />}
+            {podium[2] && <PodiumSlot entry={podium[2]} rank={3} metric={metric} t={t} />}
           </div>
         )}
 
         {entries && entries.length > 0 && (
           <p className="rounded-xl bg-progress-bg px-3 py-2 text-center text-xs text-nav-inactive">
-            {t("leaderboard.subtitle")}
+            {metric === "cycles_launched_total" ? t("leaderboard.subtitleCycles") : t("leaderboard.subtitle")}
           </p>
         )}
 
@@ -138,9 +202,7 @@ export function LeaderboardScreen({ onBack }: { onBack: () => void }) {
                   textClassName="text-sm"
                 />
                 <span className="flex-1 truncate">{entry.display_name?.trim() ? entry.display_name.trim() : "Игрок"}</span>
-                <span className="shrink-0 text-gram">
-                  {entry.total_earned.toFixed(3)} {t("common.gram")}
-                </span>
+                <span className="shrink-0 text-gram">{scoreText(entry, metric, t)}</span>
               </div>
             ))}
           </div>

@@ -202,6 +202,10 @@ const id: typeof ru = {
   leaderboard: {
     title: "Papan peringkat musim",
     subtitle: "Peringkat berdasarkan GRAM yang diperoleh musim ini",
+    subtitleCycles: "Peringkat berdasarkan siklus yang dijalankan sepanjang waktu",
+    tabEarned: "Berdasarkan penghasilan",
+    tabCycles: "Berdasarkan siklus",
+    cyclesUnit: "siklus",
     empty: "Belum ada siapa-siapa",
   },
   squad: {

@@ -289,9 +289,13 @@ export interface LeaderboardEntry {
   photo_url: string | null;
   total_earned: number;
   completed_cycles_total: number;
+  /** All-time count of cycles ever started (any status, any season) — not scoped to the active season like completed_cycles_total. */
+  cycles_launched_total: number;
 }
 
-export function fetchLeaderboard(metric: "total_earned" | "completed_cycles_total" = "total_earned") {
+export type LeaderboardMetric = "total_earned" | "completed_cycles_total" | "cycles_launched_total";
+
+export function fetchLeaderboard(metric: LeaderboardMetric = "total_earned") {
   return request<LeaderboardEntry[]>(`/api/leaderboard?metric=${metric}`);
 }
 

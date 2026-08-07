@@ -200,6 +200,10 @@ const ru = {
   leaderboard: {
     title: "Рейтинг сезона",
     subtitle: "Рейтинг по заработанным GRAM за сезон",
+    subtitleCycles: "Рейтинг по запущенным циклам за всё время",
+    tabEarned: "По заработку",
+    tabCycles: "По циклам",
+    cyclesUnit: "циклов",
     empty: "Пока никого нет",
   },
   squad: {

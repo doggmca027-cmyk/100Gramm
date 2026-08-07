@@ -202,6 +202,10 @@ const en: typeof ru = {
   leaderboard: {
     title: "Season leaderboard",
     subtitle: "Ranked by GRAM earned this season",
+    subtitleCycles: "Ranked by cycles launched all-time",
+    tabEarned: "By earnings",
+    tabCycles: "By cycles",
+    cyclesUnit: "cycles",
     empty: "No one here yet",
   },
   squad: {

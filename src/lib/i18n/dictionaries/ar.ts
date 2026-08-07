@@ -200,6 +200,10 @@ const ar = {
   leaderboard: {
     title: "ترتيب الموسم",
     subtitle: "الترتيب حسب GRAM المكتسب خلال الموسم",
+    subtitleCycles: "الترتيب حسب الدورات المُشغَّلة منذ البداية",
+    tabEarned: "حسب الأرباح",
+    tabCycles: "حسب الدورات",
+    cyclesUnit: "دورة",
     empty: "لا يوجد أحد بعد",
   },
   squad: {
