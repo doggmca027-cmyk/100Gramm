@@ -222,6 +222,9 @@ const tr: typeof ru = {
     level2: "Seviye 2 — %{percent}",
     level3: "Seviye 3 — %{percent}",
     ambassadorBadge: "Bir elçisin — artırılmış referans oranları",
+    ambassadorComboHint:
+      "Günün gizli kombo sırasını bottan özelden almak için bota en az bir kez /start yaz.",
+    ambassadorOpenBotChat: "Bot ile sohbeti aç",
     copied: "Kopyalandı!",
     lineTab: "{n}. hat",
     lineHeading: "{n}. hat",

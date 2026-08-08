@@ -222,6 +222,9 @@ const id: typeof ru = {
     level2: "Level 2 — {percent}%",
     level3: "Level 3 — {percent}%",
     ambassadorBadge: "Kamu ambassador — persentase referral lebih tinggi",
+    ambassadorComboHint:
+      "Untuk menerima urutan kombo rahasia hari ini lewat DM bot, kirim /start ke bot minimal sekali.",
+    ambassadorOpenBotChat: "Buka chat dengan bot",
     copied: "Disalin!",
     lineTab: "Line {n}",
     lineHeading: "Line {n}",

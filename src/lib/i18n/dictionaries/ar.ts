@@ -222,6 +222,8 @@ const ar: typeof ru = {
     level2: "المستوى 2 — {percent}%",
     level3: "المستوى 3 — {percent}%",
     ambassadorBadge: "أنت سفير — نسب إحالة أعلى",
+    ambassadorComboHint: "لتلقي ترتيب كومبو اليوم السري في رسالة خاصة من البوت، أرسل له /start مرة واحدة على الأقل.",
+    ambassadorOpenBotChat: "افتح الدردشة مع البوت",
     copied: "تم النسخ!",
     invite: "ادعُ إلى الفريق",
     lineTab: "المستوى {n}",

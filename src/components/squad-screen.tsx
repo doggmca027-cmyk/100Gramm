@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, Star, Medal, UserPlus } from "lucide-react";
+import { Users, Star, Medal, UserPlus, Send } from "lucide-react";
+import { openTelegramLink } from "@telegram-apps/sdk-react";
 import type { PlayerState, SquadLevel } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
 import { REFERRAL_RATES } from "@/lib/referral-rates";
@@ -69,6 +70,21 @@ export function SquadScreen({ state }: { state: PlayerState }) {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  // A plain https://t.me/<bot> link (no ?startapp=) opens the bot's private
+  // chat instead of launching the Mini App — that's the only way to get
+  // Telegram to register a chat the bot can then DM into. Ambassadors who
+  // joined via a referral/startapp link never triggered that, so the daily
+  // secret-combo DM silently fails for them until they do this once.
+  function handleOpenBotChat() {
+    if (!botUsername) return;
+    const url = `https://t.me/${botUsername}`;
+    if (openTelegramLink.isAvailable()) {
+      openTelegramLink(url);
+    } else {
+      window.open(url, "_blank");
+    }
+  }
+
   const active = levels?.find((l) => l.level === selectedLevel) ?? null;
 
   return (
@@ -86,10 +102,24 @@ export function SquadScreen({ state }: { state: PlayerState }) {
       <div className="gradient-surface rounded-2xl p-4 text-sm leading-relaxed">
         <p>{t("squad.description")}</p>
         {isAmbassador && (
-          <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-gram">
-            <Star className="h-3.5 w-3.5 text-amber-400" />
-            {t("squad.ambassadorBadge")}
-          </p>
+          <div className="mt-2 flex flex-col gap-2">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-gram">
+              <Star className="h-3.5 w-3.5 text-amber-400" />
+              {t("squad.ambassadorBadge")}
+            </p>
+            <div className="rounded-xl bg-progress-bg p-2.5 text-xs text-nav-inactive">
+              <p>{t("squad.ambassadorComboHint")}</p>
+              <button
+                type="button"
+                onClick={handleOpenBotChat}
+                disabled={!botUsername}
+                className="mt-2 flex items-center justify-center gap-1.5 rounded-full bg-bg px-3 py-1.5 text-xs font-semibold text-gram disabled:opacity-40"
+              >
+                <Send className="h-3.5 w-3.5" />
+                {t("squad.ambassadorOpenBotChat")}
+              </button>
+            </div>
+          </div>
         )}
         <ul className="mt-3 space-y-1 text-xs text-nav-inactive">
           <li className="flex items-center gap-1.5">

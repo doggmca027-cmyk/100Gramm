@@ -222,6 +222,9 @@ const en: typeof ru = {
     level2: "Level 2 — {percent}%",
     level3: "Level 3 — {percent}%",
     ambassadorBadge: "You're an ambassador — boosted referral rates",
+    ambassadorComboHint:
+      "To receive today's secret combo order by DM from the bot, message it /start at least once.",
+    ambassadorOpenBotChat: "Open chat with bot",
     copied: "Copied!",
     lineTab: "Line {n}",
     lineHeading: "Line {n}",

@@ -26,14 +26,17 @@ export async function POST(request: NextRequest) {
 
     // Reshuffling changes today's correct answer — re-notify so no
     // ambassador is left holding a now-wrong one. Best-effort: a Telegram
-    // hiccup here shouldn't fail the regenerate action itself.
+    // hiccup here shouldn't fail the regenerate action itself, but the
+    // outcome (who got DMed, who didn't) is still returned to the admin UI
+    // so a 100% delivery failure doesn't go unnoticed in server logs only.
+    let notify;
     try {
-      await notifyAmbassadorsOfDailyCombo();
+      notify = await notifyAmbassadorsOfDailyCombo();
     } catch (notifyError) {
       console.error("Failed to notify ambassadors after combo regenerate:", notifyError);
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({ ...result, notify });
   } catch (error) {
     return apiErrorResponse(error);
   }

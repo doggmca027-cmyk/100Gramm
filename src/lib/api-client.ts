@@ -448,6 +448,14 @@ export interface AdminDailyCombo {
   combo_date: string;
   tiers: AdminDailyComboSlot[];
   all_tiers: AdminDailyComboSlot[];
+  /** Only set by the regenerate endpoint — result of re-DMing ambassadors the new answer. */
+  notify?: {
+    sent: number;
+    failed: number;
+    total: number;
+    failedTelegramIds: number[];
+    skipped?: "server_misconfigured" | "no_active_season";
+  };
 }
 
 export function fetchAdminDailyCombo() {

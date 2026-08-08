@@ -18,6 +18,16 @@ export interface NotifyAmbassadorsResult {
   total: number;
   /** Set instead of sending anything when there's nothing to do yet (no bot token / no active season). */
   skipped?: "server_misconfigured" | "no_active_season";
+  /**
+   * telegram_ids Telegram rejected the DM for — almost always because that
+   * ambassador has never opened a private chat with the bot (they joined
+   * via a `?startapp=` deep link, which launches the Mini App directly and
+   * never registers a chat; Telegram then answers "chat not found" or
+   * "Forbidden: bot can't initiate conversation with a user"). Surfaced so
+   * the admin UI can point at exactly who needs to press Start once —
+   * there's no server-side way to force this, it's a Bot API restriction.
+   */
+  failedTelegramIds: number[];
 }
 
 /**
@@ -44,13 +54,15 @@ export interface NotifyAmbassadorsResult {
  */
 export async function notifyAmbassadorsOfDailyCombo(): Promise<NotifyAmbassadorsResult> {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  if (!botToken) return { sent: 0, failed: 0, total: 0, skipped: "server_misconfigured" };
+  if (!botToken)
+    return { sent: 0, failed: 0, total: 0, failedTelegramIds: [], skipped: "server_misconfigured" };
 
   const supabase = supabaseServer();
 
   const { data: seasonId, error: seasonError } = await supabase.rpc("active_season_id");
   if (seasonError) throw seasonError;
-  if (!seasonId) return { sent: 0, failed: 0, total: 0, skipped: "no_active_season" };
+  if (!seasonId)
+    return { sent: 0, failed: 0, total: 0, failedTelegramIds: [], skipped: "no_active_season" };
 
   const combo = await loadAdminDailyCombo(seasonId);
 
@@ -61,7 +73,7 @@ export async function notifyAmbassadorsOfDailyCombo(): Promise<NotifyAmbassadors
   if (ambassadorsError) throw ambassadorsError;
 
   const chatIds = (ambassadors ?? []).map((u) => u.telegram_id as number);
-  if (chatIds.length === 0) return { sent: 0, failed: 0, total: 0 };
+  if (chatIds.length === 0) return { sent: 0, failed: 0, total: 0, failedTelegramIds: [] };
 
   const order = combo.tiers
     .map((t, i) => `${TIER_EMOJI[i] ?? `${i + 1}.`} ${escapeHtml(t.name)}`)
@@ -73,6 +85,7 @@ export async function notifyAmbassadorsOfDailyCombo(): Promise<NotifyAmbassadors
 
   let sent = 0;
   let failed = 0;
+  const failedTelegramIds: number[] = [];
   for (let i = 0; i < chatIds.length; i++) {
     try {
       const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -86,10 +99,11 @@ export async function notifyAmbassadorsOfDailyCombo(): Promise<NotifyAmbassadors
     } catch (err) {
       console.error(`Ambassador combo notify failed for chat ${chatIds[i]}:`, err);
       failed++;
+      failedTelegramIds.push(chatIds[i]);
     }
 
     if (i < chatIds.length - 1) await sleep(40);
   }
 
-  return { sent, failed, total: chatIds.length };
+  return { sent, failed, total: chatIds.length, failedTelegramIds };
 }

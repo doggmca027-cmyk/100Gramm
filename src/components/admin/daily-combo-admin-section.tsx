@@ -10,6 +10,20 @@ import {
   type AdminDailyCombo,
 } from "@/lib/api-client";
 
+/** Human-readable summary of the ambassador re-notify outcome after a regenerate. */
+function notifySummary(notify: NonNullable<AdminDailyCombo["notify"]>): string {
+  if (notify.skipped === "server_misconfigured") return "Не отправлено: не настроен TELEGRAM_BOT_TOKEN.";
+  if (notify.skipped === "no_active_season") return "Не отправлено: нет активного сезона.";
+  if (notify.total === 0) return "Амбассадоров пока нет — уведомлять некого.";
+  const base = `Уведомлено амбассадоров: ${notify.sent}/${notify.total}.`;
+  if (notify.failed === 0) return base;
+  return (
+    `${base} Не дошло до ${notify.failed}: ID ${notify.failedTelegramIds.join(", ")} — ` +
+    `скорее всего они ни разу не открывали чат с ботом напрямую (заходили только через кнопку ` +
+    `приложения). Попроси их написать /start боту в личке — это разово чинит доставку.`
+  );
+}
+
 /** Plain-text summary the admin can copy straight into a Telegram channel post. */
 function shillText(combo: AdminDailyCombo): string {
   const list = combo.tiers.map((t) => `${t.tier}. ${t.name}`).join("\n");
@@ -22,6 +36,7 @@ export function DailyComboAdminSection() {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notifyResult, setNotifyResult] = useState<AdminDailyCombo["notify"] | null>(null);
 
   function load() {
     fetchAdminDailyCombo()
@@ -37,10 +52,12 @@ export function DailyComboAdminSection() {
   async function handleRegenerate() {
     setBusy(true);
     setError(null);
+    setNotifyResult(null);
     try {
       const data = await regenerateAdminDailyCombo();
       setCombo(data);
       setPicks(data.tiers.map((t) => t.tier));
+      setNotifyResult(data.notify ?? null);
     } catch {
       setError("Не получилось перегенерировать комбо");
     } finally {
@@ -125,6 +142,9 @@ export function DailyComboAdminSection() {
           <RefreshCw className="h-4 w-4" />
           Перегенерировать (сбросит прогресс всех игроков за сегодня)
         </button>
+        {notifyResult && (
+          <p className="text-xs text-nav-inactive">{notifySummary(notifyResult)}</p>
+        )}
       </div>
 
       <div className="gradient-surface flex flex-col gap-2 rounded-xl p-3">

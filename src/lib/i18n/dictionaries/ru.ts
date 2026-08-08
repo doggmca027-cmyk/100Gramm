@@ -220,6 +220,9 @@ const ru = {
     level2: "Уровень 2 — {percent}%",
     level3: "Уровень 3 — {percent}%",
     ambassadorBadge: "Ты амбассадор — повышенные проценты с рефералов",
+    ambassadorComboHint:
+      "Чтобы получать секретный порядок комбо дня в личку от бота, напиши ему /start хотя бы раз.",
+    ambassadorOpenBotChat: "Открыть чат с ботом",
     copied: "Скопировано!",
     invite: "Позвать в команду",
     lineTab: "{n} линия",
