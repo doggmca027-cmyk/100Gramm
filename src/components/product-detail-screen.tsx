@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Hourglass, Flame, Lock } from "lucide-react";
 import type { ActiveCycle, PlayerState, TierState } from "@/lib/types";
-import { useCountdown, formatDuration } from "@/hooks/use-countdown";
+import { useCountdown, formatDuration, useDurationUnits } from "@/hooks/use-countdown";
 import { useLanguage } from "@/lib/i18n/context";
 import { TIER_RARITY_KEY } from "@/lib/tier-art";
 import { TierImage } from "./tier-image";
@@ -11,12 +11,13 @@ import { UsdtPayButton } from "./usdt-pay-button";
 
 function SlotTile({ endsAt }: { endsAt: string }) {
   const { t } = useLanguage();
+  const units = useDurationUnits();
   const remaining = useCountdown(endsAt);
   return (
     <div className="gradient-surface flex flex-col items-center gap-1 rounded-xl p-2">
       <Hourglass className="h-4 w-4 text-amber-400" />
       <span className="font-mono text-[11px] text-nav-inactive">
-        {remaining > 0 ? formatDuration(remaining) : t("productCard.ready")}
+        {remaining > 0 ? formatDuration(remaining, units) : t("productCard.ready")}
       </span>
     </div>
   );

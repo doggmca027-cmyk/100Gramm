@@ -34,7 +34,7 @@ export function UpgradesScreen({
           <div
             key={tier.tier}
             className="gradient-surface rounded-2xl p-4"
-            style={{ borderLeft: `3px solid ${TIER_ACCENT[tier.tier] ?? "#8b7765"}` }}
+            style={{ borderInlineStart: `3px solid ${TIER_ACCENT[tier.tier] ?? "#8b7765"}` }}
           >
             <div className="flex items-center justify-between">
               <p className="flex items-center gap-1.5 font-semibold">

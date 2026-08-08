@@ -88,13 +88,13 @@ function PodiumSlot({
           textClassName={isFirst ? "text-2xl" : "text-xl"}
         />
         <span
-          className={`absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ring-2 ring-bg ${RANK_BADGE_CLASS[rank]}`}
+          className={`absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ring-2 ring-bg rtl:right-auto rtl:-left-1 ${RANK_BADGE_CLASS[rank]}`}
         >
           {rank}
         </span>
       </div>
       <p className={`max-w-[84px] truncate text-center font-semibold ${isFirst ? "text-sm" : "text-xs"}`}>
-        {entry.display_name?.trim() ? entry.display_name.trim() : "Игрок"}
+        {entry.display_name?.trim() ? entry.display_name.trim() : t("common.playerFallback")}
       </p>
       <p className="text-xs text-gram">{scoreText(entry, metric, t)}</p>
     </div>
@@ -201,7 +201,7 @@ export function LeaderboardScreen({ onBack }: { onBack: () => void }) {
                   sizeClassName="h-9 w-9"
                   textClassName="text-sm"
                 />
-                <span className="flex-1 truncate">{entry.display_name?.trim() ? entry.display_name.trim() : "Игрок"}</span>
+                <span className="flex-1 truncate">{entry.display_name?.trim() ? entry.display_name.trim() : t("common.playerFallback")}</span>
                 <span className="shrink-0 text-gram">{scoreText(entry, metric, t)}</span>
               </div>
             ))}

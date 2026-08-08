@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Settings, Trophy, ClipboardList } from "lucide-react";
-import { useCountdown, formatDuration } from "@/hooks/use-countdown";
+import { useCountdown, formatDuration, useDurationUnits } from "@/hooks/use-countdown";
 import type { PlayerState } from "@/lib/types";
 import { isAdminTelegramId } from "@/lib/admin";
 import { useLanguage } from "@/lib/i18n/context";
@@ -42,6 +42,7 @@ export function AppHeader({
   onOpenTasks: () => void;
 }) {
   const { t, pick } = useLanguage();
+  const units = useDurationUnits();
   const secondsLeft = useCountdown(state.season.ends_at);
   const daysLeft = Math.floor(secondsLeft / 86400);
   const isAdmin = isAdminTelegramId(state.squad.invite_code);
@@ -72,7 +73,8 @@ export function AppHeader({
             {state.wallet.balance.toFixed(2)} {t("common.gram")}
           </p>
           <p className="text-xs text-nav-inactive">
-            {t("header.season")}: {daysLeft > 0 ? `${daysLeft} d` : formatDuration(secondsLeft)}
+            {t("header.season")}:{" "}
+            {daysLeft > 0 ? `${daysLeft}${t("common.dayShort")}` : formatDuration(secondsLeft, units)}
           </p>
         </div>
       </div>

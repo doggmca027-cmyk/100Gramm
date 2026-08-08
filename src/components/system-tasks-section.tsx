@@ -7,7 +7,7 @@ import type { PlayerState, SystemTask } from "@/lib/types";
 import { claimSystemTask, ApiError } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
 import { itemIcon, itemNameKey } from "@/lib/combo-items";
-import { useCountdown, formatDuration } from "@/hooks/use-countdown";
+import { useCountdown, formatDuration, useDurationUnits } from "@/hooks/use-countdown";
 
 type Stage = "todo" | "checking" | "pending" | "done";
 
@@ -40,6 +40,7 @@ function TaskCard({
   onClaimed: (state: PlayerState) => void;
 }) {
   const { t } = useLanguage();
+  const units = useDurationUnits();
   const isSocial = task.category === "social";
   const [stage, setStage] = useState<Stage>(() => initialStage(task));
   const [availableAt, setAvailableAt] = useState<string | null>(task.available_at);
@@ -149,7 +150,7 @@ function TaskCard({
 
       {waiting && (
         <p className="text-xs text-boost">
-          {t("partnerTasks.availableIn", { time: formatDuration(remaining) })}
+          {t("partnerTasks.availableIn", { time: formatDuration(remaining, units) })}
         </p>
       )}
 

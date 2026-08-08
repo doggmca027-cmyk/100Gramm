@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Zap, X } from "lucide-react";
 import type { Boost, PlayerState } from "@/lib/types";
-import { useCountdown, formatDuration } from "@/hooks/use-countdown";
+import { useCountdown, formatDuration, useDurationUnits } from "@/hooks/use-countdown";
 import { useLanguage } from "@/lib/i18n/context";
 import { applyBoost } from "@/lib/api-client";
 import { TIER_ICON, DEFAULT_TIER_ICON } from "@/lib/tier-art";
@@ -18,6 +18,7 @@ function BoostRow({
   onStateChange: (state: PlayerState) => void;
 }) {
   const { t, pick } = useLanguage();
+  const units = useDurationUnits();
   const secondsLeft = useCountdown(boost.expires_at);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [applying, setApplying] = useState(false);
@@ -50,7 +51,7 @@ function BoostRow({
           <p className="text-sm font-semibold">{t("boosts.extraSlot")}</p>
           {boost.status === "PENDING" ? (
             <p className="text-xs text-nav-inactive">
-              {t("boosts.expiresIn", { time: formatDuration(secondsLeft) })}
+              {t("boosts.expiresIn", { time: formatDuration(secondsLeft, units) })}
             </p>
           ) : (
             <p className="text-xs text-profit">

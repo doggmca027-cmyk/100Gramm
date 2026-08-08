@@ -7,6 +7,11 @@ const en: typeof ru = {
     retry: "Retry",
     gram: "GRAM",
     back: "Back",
+    dayShort: "d",
+    hourShort: "h",
+    minuteShort: "m",
+    secondShort: "s",
+    playerFallback: "Player",
   },
   connectError: {
     text: "Couldn't connect. Please open this app through Telegram.",

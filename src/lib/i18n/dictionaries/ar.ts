@@ -1,10 +1,17 @@
-const ar = {
+import type ru from "./ru";
+
+const ar: typeof ru = {
   common: {
     loading: "جارٍ التحميل...",
     loadFailed: "تعذّر تحميل البيانات.",
     retry: "إعادة المحاولة",
     gram: "GRAM",
     back: "رجوع",
+    dayShort: "ي",
+    hourShort: "س",
+    minuteShort: "د",
+    secondShort: "ث",
+    playerFallback: "لاعب",
   },
   connectError: {
     text: "تعذّر الاتصال. افتح التطبيق عبر تيليجرام.",
@@ -296,6 +303,6 @@ const ar = {
   languagePicker: {
     title: "اختر اللغة",
   },
-} satisfies Record<string, Record<string, string>>;
+};
 
 export default ar;

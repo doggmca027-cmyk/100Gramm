@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { X, Bot, Boxes, Gift } from "lucide-react";
 import type { InventoryItem, PlayerState } from "@/lib/types";
-import { useCountdown, formatDuration } from "@/hooks/use-countdown";
+import { useCountdown, formatDuration, useDurationUnits } from "@/hooks/use-countdown";
 import { useLanguage } from "@/lib/i18n/context";
 import { applyAutoCollectItem, applyTimeSkipItem } from "@/lib/api-client";
 import { ITEM_ICON, itemNameKey, itemDescKey } from "@/lib/combo-items";
@@ -19,6 +19,7 @@ function ItemCard({
   onStateChange: (state: PlayerState) => void;
 }) {
   const { t, pick } = useLanguage();
+  const units = useDurationUnits();
   const secondsLeft = useCountdown(item.expires_at);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [applying, setApplying] = useState(false);
@@ -71,7 +72,7 @@ function ItemCard({
 
       <div className="flex items-center justify-between text-xs">
         <span className="text-nav-inactive">
-          {t("items.expiresIn", { time: formatDuration(secondsLeft) })}
+          {t("items.expiresIn", { time: formatDuration(secondsLeft, units) })}
         </span>
         <button
           type="button"
@@ -125,7 +126,7 @@ function ItemCard({
                       {cycle.tier}. {tierInfo ? pick(tierInfo.name_i18n) : ""}
                     </span>
                     <span className="text-xs text-nav-inactive">
-                      {formatDuration(Math.floor(cycle.seconds_remaining))}
+                      {formatDuration(Math.floor(cycle.seconds_remaining), units)}
                     </span>
                   </button>
                 );

@@ -1,5 +1,5 @@
 import "server-only";
-import { createHmac, randomBytes } from "node:crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { SignJWT, jwtVerify } from "jose";
 
 export const SESSION_COOKIE_NAME = "session";
@@ -73,7 +73,17 @@ export function validateTelegramInitData(
   const secretKey = createHmac("sha256", "WebAppData").update(botToken).digest();
   const computedHash = createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
 
-  if (computedHash !== receivedHash) {
+  // Constant-time compare — a plain !== leaks byte-by-byte timing info that
+  // could in theory help an attacker forge a valid hash without the bot
+  // token. Lengths must match first: timingSafeEqual throws (rather than
+  // returning false) on mismatched buffer lengths, and receivedHash is
+  // attacker-controlled.
+  const computedBuf = Buffer.from(computedHash, "hex");
+  const receivedBuf = Buffer.from(receivedHash, "hex");
+  if (
+    computedBuf.length !== receivedBuf.length ||
+    !timingSafeEqual(computedBuf, receivedBuf)
+  ) {
     throw new Error("init_data_invalid_hash");
   }
 

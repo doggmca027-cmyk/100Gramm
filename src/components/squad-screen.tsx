@@ -183,7 +183,7 @@ export function SquadScreen({ state }: { state: PlayerState }) {
                 <div key={member.user_id} className="flex items-center gap-3 p-3 text-sm">
                   <MemberAvatar name={member.display_name} photoUrl={member.photo_url} />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold">{member.display_name?.trim() ? member.display_name.trim() : "Игрок"}</p>
+                    <p className="truncate font-semibold">{member.display_name?.trim() ? member.display_name.trim() : t("common.playerFallback")}</p>
                     <p className="text-xs text-nav-inactive">
                       {t("squad.deposits")}: {formatGramAmount(member.total_deposited)} {t("common.gram")}
                     </p>

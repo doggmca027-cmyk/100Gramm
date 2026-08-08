@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Lock, Timer, Clock, Layers, Zap, Flame } from "lucide-react";
 import type { ActiveCycle, TierState } from "@/lib/types";
-import { useCountdown, useElapsedPercent, formatDuration } from "@/hooks/use-countdown";
+import { useCountdown, useElapsedPercent, formatDuration, useDurationUnits } from "@/hooks/use-countdown";
 import { useLanguage } from "@/lib/i18n/context";
 import { TIER_ACCENT } from "@/lib/tier-art";
 import { TierImage } from "./tier-image";
@@ -40,6 +40,7 @@ export function ProductCard({
   onOpenDetail: () => void;
 }) {
   const { t, pick } = useLanguage();
+  const units = useDurationUnits();
   const [starting, setStarting] = useState(false);
   const accent = TIER_ACCENT[tier.tier] ?? "#8b7765";
 
@@ -116,7 +117,7 @@ export function ProductCard({
   return (
     <div
       className="gradient-surface flex cursor-pointer gap-3 rounded-2xl p-3"
-      style={{ borderLeft: `3px solid ${accent}` }}
+      style={{ borderInlineStart: `3px solid ${accent}` }}
       onClick={onOpenDetail}
     >
       <TierImage tier={tier.tier} className="h-16 w-16 shrink-0 rounded-xl" />
@@ -145,7 +146,7 @@ export function ProductCard({
           {usedSlots > 0 && soonestEndsAt ? (
             <span className="flex items-center gap-1 font-mono text-nav-inactive">
               <Timer className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
-              {remaining > 0 ? formatDuration(remaining) : t("productCard.ready")}
+              {remaining > 0 ? formatDuration(remaining, units) : t("productCard.ready")}
               {usedSlots > 1 ? ` ×${usedSlots}` : ""}
             </span>
           ) : (

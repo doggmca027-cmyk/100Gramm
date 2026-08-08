@@ -7,6 +7,11 @@ const tr: typeof ru = {
     retry: "Tekrar dene",
     gram: "GRAM",
     back: "Geri",
+    dayShort: "g",
+    hourShort: "sa",
+    minuteShort: "dk",
+    secondShort: "sn",
+    playerFallback: "Oyuncu",
   },
   connectError: {
     text: "Bağlanılamadı. Lütfen uygulamayı Telegram üzerinden aç.",

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Gamepad2, PartyPopper, CheckCircle2, XCircle, Sparkles } from "lucide-react";
 import type { PlayerState } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
-import { useCountdown, formatDuration } from "@/hooks/use-countdown";
+import { useCountdown, formatDuration, useDurationUnits } from "@/hooks/use-countdown";
 import { TIER_ICON, TIER_ACCENT, DEFAULT_TIER_ICON } from "@/lib/tier-art";
 import { submitComboGuess } from "@/lib/api-client";
 import { itemIcon, itemNameKey } from "@/lib/combo-items";
@@ -25,6 +25,7 @@ export function GamesScreen({
   onStateChange: (state: PlayerState) => void;
 }) {
   const { t, pick } = useLanguage();
+  const units = useDurationUnits();
   const combo = state.daily_combo;
   const secondsLeft = useCountdown(combo?.resets_at ?? NO_COMBO_FALLBACK_ISO);
 
@@ -139,7 +140,7 @@ export function GamesScreen({
         <div className="gradient-surface rounded-xl p-4 text-center">
           <p className="font-semibold text-danger">{t("games.comboOutOfAttempts")}</p>
           <p className="mt-1 text-xs text-nav-inactive">
-            {t("games.comboResetsIn", { time: formatDuration(secondsLeft) })}
+            {t("games.comboResetsIn", { time: formatDuration(secondsLeft, units) })}
           </p>
         </div>
       ) : (
@@ -233,7 +234,7 @@ export function GamesScreen({
           </button>
 
           <p className="text-center text-xs text-nav-inactive">
-            {t("games.comboResetsIn", { time: formatDuration(secondsLeft) })}
+            {t("games.comboResetsIn", { time: formatDuration(secondsLeft, units) })}
           </p>
         </>
       )}

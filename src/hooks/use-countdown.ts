@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/lib/i18n/context";
 
 function secondsUntil(iso: string): number {
   return Math.max(0, Math.floor((new Date(iso).getTime() - Date.now()) / 1000));
@@ -49,11 +50,31 @@ export function useElapsedPercent(startIso: string, totalHours: number): number 
   return elapsedPercent(startIso, totalHours);
 }
 
-export function formatDuration(totalSeconds: number): string {
+/** Localized h/m/s labels, e.g. `{ h: "h", m: "m", s: "s" }` — pull from
+ * `t("common.hourShort")` / `t("common.minuteShort")` / `t("common.secondShort")`
+ * at the call site so the unit abbreviations follow the active language
+ * instead of always reading as Russian. */
+export interface DurationUnits {
+  h: string;
+  m: string;
+  s: string;
+}
+
+export function formatDuration(totalSeconds: number, units: DurationUnits): string {
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
   const s = Math.floor(totalSeconds % 60);
-  if (h > 0) return `${h}ч ${m}м`;
-  if (m > 0) return `${m}м ${s}с`;
-  return `${s}с`;
+  if (h > 0) return `${h}${units.h} ${m}${units.m}`;
+  if (m > 0) return `${m}${units.m} ${s}${units.s}`;
+  return `${s}${units.s}`;
+}
+
+/** Reads the active language's h/m/s abbreviations for `formatDuration`. */
+export function useDurationUnits(): DurationUnits {
+  const { t } = useLanguage();
+  return {
+    h: t("common.hourShort"),
+    m: t("common.minuteShort"),
+    s: t("common.secondShort"),
+  };
 }

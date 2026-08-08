@@ -5,6 +5,11 @@ const ru = {
     retry: "Повторить",
     gram: "GRAM",
     back: "Назад",
+    dayShort: "д",
+    hourShort: "ч",
+    minuteShort: "м",
+    secondShort: "с",
+    playerFallback: "Игрок",
   },
   connectError: {
     text: "Не удалось подключиться. Открой приложение через Telegram.",

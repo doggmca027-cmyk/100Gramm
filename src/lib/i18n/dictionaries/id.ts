@@ -7,6 +7,11 @@ const id: typeof ru = {
     retry: "Coba lagi",
     gram: "GRAM",
     back: "Kembali",
+    dayShort: "h",
+    hourShort: "j",
+    minuteShort: "m",
+    secondShort: "d",
+    playerFallback: "Pemain",
   },
   connectError: {
     text: "Tidak dapat terhubung. Buka aplikasi ini melalui Telegram.",

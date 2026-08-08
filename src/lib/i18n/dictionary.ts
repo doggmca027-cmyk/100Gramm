@@ -21,7 +21,7 @@ export function translate(
 
   if (vars) {
     for (const [name, value] of Object.entries(vars)) {
-      text = text.replace(`{${name}}`, String(value));
+      text = text.replaceAll(`{${name}}`, String(value));
     }
   }
 

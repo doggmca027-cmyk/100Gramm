@@ -8,7 +8,7 @@ import type { PartnerTask, PlayerState } from "@/lib/types";
 import { checkPartnerTaskSubscription, ApiError } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
 import { formatGramAmount } from "@/lib/format-gram";
-import { useCountdown, formatDuration } from "@/hooks/use-countdown";
+import { useCountdown, formatDuration, useDurationUnits } from "@/hooks/use-countdown";
 
 type Stage = "todo" | "checking" | "pending" | "done";
 
@@ -31,6 +31,7 @@ function TaskCard({
   onClaimed: (state: PlayerState) => void;
 }) {
   const { t } = useLanguage();
+  const units = useDurationUnits();
   const [stage, setStage] = useState<Stage>(() => initialStage(task));
   const [availableAt, setAvailableAt] = useState<string | null>(task.available_at);
   const [loading, setLoading] = useState(false);
@@ -113,7 +114,7 @@ function TaskCard({
         </p>
         {waiting && (
           <p className="text-xs text-boost">
-            {t("partnerTasks.availableIn", { time: formatDuration(remaining) })}
+            {t("partnerTasks.availableIn", { time: formatDuration(remaining, units) })}
           </p>
         )}
         {errorText && <p className="text-xs text-danger">{errorText}</p>}
