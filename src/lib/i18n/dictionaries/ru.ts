@@ -53,6 +53,7 @@ const ru = {
   },
   productCard: {
     unlocksAfter: "Откроется после",
+    unlocksIn: "Откроется через",
     cycles: "циклов",
     insufficientBalance: "Недостаточно GRAM",
     noFreeSlots: "Нет свободных слотов",

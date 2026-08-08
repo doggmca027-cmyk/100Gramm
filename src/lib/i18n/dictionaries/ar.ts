@@ -55,6 +55,7 @@ const ar: typeof ru = {
   },
   productCard: {
     unlocksAfter: "يُفتح بعد",
+    unlocksIn: "يُفتح خلال",
     cycles: "دورات",
     insufficientBalance: "رصيد GRAM غير كافٍ",
     noFreeSlots: "لا توجد فتحات متاحة",

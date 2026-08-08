@@ -55,6 +55,7 @@ const en: typeof ru = {
   },
   productCard: {
     unlocksAfter: "Unlocks after",
+    unlocksIn: "Unlocks in",
     cycles: "cycles",
     insufficientBalance: "Not enough GRAM",
     noFreeSlots: "No free slots",

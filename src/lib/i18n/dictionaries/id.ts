@@ -55,6 +55,7 @@ const id: typeof ru = {
   },
   productCard: {
     unlocksAfter: "Terbuka setelah",
+    unlocksIn: "Terbuka dalam",
     cycles: "siklus",
     insufficientBalance: "GRAM tidak cukup",
     noFreeSlots: "Tidak ada slot kosong",

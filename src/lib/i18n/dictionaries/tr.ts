@@ -55,6 +55,7 @@ const tr: typeof ru = {
   },
   productCard: {
     unlocksAfter: "Şu kadar sonra açılır:",
+    unlocksIn: "Açılmasına kalan:",
     cycles: "döngü",
     insufficientBalance: "Yetersiz GRAM",
     noFreeSlots: "Boş slot yok",

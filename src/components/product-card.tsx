@@ -52,6 +52,22 @@ export function ProductCard({
     previousTier?.unlocked_at ? (previousTier?.unlock_min_hours ?? 0) : 0,
   );
   const unlockPercent = Math.floor(Math.min(cyclesPercent, timePercent));
+  // unlock_min_hours is a floor measured in real elapsed time since the
+  // previous tier unlocked, deliberately *not* sped up by owning extra
+  // slots — running several cycles in parallel can satisfy the cycle-count
+  // requirement (doneCycles >= requiredCycles) well before this floor does.
+  // When that happens, showing "10/10 циклов" reads as "requirement met"
+  // even though the tier is still gated purely on time, so once cycles are
+  // saturated we switch the label to a countdown against that real floor
+  // instead of the now-meaningless cycle fraction.
+  const cyclesMet = requiredCycles === 0 || doneCycles >= requiredCycles;
+  const unlockAt =
+    previousTier?.unlocked_at && previousTier?.unlock_min_hours
+      ? new Date(
+          new Date(previousTier.unlocked_at).getTime() + previousTier.unlock_min_hours * 3600_000,
+        ).toISOString()
+      : EPOCH;
+  const timeUntilUnlock = useCountdown(unlockAt);
 
   const usedSlots = activeCycles.reduce((sum, c) => sum + c.slot_quantity, 0);
   const soonestEndsAt = nextEndsAt(activeCycles);
@@ -98,8 +114,9 @@ export function ProductCard({
             />
           </div>
           <p className="text-xs text-nav-inactive">
-            {t("productCard.unlocksAfter")} {requiredCycles} {t("productCard.cycles")} ·{" "}
-            {doneCycles}/{requiredCycles} · {unlockPercent}%
+            {cyclesMet && timeUntilUnlock > 0
+              ? `${t("productCard.unlocksIn")} ${formatDuration(timeUntilUnlock, units)}`
+              : `${t("productCard.unlocksAfter")} ${requiredCycles} ${t("productCard.cycles")} · ${doneCycles}/${requiredCycles} · ${unlockPercent}%`}
           </p>
         </div>
       </div>
