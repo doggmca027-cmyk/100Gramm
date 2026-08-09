@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { BarChart3, Medal } from "lucide-react";
 import { fetchAmbassadorStats, type AmbassadorStats } from "@/lib/api-client";
+import { formatGramAmount } from "@/lib/format-gram";
 
 function formatDisplayName(username: string | null, firstName: string | null) {
   const safeName = [firstName, username].find((value) => typeof value === "string" && value.trim().length > 0);
@@ -71,7 +72,7 @@ export function AmbassadorStatsScreen({ onBack }: { onBack: () => void }) {
                   </span>
                   <span>
                     {l.referred_count} чел. ·{" "}
-                    <span className="text-gram">{l.total_deposited.toFixed(2)} GRAM</span>
+                    <span className="text-gram">{formatGramAmount(l.total_deposited)} GRAM</span>
                   </span>
                 </div>
               ))}
