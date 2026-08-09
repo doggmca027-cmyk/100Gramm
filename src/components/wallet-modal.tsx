@@ -15,7 +15,7 @@ import { UsdtAutoDeposit } from "./usdt-auto-deposit";
 type DepositPhase = "idle" | "preparing" | "awaiting-wallet" | "verifying" | "success";
 type DepositCurrency = "GRAM" | "USDT";
 
-const DEFAULT_WITHDRAW_CONFIG = { withdraw_min: 0.5, withdraw_fee_percent: 15 };
+const DEFAULT_WITHDRAW_CONFIG = { withdraw_min: 1, withdraw_fee_percent: 15 };
 /** TON is 1:1 with GRAM — the shared floor applies directly, must match MIN_DEPOSIT_TON server-side. */
 const MIN_DEPOSIT_TON = MIN_DEPOSIT_GRAM;
 
@@ -200,7 +200,7 @@ export function WalletModal({
         err instanceof ApiError && err.code === "payment_not_found"
           ? t("walletConnect.errorNotConfirmed")
           : err instanceof ApiError && err.code === "amount_too_low"
-            ? t("walletConnect.errorTooLow")
+            ? t("walletConnect.errorTooLow", { min: MIN_DEPOSIT_TON })
             : t("walletConnect.errorGeneric"),
       );
     }
@@ -230,6 +230,12 @@ export function WalletModal({
             <X className="h-5 w-5" />
           </button>
         </div>
+
+        {mode === "deposit" && (
+          <p className="text-xs text-nav-inactive">
+            {t("wallet.depositMinNote", { min: MIN_DEPOSIT_GRAM })}
+          </p>
+        )}
 
         {mode === "deposit" && (
           // GRAM vs USDT — both tabs offer the same two funding paths
@@ -296,7 +302,9 @@ export function WalletModal({
                 </div>
               ) : (
                 <>
-                  <p className="text-xs text-nav-inactive">{t("walletConnect.depositSubtitle")}</p>
+                  <p className="text-xs text-nav-inactive">
+                    {t("walletConnect.depositSubtitle", { min: MIN_DEPOSIT_TON })}
+                  </p>
 
                   <input
                     type="text"
@@ -304,7 +312,7 @@ export function WalletModal({
                     dir="ltr"
                     value={depositValue}
                     onChange={(e) => setDepositValue(e.target.value)}
-                    placeholder={t("walletConnect.depositPlaceholder")}
+                    placeholder={t("walletConnect.depositPlaceholder", { min: MIN_DEPOSIT_TON })}
                     disabled={depositBusy}
                     className="rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none disabled:opacity-60"
                     autoFocus
@@ -371,6 +379,9 @@ export function WalletModal({
           <>
             <p className="text-xs text-nav-inactive">
               {t("wallet.balanceLabel")}: {state.wallet.balance.toFixed(2)} {t("common.gram")}
+            </p>
+            <p className="text-xs text-nav-inactive">
+              {t("wallet.withdrawMinNote", { min: withdrawConfig.withdraw_min })}
             </p>
 
             <div
