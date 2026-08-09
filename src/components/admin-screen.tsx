@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Settings, Handshake, Star, Newspaper, Sparkles, Banknote, UserRound, type LucideIcon } from "lucide-react";
 import type { PlayerState } from "@/lib/types";
 import { PartnerTasksAdminSection } from "./admin/partner-tasks-admin-section";
+import { PartnerAppsAdminSection } from "./admin/partner-apps-admin-section";
 import { AmbassadorsAdminSection } from "./admin/ambassadors-admin-section";
 import { NewsAdminSection } from "./admin/news-admin-section";
 import { DailyComboAdminSection } from "./admin/daily-combo-admin-section";
@@ -67,7 +68,12 @@ export function AdminScreen({
       </div>
 
       <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-4 pb-8">
-        {section === "tasks" && <PartnerTasksAdminSection />}
+        {section === "tasks" && (
+          <>
+            <PartnerAppsAdminSection />
+            <PartnerTasksAdminSection />
+          </>
+        )}
         {section === "ambassadors" && (
           <AmbassadorsAdminSection onOpenStats={() => setStatsOpen(true)} />
         )}

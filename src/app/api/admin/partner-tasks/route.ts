@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase
       .from("partner_tasks")
       .select(
-        "id, title, description, reward_amount, reward_item_type, reward_item_qty, channel_username, is_active, sort_order, kind",
+        "id, title, description, reward_amount, reward_item_type, reward_item_qty, channel_username, is_active, sort_order, kind, verification_method, partner_app_id, target_url",
       )
       .eq("season_id", seasonId)
       .order("sort_order");
@@ -48,17 +48,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => null);
 
     const title = typeof body?.title === "string" ? body.title.trim() : "";
-    const username = typeof body?.channelLink === "string"
-      ? parseChannelUsername(body.channelLink)
-      : null;
     const kind = body?.kind === "ambassador" ? "ambassador" : "partner";
     const rewardType = body?.rewardType === "item" ? "item" : "gram";
+    const verificationMethod = body?.verificationMethod === "external_api" ? "external_api" : "telegram_channel";
 
     if (!title) {
       return NextResponse.json({ error: "missing_title" }, { status: 400 });
-    }
-    if (!username) {
-      return NextResponse.json({ error: "invalid_channel_link" }, { status: 400 });
     }
 
     let reward = 0;
@@ -82,6 +77,43 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = supabaseServer();
+
+    // Fields specific to each verification method.
+    let channelUsername: string | null = null;
+    let channelId: string | null = null;
+    let partnerAppId: string | null = null;
+    let targetUrl: string | null = null;
+
+    if (verificationMethod === "telegram_channel") {
+      const username = typeof body?.channelLink === "string"
+        ? parseChannelUsername(body.channelLink)
+        : null;
+      if (!username) {
+        return NextResponse.json({ error: "invalid_channel_link" }, { status: 400 });
+      }
+      channelUsername = username;
+      channelId = `@${username}`;
+    } else {
+      partnerAppId = typeof body?.partnerAppId === "string" ? body.partnerAppId : null;
+      targetUrl = typeof body?.targetUrl === "string" ? body.targetUrl.trim() : "";
+      if (!partnerAppId) {
+        return NextResponse.json({ error: "missing_partner_app" }, { status: 400 });
+      }
+      if (!targetUrl || !/^https?:\/\//.test(targetUrl)) {
+        return NextResponse.json({ error: "invalid_target_url" }, { status: 400 });
+      }
+      const { data: partnerApp, error: partnerAppError } = await supabase
+        .from("partner_apps")
+        .select("id")
+        .eq("id", partnerAppId)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (partnerAppError) throw partnerAppError;
+      if (!partnerApp) {
+        return NextResponse.json({ error: "unknown_partner_app" }, { status: 400 });
+      }
+    }
+
     const { data: seasonId, error: seasonError } = await supabase.rpc("active_season_id");
     if (seasonError) throw seasonError;
     if (!seasonId) {
@@ -101,10 +133,13 @@ export async function POST(request: NextRequest) {
         reward_amount: reward,
         reward_item_type: rewardItemType,
         reward_item_qty: rewardItemQty,
-        channel_username: username,
-        channel_id: `@${username}`,
+        channel_username: channelUsername,
+        channel_id: channelId,
         sort_order: count ?? 0,
         kind,
+        verification_method: verificationMethod,
+        partner_app_id: partnerAppId,
+        target_url: targetUrl,
       })
       .select()
       .single();

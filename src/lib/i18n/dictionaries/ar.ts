@@ -290,6 +290,7 @@ const ar: typeof ru = {
     notSubscribed: "لم تشترك في القناة!",
     checkFailed: "تعذّر التحقق، حاول مرة أخرى",
     availableIn: "تم تأكيد الاشتراك — ستكون المكافأة متاحة خلال {time}",
+    awaitingPartner: "بانتظار تأكيد التطبيق الشريك",
   },
   systemTasks: {
     title: "مهام الحي",

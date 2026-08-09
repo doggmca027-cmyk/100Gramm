@@ -193,6 +193,8 @@ export interface Container {
 }
 
 export type PartnerTaskKind = "partner" | "ambassador";
+/** 'telegram_channel' = the classic subscribe-and-check flow; 'external_api' = another app's task, verified via a signed postback instead — see partner-webhook.ts. */
+export type PartnerTaskVerificationMethod = "telegram_channel" | "external_api";
 
 export interface PartnerTask {
   id: string;
@@ -202,10 +204,11 @@ export interface PartnerTask {
   /** Set when the task pays out a boost item instead of GRAM — reward_amount is 0 in that case. */
   reward_item_type: string | null;
   reward_item_qty: number;
-  channel_username: string;
+  channel_username: string | null;
   icon_url: string | null;
   /** 'ambassador' = channel run by one of our ambassadors ("Смотрящие" tab); 'partner' = everyone else ("Связи на районе"). */
   kind: PartnerTaskKind;
+  verification_method: PartnerTaskVerificationMethod;
   /** Reward actually paid — not just subscription-verified, see verified_at/available_at. */
   completed: boolean;
   /** When the subscription check first passed, if it has. */

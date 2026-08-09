@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Handshake, Star } from "lucide-react";
+import { Handshake, Star, Globe } from "lucide-react";
 import {
   fetchAdminPartnerTasks,
   createAdminPartnerTask,
   deactivateAdminPartnerTask,
+  fetchAdminPartnerApps,
   ApiError,
   type AdminPartnerTask,
+  type AdminPartnerApp,
 } from "@/lib/api-client";
 import type { PartnerTaskKind } from "@/lib/types";
 import { formatGramAmount } from "@/lib/format-gram";
@@ -19,6 +21,7 @@ const KIND_GROUPS: { kind: PartnerTaskKind; label: string; Icon: typeof Handshak
 ];
 
 type RewardType = "gram" | "item";
+type VerificationMethod = "telegram_channel" | "external_api";
 
 // Same catalog combo_item_templates draws from (see lib/combo-items.ts) —
 // the boosts a task can hand out instead of GRAM.
@@ -37,9 +40,13 @@ function rewardItemLabel(itemType: string): string {
 
 export function PartnerTasksAdminSection() {
   const [tasks, setTasks] = useState<AdminPartnerTask[] | null>(null);
+  const [partnerApps, setPartnerApps] = useState<AdminPartnerApp[]>([]);
   const [kind, setKind] = useState<PartnerTaskKind>("partner");
   const [title, setTitle] = useState("");
+  const [verificationMethod, setVerificationMethod] = useState<VerificationMethod>("telegram_channel");
   const [channelLink, setChannelLink] = useState("");
+  const [partnerAppId, setPartnerAppId] = useState("");
+  const [targetUrl, setTargetUrl] = useState("");
   const [rewardType, setRewardType] = useState<RewardType>("gram");
   const [reward, setReward] = useState("");
   const [rewardItemType, setRewardItemType] = useState<string>(REWARD_ITEM_OPTIONS[0].item_type);
@@ -51,6 +58,12 @@ export function PartnerTasksAdminSection() {
     fetchAdminPartnerTasks()
       .then(setTasks)
       .catch(() => setTasks([]));
+    fetchAdminPartnerApps()
+      .then((apps) => {
+        setPartnerApps(apps);
+        setPartnerAppId((cur) => cur || apps.find((a) => a.is_active)?.id || "");
+      })
+      .catch(() => setPartnerApps([]));
   }
 
   useEffect(load, []);
@@ -60,26 +73,25 @@ export function PartnerTasksAdminSection() {
     setError(null);
     setSubmitting(true);
     try {
-      await createAdminPartnerTask(
+      const rewardPart =
         rewardType === "item"
-          ? {
-              title,
-              channelLink,
-              kind,
+          ? ({
               rewardType: "item",
               rewardItemType,
               rewardItemQty: Number(rewardItemQty) || 1,
-            }
-          : {
-              title,
-              channelLink,
-              kind,
-              rewardType: "gram",
-              reward: Number(reward.replace(",", ".")),
-            },
-      );
+            } as const)
+          : ({ rewardType: "gram", reward: Number(reward.replace(",", ".")) } as const);
+
+      const verificationPart =
+        verificationMethod === "external_api"
+          ? ({ verificationMethod: "external_api", partnerAppId, targetUrl: targetUrl.trim() } as const)
+          : ({ verificationMethod: "telegram_channel", channelLink } as const);
+
+      await createAdminPartnerTask({ title, kind, ...rewardPart, ...verificationPart });
+
       setTitle("");
       setChannelLink("");
+      setTargetUrl("");
       setReward("");
       setRewardItemQty("1");
       load();
@@ -87,9 +99,13 @@ export function PartnerTasksAdminSection() {
       setError(
         err instanceof ApiError && err.code === "invalid_channel_link"
           ? "Не понял ссылку на канал — пример: https://t.me/channel или @channel"
-          : err instanceof ApiError && err.code === "invalid_reward"
-            ? "Проверь награду — сумма должна быть положительной, а количество бустов — целым и больше нуля"
-            : "Не получилось создать задачу",
+          : err instanceof ApiError && err.code === "invalid_target_url"
+            ? "URL перехода должен начинаться с http(s)://"
+            : err instanceof ApiError && (err.code === "missing_partner_app" || err.code === "unknown_partner_app")
+              ? "Выбери активное партнёрское приложение (или сначала зарегистрируй его выше)"
+              : err instanceof ApiError && err.code === "invalid_reward"
+                ? "Проверь награду — сумма должна быть положительной, а количество бустов — целым и больше нуля"
+                : "Не получилось создать задачу",
       );
     } finally {
       setSubmitting(false);
@@ -131,13 +147,63 @@ export function PartnerTasksAdminSection() {
           required
           className="rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none"
         />
-        <input
-          value={channelLink}
-          onChange={(e) => setChannelLink(e.target.value)}
-          placeholder="Ссылка на канал (t.me/channel или @channel)"
-          required
-          className="rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none"
-        />
+
+        <div className="flex gap-2">
+          {(
+            [
+              { method: "telegram_channel" as const, label: "Telegram-канал" },
+              { method: "external_api" as const, label: "Другое приложение (API)" },
+            ]
+          ).map(({ method, label }) => (
+            <button
+              key={method}
+              type="button"
+              onClick={() => setVerificationMethod(method)}
+              className={`flex-1 rounded-full px-3 py-2 text-xs font-semibold ${
+                verificationMethod === method ? "gradient-action" : "bg-progress-bg text-nav-inactive"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {verificationMethod === "telegram_channel" ? (
+          <input
+            value={channelLink}
+            onChange={(e) => setChannelLink(e.target.value)}
+            placeholder="Ссылка на канал (t.me/channel или @channel)"
+            required
+            className="rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none"
+          />
+        ) : (
+          <>
+            {partnerApps.length === 0 ? (
+              <p className="rounded-lg bg-progress-bg px-3 py-2 text-xs text-nav-inactive">
+                Партнёров ещё нет — зарегистрируй приложение в разделе выше.
+              </p>
+            ) : (
+              <select
+                value={partnerAppId}
+                onChange={(e) => setPartnerAppId(e.target.value)}
+                className="rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none"
+              >
+                {partnerApps.map((app) => (
+                  <option key={app.id} value={app.id} disabled={!app.is_active}>
+                    {app.name} {app.is_active ? "" : "(отключён)"}
+                  </option>
+                ))}
+              </select>
+            )}
+            <input
+              value={targetUrl}
+              onChange={(e) => setTargetUrl(e.target.value)}
+              placeholder="URL перехода, оканчивается на ...startapp= (наш токен допишется в конец)"
+              required
+              className="rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none"
+            />
+          </>
+        )}
 
         <div className="flex gap-2">
           {(
@@ -194,7 +260,7 @@ export function PartnerTasksAdminSection() {
         {error && <p className="text-xs text-danger">{error}</p>}
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || (verificationMethod === "external_api" && partnerApps.length === 0)}
           className="gradient-action rounded-full py-2 text-sm font-semibold disabled:opacity-50"
         >
           Добавить
@@ -217,6 +283,7 @@ export function PartnerTasksAdminSection() {
               )}
               {group.map((t) => {
                 const RewardIcon = t.reward_item_type ? ITEM_ICON[t.reward_item_type] : null;
+                const partnerName = partnerApps.find((a) => a.id === t.partner_app_id)?.name;
                 return (
                   <div
                     key={t.id}
@@ -225,7 +292,15 @@ export function PartnerTasksAdminSection() {
                     <div>
                       <p className="text-sm font-semibold">{t.title}</p>
                       <p className="flex items-center gap-1 text-xs text-nav-inactive">
-                        @{t.channel_username} ·{" "}
+                        {t.verification_method === "external_api" ? (
+                          <span className="flex items-center gap-1">
+                            <Globe className="h-3 w-3 shrink-0" />
+                            {partnerName ?? "партнёр"}
+                          </span>
+                        ) : (
+                          `@${t.channel_username}`
+                        )}{" "}
+                        ·{" "}
                         {t.reward_item_type ? (
                           <span className="flex items-center gap-1 text-purple-400">
                             {RewardIcon && <RewardIcon className="h-3.5 w-3.5 shrink-0" />}

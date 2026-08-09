@@ -291,6 +291,7 @@ const tr: typeof ru = {
     notSubscribed: "Kanala abone olmadın!",
     checkFailed: "Kontrol edilemedi, tekrar dene",
     availableIn: "Abonelik onaylandı — ödül {time} sonra açılacak",
+    awaitingPartner: "Partner uygulamanın onayı bekleniyor",
   },
   systemTasks: {
     title: "Mahalle Görevleri",

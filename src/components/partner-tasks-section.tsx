@@ -2,16 +2,22 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Handshake, CheckCircle2, Gift, type LucideIcon } from "lucide-react";
+import { Handshake, CheckCircle2, Hourglass, Gift, type LucideIcon } from "lucide-react";
 import { openTelegramLink } from "@telegram-apps/sdk-react";
 import type { PartnerTask, PlayerState } from "@/lib/types";
-import { checkPartnerTaskSubscription, ApiError } from "@/lib/api-client";
+import { checkPartnerTaskSubscription, createExternalTaskClick, ApiError } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
 import { formatGramAmount } from "@/lib/format-gram";
 import { ITEM_ICON, itemNameKey } from "@/lib/combo-items";
 import { useCountdown, formatDuration, useDurationUnits } from "@/hooks/use-countdown";
 
-type Stage = "todo" | "checking" | "pending" | "done";
+// "awaiting_partner" only exists client-side, for external_api tasks: there
+// is no player-triggered check for these (unlike telegram_channel's
+// checking/pending), completion is entirely driven by the partner's own
+// postback to /api/partner/callback/[slug] — this is just "we opened their
+// app, now we wait", reset to "todo" on remount since the server has
+// nothing to resume it from besides completed itself.
+type Stage = "todo" | "checking" | "pending" | "awaiting_partner" | "done";
 
 // Placeholder for useCountdown when there's no available_at yet — avoids
 // computing `new Date()` (impure) during render just to produce an unused
@@ -39,20 +45,47 @@ function TaskCard({
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
 
+  // Derived, not synced via effect: task.completed always wins over
+  // whatever the local `stage` happens to be. Matters most for
+  // external_api tasks, where completion is entirely driven by the
+  // partner's async postback, not a click the player made just now —
+  // without this, a card stuck showing "awaiting_partner" (stage only
+  // ever transitions from the player's own actions) would never notice
+  // the reward was already paid on a background state refresh, and
+  // re-tapping "Выполнить" would just hit already_claimed.
+  const effectiveStage: Stage = task.completed ? "done" : stage;
+
   // Ticks down to 0 once available_at passes — the button unlocks itself,
   // no need for the user to reopen the app.
   const remaining = useCountdown(availableAt ?? EPOCH);
-  const waiting = stage === "pending" && remaining > 0;
+  const waiting = effectiveStage === "pending" && remaining > 0;
 
-  function handleOpen() {
-    const url = `https://t.me/${task.channel_username}`;
+  function openUrl(url: string) {
     if (openTelegramLink.isAvailable()) {
       openTelegramLink(url);
     } else {
       window.open(url, "_blank");
     }
+  }
+
+  function handleOpen() {
+    openUrl(`https://t.me/${task.channel_username}`);
     setStage("checking");
     setErrorText(null);
+  }
+
+  async function handleOpenExternal() {
+    setErrorText(null);
+    setLoading(true);
+    try {
+      const { target_url } = await createExternalTaskClick(task.id);
+      openUrl(target_url);
+      setStage("awaiting_partner");
+    } catch {
+      setErrorText(t("partnerTasks.checkFailed"));
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleCheck() {
@@ -127,15 +160,30 @@ function TaskCard({
             {t("partnerTasks.availableIn", { time: formatDuration(remaining, units) })}
           </p>
         )}
+        {effectiveStage === "awaiting_partner" && (
+          <p className="flex items-center gap-1 text-xs text-boost">
+            <Hourglass className="h-3 w-3 shrink-0" />
+            {t("partnerTasks.awaitingPartner")}
+          </p>
+        )}
         {errorText && <p className="text-xs text-danger">{errorText}</p>}
       </div>
 
-      {stage === "done" ? (
+      {effectiveStage === "done" ? (
         <button type="button" disabled className="flex shrink-0 items-center gap-1 rounded-full bg-progress-bg px-3 py-1.5 text-xs text-profit">
           <CheckCircle2 className="h-3.5 w-3.5" />
           {t("quests.claimed")}
         </button>
-      ) : stage === "todo" ? (
+      ) : task.verification_method === "external_api" ? (
+        <button
+          type="button"
+          onClick={handleOpenExternal}
+          disabled={loading}
+          className="gradient-action shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
+        >
+          {t("partnerTasks.doIt")}
+        </button>
+      ) : effectiveStage === "todo" ? (
         <button type="button" onClick={handleOpen} className="gradient-action shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold">
           {t("partnerTasks.doIt")}
         </button>

@@ -291,6 +291,7 @@ const id: typeof ru = {
     notSubscribed: "Kamu belum berlangganan kanal ini!",
     checkFailed: "Gagal memeriksa, coba lagi",
     availableIn: "Langganan terkonfirmasi — hadiah tersedia dalam {time}",
+    awaitingPartner: "Menunggu konfirmasi dari aplikasi partner",
   },
   systemTasks: {
     title: "Tugas Distrik",

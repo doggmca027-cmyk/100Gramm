@@ -1,4 +1,10 @@
-import type { HistoryEntry, PartnerTaskKind, PlayerState, SquadLevel } from "./types";
+import type {
+  HistoryEntry,
+  PartnerTaskKind,
+  PartnerTaskVerificationMethod,
+  PlayerState,
+  SquadLevel,
+} from "./types";
 
 export class ApiError extends Error {
   constructor(
@@ -326,6 +332,21 @@ export function checkPartnerTaskSubscription(taskId: string) {
   });
 }
 
+/**
+ * Mints (or reuses) the one-time click token for an external_api partner
+ * task and returns where "Выполнить" should open — the token's already
+ * appended to target_url. There's no player-triggered "check" step for
+ * these (unlike telegram_channel tasks): completion is entirely driven by
+ * the partner's own postback to /api/partner/callback/[slug], which the
+ * next state refresh picks up as `completed`.
+ */
+export function createExternalTaskClick(taskId: string) {
+  return request<{ token: string; target_url: string }>("/api/tasks/external-click", {
+    method: "POST",
+    body: JSON.stringify({ taskId }),
+  });
+}
+
 export interface SystemTaskClaimResult {
   task_slug: string;
   reward_xp: number;
@@ -359,10 +380,13 @@ export interface AdminPartnerTask {
   /** Set when the task pays out a boost item instead of GRAM — reward_amount is 0 in that case. */
   reward_item_type: string | null;
   reward_item_qty: number;
-  channel_username: string;
+  channel_username: string | null;
   is_active: boolean;
   sort_order: number;
   kind: PartnerTaskKind;
+  verification_method: PartnerTaskVerificationMethod;
+  partner_app_id: string | null;
+  target_url: string | null;
 }
 
 export function fetchAdminPartnerTasks() {
@@ -372,12 +396,15 @@ export function fetchAdminPartnerTasks() {
 export function createAdminPartnerTask(
   input: {
     title: string;
-    channelLink: string;
     kind: PartnerTaskKind;
   } & (
     | { rewardType: "gram"; reward: number }
     | { rewardType: "item"; rewardItemType: string; rewardItemQty: number }
-  ),
+  ) &
+    (
+      | { verificationMethod: "telegram_channel"; channelLink: string }
+      | { verificationMethod: "external_api"; partnerAppId: string; targetUrl: string }
+    ),
 ) {
   return request<AdminPartnerTask>("/api/admin/partner-tasks", {
     method: "POST",
@@ -387,6 +414,37 @@ export function createAdminPartnerTask(
 
 export function deactivateAdminPartnerTask(id: string) {
   return request<{ ok: true }>(`/api/admin/partner-tasks/${id}`, { method: "PATCH" });
+}
+
+export interface AdminPartnerApp {
+  id: string;
+  slug: string;
+  name: string;
+  secret: string;
+  outgoing_callback_url: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export function fetchAdminPartnerApps() {
+  return request<AdminPartnerApp[]>("/api/admin/partner-apps");
+}
+
+export function createAdminPartnerApp(input: { slug: string; name: string; outgoingCallbackUrl?: string }) {
+  return request<AdminPartnerApp>("/api/admin/partner-apps", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateAdminPartnerApp(
+  id: string,
+  input: { isActive?: boolean; outgoingCallbackUrl?: string; rotateSecret?: boolean },
+) {
+  return request<AdminPartnerApp>(`/api/admin/partner-apps/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
 }
 
 export interface AdminUser {
