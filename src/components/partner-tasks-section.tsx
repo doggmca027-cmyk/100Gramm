@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Handshake, CheckCircle2, type LucideIcon } from "lucide-react";
+import { Handshake, CheckCircle2, Gift, type LucideIcon } from "lucide-react";
 import { openTelegramLink } from "@telegram-apps/sdk-react";
 import type { PartnerTask, PlayerState } from "@/lib/types";
 import { checkPartnerTaskSubscription, ApiError } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
 import { formatGramAmount } from "@/lib/format-gram";
+import { ITEM_ICON, itemNameKey } from "@/lib/combo-items";
 import { useCountdown, formatDuration, useDurationUnits } from "@/hooks/use-countdown";
 
 type Stage = "todo" | "checking" | "pending" | "done";
@@ -32,6 +33,7 @@ function TaskCard({
 }) {
   const { t } = useLanguage();
   const units = useDurationUnits();
+  const ItemIcon = task.reward_item_type ? (ITEM_ICON[task.reward_item_type] ?? Gift) : null;
   const [stage, setStage] = useState<Stage>(() => initialStage(task));
   const [availableAt, setAvailableAt] = useState<string | null>(task.available_at);
   const [loading, setLoading] = useState(false);
@@ -109,9 +111,17 @@ function TaskCard({
         {task.description && (
           <p className="truncate text-xs text-nav-inactive">{task.description}</p>
         )}
-        <p className="text-xs text-gram">
-          +{formatGramAmount(task.reward_amount)} {t("common.gram")}
-        </p>
+        {ItemIcon ? (
+          <p className="flex items-center gap-1 text-xs text-purple-400">
+            <ItemIcon className="h-3.5 w-3.5 shrink-0" />
+            {t(itemNameKey(task.reward_item_type!))}
+            {task.reward_item_qty > 1 ? ` ×${task.reward_item_qty}` : ""}
+          </p>
+        ) : (
+          <p className="text-xs text-gram">
+            +{formatGramAmount(task.reward_amount)} {t("common.gram")}
+          </p>
+        )}
         {waiting && (
           <p className="text-xs text-boost">
             {t("partnerTasks.availableIn", { time: formatDuration(remaining, units) })}

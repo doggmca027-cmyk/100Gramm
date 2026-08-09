@@ -199,6 +199,9 @@ export interface PartnerTask {
   title: string;
   description: string | null;
   reward_amount: number;
+  /** Set when the task pays out a boost item instead of GRAM — reward_amount is 0 in that case. */
+  reward_item_type: string | null;
+  reward_item_qty: number;
   channel_username: string;
   icon_url: string | null;
   /** 'ambassador' = channel run by one of our ambassadors ("Смотрящие" tab); 'partner' = everyone else ("Связи на районе"). */

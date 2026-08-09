@@ -356,6 +356,9 @@ export interface AdminPartnerTask {
   title: string;
   description: string | null;
   reward_amount: number;
+  /** Set when the task pays out a boost item instead of GRAM — reward_amount is 0 in that case. */
+  reward_item_type: string | null;
+  reward_item_qty: number;
   channel_username: string;
   is_active: boolean;
   sort_order: number;
@@ -366,12 +369,16 @@ export function fetchAdminPartnerTasks() {
   return request<AdminPartnerTask[]>("/api/admin/partner-tasks");
 }
 
-export function createAdminPartnerTask(input: {
-  title: string;
-  channelLink: string;
-  reward: number;
-  kind: PartnerTaskKind;
-}) {
+export function createAdminPartnerTask(
+  input: {
+    title: string;
+    channelLink: string;
+    kind: PartnerTaskKind;
+  } & (
+    | { rewardType: "gram"; reward: number }
+    | { rewardType: "item"; rewardItemType: string; rewardItemQty: number }
+  ),
+) {
   return request<AdminPartnerTask>("/api/admin/partner-tasks", {
     method: "POST",
     body: JSON.stringify(input),
