@@ -28,6 +28,7 @@ import { GANG_AVATAR_IDS, GANG_CREATION_COST, GANG_SLOT_PACK_COST, GANG_SLOT_PAC
 import {
   createGang,
   disbandGang,
+  distributeDividends,
   donateToGangBank,
   fetchGangs,
   joinGang,
@@ -38,9 +39,10 @@ import {
   ApiError,
 } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
+import { DistrictMapScreen } from "./district-map-screen";
 
-/** avatar_id -> emblem icon + accent color. Keep in sync with GANG_AVATAR_IDS (src/lib/gang-avatars.ts). */
-const GANG_AVATARS: Record<GangAvatarId, { Icon: LucideIcon; className: string }> = {
+/** avatar_id -> emblem icon + accent color. Keep in sync with GANG_AVATAR_IDS (src/lib/gang-avatars.ts). Exported for district-map-screen.tsx's controlling-gang/leaderboard badges. */
+export const GANG_AVATARS: Record<GangAvatarId, { Icon: LucideIcon; className: string }> = {
   default_gang: { Icon: Users, className: "text-purple-300" },
   skull: { Icon: Skull, className: "text-red-400" },
   crown: { Icon: Crown, className: "text-amber-400" },
@@ -51,7 +53,7 @@ const GANG_AVATARS: Record<GangAvatarId, { Icon: LucideIcon; className: string }
   anchor: { Icon: Anchor, className: "text-cyan-400" },
 };
 
-function GangAvatar({
+export function GangAvatar({
   avatarId,
   sizeClassName = "h-12 w-12",
   iconClassName = "h-6 w-6",
@@ -557,11 +559,14 @@ function GangWithOne({
   const { t } = useLanguage();
   const gang = state.gang!;
   const { entries } = useGangList();
-  const [tabView, setTabView] = useState<"members" | "top">("members");
+  const [tabView, setTabView] = useState<"members" | "treasury" | "top">("members");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [donateOpen, setDonateOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [dividendAmount, setDividendAmount] = useState("");
+  const [dividendSubmitting, setDividendSubmitting] = useState(false);
+  const [dividendError, setDividendError] = useState<string | null>(null);
   const botUsername = process.env.NEXT_PUBLIC_BOT_USERNAME;
   const inviteLink = botUsername ? `https://t.me/${botUsername}?startapp=gang_${gang.id}` : null;
 
@@ -627,6 +632,24 @@ function GangWithOne({
     }
   }
 
+  const dividendParsed = Number(dividendAmount);
+  const dividendValid = dividendAmount.trim().length > 0 && Number.isFinite(dividendParsed) && dividendParsed > 0;
+
+  async function handleDistributeDividends() {
+    if (!dividendValid) return;
+    setDividendSubmitting(true);
+    setDividendError(null);
+    try {
+      const { state: next } = await distributeDividends(dividendParsed);
+      onStateChange(next);
+      setDividendAmount("");
+    } catch (err) {
+      setDividendError(gangErrorMessage(err, t));
+    } finally {
+      setDividendSubmitting(false);
+    }
+  }
+
   async function handleLeave() {
     if (!confirm(t("gangs.leaveConfirm"))) return;
     setBusy(true);
@@ -687,6 +710,13 @@ function GangWithOne({
             />
           </div>
         </div>
+
+        {gang.target_district_name && (
+          <p className="flex items-center gap-1.5 text-xs text-nav-inactive">
+            <Swords className="h-3.5 w-3.5 shrink-0 text-red-400" />
+            {t("gangs.attackingDistrict", { name: gang.target_district_name })}
+          </p>
+        )}
 
         <div className="rounded-2xl border border-purple-900/40 bg-slate-900/80 p-3 text-sm">
           <div className="grid grid-cols-2 gap-2">
@@ -774,7 +804,7 @@ function GangWithOne({
       </button>
 
       <div className="flex gap-2">
-        {(["members", "top"] as const).map((view) => (
+        {(["members", "treasury", "top"] as const).map((view) => (
           <button
             key={view}
             type="button"
@@ -783,13 +813,15 @@ function GangWithOne({
               tabView === view ? "gradient-action" : "gradient-surface text-nav-inactive"
             }`}
           >
-            {view === "members" ? <Users className="h-3.5 w-3.5 shrink-0" /> : <Trophy className="h-3.5 w-3.5 shrink-0" />}
-            {view === "members" ? t("gangs.membersTitle") : t("gangs.topTitle")}
+            {view === "members" && <Users className="h-3.5 w-3.5 shrink-0" />}
+            {view === "treasury" && <HandCoins className="h-3.5 w-3.5 shrink-0" />}
+            {view === "top" && <Trophy className="h-3.5 w-3.5 shrink-0" />}
+            {view === "members" ? t("gangs.membersTitle") : view === "treasury" ? t("gangs.treasuryTitle") : t("gangs.topTitle")}
           </button>
         ))}
       </div>
 
-      {tabView === "members" ? (
+      {tabView === "members" && (
         <div className="gradient-surface flex flex-col divide-y divide-white/5 rounded-xl">
           {gang.members.map((member) => (
             <GangMemberRow
@@ -803,7 +835,50 @@ function GangWithOne({
             />
           ))}
         </div>
-      ) : (
+      )}
+
+      {tabView === "treasury" && (
+        <div className="gradient-surface flex flex-col gap-3 rounded-2xl p-4">
+          <p className="flex items-center gap-1.5 text-sm font-semibold">
+            <HandCoins className="h-4 w-4 shrink-0 text-amber-400" />
+            {t("gangs.dividendsTitle")}
+          </p>
+          <p className="text-xs text-nav-inactive">
+            {t("gangs.dividendsHint", { count: gang.members.length })}
+          </p>
+          {gang.my_role === "leader" ? (
+            <>
+              <input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                value={dividendAmount}
+                onChange={(e) => setDividendAmount(e.target.value)}
+                placeholder={t("gangs.donateAmountPlaceholder")}
+                className={`rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none ring-1 transition-colors ${
+                  dividendValid && dividendParsed > gang.bank_balance_gram ? "ring-danger" : "ring-transparent"
+                }`}
+              />
+              {dividendValid && dividendParsed > gang.bank_balance_gram && (
+                <p className="text-xs text-danger">{t("gangs.insufficientGangBank")}</p>
+              )}
+              {dividendError && <p className="text-xs text-danger">{dividendError}</p>}
+              <button
+                type="button"
+                onClick={handleDistributeDividends}
+                disabled={!dividendValid || dividendSubmitting}
+                className="gradient-action rounded-full py-3 text-sm font-semibold disabled:opacity-40"
+              >
+                {dividendSubmitting ? t("gangs.donating") : t("gangs.dividendsCta")}
+              </button>
+            </>
+          ) : (
+            <p className="text-xs text-nav-inactive">{t("gangs.dividendsLeaderOnly")}</p>
+          )}
+        </div>
+      )}
+
+      {tabView === "top" && (
         <div className="flex flex-col gap-2">
           {entries === null && <p className="p-3 text-center text-sm text-nav-inactive">{t("common.loading")}</p>}
           {entries?.map((g) => (
@@ -854,10 +929,37 @@ export function GangsScreen({
   state: PlayerState;
   onStateChange: (state: PlayerState) => void;
 }) {
+  const { t } = useLanguage();
+  const [view, setView] = useState<"gang" | "districts">("gang");
   const balance = state.wallet.balance ?? 0;
-  return state.gang ? (
-    <GangWithOne state={state} onStateChange={onStateChange} />
-  ) : (
-    <GangsWithoutOne balance={balance} onStateChange={onStateChange} />
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex gap-2 p-4 pb-0">
+        {(["gang", "districts"] as const).map((v) => (
+          <button
+            key={v}
+            type="button"
+            onClick={() => setView(v)}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-xs font-semibold transition-colors ${
+              view === v ? "gradient-action" : "gradient-surface text-nav-inactive"
+            }`}
+          >
+            {v === "gang" ? <Shield className="h-3.5 w-3.5 shrink-0" /> : <Trophy className="h-3.5 w-3.5 shrink-0" />}
+            {v === "gang" ? t("gangs.title") : t("districts.title")}
+          </button>
+        ))}
+      </div>
+
+      {view === "gang" ? (
+        state.gang ? (
+          <GangWithOne state={state} onStateChange={onStateChange} />
+        ) : (
+          <GangsWithoutOne balance={balance} onStateChange={onStateChange} />
+        )
+      ) : (
+        <DistrictMapScreen state={state} onStateChange={onStateChange} />
+      )}
+    </div>
   );
 }

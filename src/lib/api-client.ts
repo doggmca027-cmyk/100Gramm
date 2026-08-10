@@ -1,5 +1,6 @@
 import type {
   BankPlanDays,
+  District,
   GangAvatarId,
   GangListEntry,
   HistoryEntry,
@@ -669,6 +670,27 @@ export function kickGangMember(userId: string) {
 export function upgradeGangCapacity() {
   return request<{ result: { gang_id: string; max_members: number; bank_balance_gram: number }; state: PlayerState }>(
     "/api/gangs/upgrade-capacity",
+    { method: "POST" },
+  );
+}
+
+/** Leader-only: splits `amount` GRAM from the gang bank evenly across every current member. */
+export function distributeDividends(amount: number) {
+  return request<{ result: { gang_id: string; amount: number; member_count: number; bank_balance_gram: number }; state: PlayerState }>(
+    "/api/gangs/dividends",
+    { method: "POST", body: JSON.stringify({ amount }) },
+  );
+}
+
+/** Public read — the "Карта Районов" screen, District Wars MVP. */
+export function fetchDistricts() {
+  return request<District[]>("/api/districts");
+}
+
+/** Leader-or-co_leader-only: sets the caller's gang's attack target for district influence points. */
+export function attackDistrict(districtId: string) {
+  return request<{ result: { gang_id: string; target_district_id: string }; state: PlayerState }>(
+    `/api/districts/${districtId}/attack`,
     { method: "POST" },
   );
 }

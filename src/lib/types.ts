@@ -129,11 +129,38 @@ export interface PlayerGang {
   max_members: number;
   leader_name: string;
   my_role: GangRole;
+  /** The district this gang is currently contesting — null until a leader/co_leader picks one via attackDistrict(). */
+  target_district_id: string | null;
+  target_district_name: string | null;
   members: GangMember[];
   bank_balance_gram: number;
   bank_balance_ton: number;
   bank_top_donors: GangBankDonor[];
   bank_transactions: GangBankTransaction[];
+}
+
+export type DistrictBonusType = "cycle_boost" | "bank_boost" | "slot_discount";
+
+export interface DistrictInfluenceEntry {
+  gang_id: string;
+  name: string;
+  avatar_id: GangAvatarId;
+  points: number;
+}
+
+/** One row of /api/districts — the "Карта Районов" screen. */
+export interface District {
+  id: string;
+  name: string;
+  slug: string;
+  bonus_type: DistrictBonusType;
+  bonus_value: number;
+  controlling_gang: { id: string; name: string; avatar_id: GangAvatarId } | null;
+  /** True when this is the caller's own gang's current attack target. */
+  is_my_target: boolean;
+  /** The caller's own gang's influence points here — null when the caller isn't in a gang. */
+  my_gang_points: number | null;
+  top_influence: DistrictInfluenceEntry[];
 }
 
 /** One row of /api/gangs — the browse-to-join list and the "Топ Банд Района" ranking table, same shape either way. */
