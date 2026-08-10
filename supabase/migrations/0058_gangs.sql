@@ -161,12 +161,16 @@ begin
     raise exception 'no_active_season';
   end if;
 
-  -- Lock first, check second â€” same order every other balance-deducting
-  -- RPC in this schema uses (request_withdrawal, start_cycle, create_bank_deposit).
-  select balance into v_balance
-  from user_seasons
-  where user_id = p_user_id and season_id = v_season_id
-  for update;
+  select coalesce((config->>'starting_balance')::numeric, 0)
+  into v_balance
+  from seasons
+  where id = v_season_id;
+
+  insert into user_seasons (user_id, season_id, balance, total_earned)
+  values (p_user_id, v_season_id, v_balance, v_balance)
+  on conflict (user_id, season_id) do nothing;
+
+  -- Lock first, check second — same order every other balance-deducting
 
   if v_balance is null then
     raise exception 'no_active_season';
@@ -1294,3 +1298,4 @@ exception
     raise exception 'tx_already_used';
 end;
 $$;
+
