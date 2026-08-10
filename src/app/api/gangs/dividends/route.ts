@@ -11,6 +11,9 @@ export async function POST(request: NextRequest) {
     const userId = await requireUserId(request);
     const body = await request.json().catch(() => null);
     const amount = typeof body?.amount === "number" ? body.amount : Number(body?.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return NextResponse.json({ error: "amount_too_low" }, { status: 400 });
+    }
 
     const supabase = supabaseServer();
     const { data: result, error } = await supabase.rpc("distribute_bank_dividends", {

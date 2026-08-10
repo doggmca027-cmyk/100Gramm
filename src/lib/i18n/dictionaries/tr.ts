@@ -363,7 +363,7 @@ const tr: typeof ru = {
     leaveConfirm: "Bu sendikadan kalıcı olarak ayrılınsın mı?",
     leaving: "Ayrılıyor...",
     disband: "Sendikayı fesih et",
-    disbandConfirm: "Bu, sendikayı tüm üyeleriyle birlikte kalıcı olarak siler. Fesih edilsin mi?",
+    disbandConfirm: "Bu, sendikayı tüm üyeleriyle birlikte kalıcı olarak siler. Kasada kalan GRAM önce üyelere eşit dağıtılır. Fesih edilsin mi?",
     disbanding: "Fesih ediliyor...",
     leaderCannotLeave: "Lider öylece ayrılamaz — liderliği devret ya da sendikayı fesih et",
     nameTaken: "Bu isim zaten alınmış",

@@ -363,7 +363,7 @@ const id: typeof ru = {
     leaveConfirm: "Yakin keluar dari sindikat ini?",
     leaving: "Keluar...",
     disband: "Bubarkan sindikat",
-    disbandConfirm: "Ini akan menghapus sindikat beserta seluruh anggotanya secara permanen. Bubarkan?",
+    disbandConfirm: "Ini akan menghapus sindikat beserta seluruh anggotanya secara permanen. Sisa GRAM di bank akan dibagi rata ke anggota dulu. Bubarkan?",
     disbanding: "Membubarkan...",
     leaderCannotLeave: "Ketua tidak bisa langsung keluar — serahkan kepemimpinan atau bubarkan sindikat",
     nameTaken: "Nama itu sudah dipakai",

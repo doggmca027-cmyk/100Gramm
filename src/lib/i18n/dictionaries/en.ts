@@ -363,7 +363,7 @@ const en: typeof ru = {
     leaveConfirm: "Leave this syndicate for good?",
     leaving: "Leaving...",
     disband: "Disband syndicate",
-    disbandConfirm: "This deletes the syndicate for good, along with its whole roster. Disband it?",
+    disbandConfirm: "This deletes the syndicate for good, along with its whole roster. Any GRAM left in the bank splits evenly across the members first. Disband it?",
     disbanding: "Disbanding...",
     leaderCannotLeave: "A leader can't just leave — hand off leadership or disband the syndicate",
     nameTaken: "That name is already taken",
