@@ -1,4 +1,5 @@
 import type {
+  BankPlanDays,
   HistoryEntry,
   PartnerTaskKind,
   PartnerTaskVerificationMethod,
@@ -594,4 +595,37 @@ export function resolveAdminWithdrawal(id: string, approve: boolean, note?: stri
     method: "PATCH",
     body: JSON.stringify({ approve, note }),
   });
+}
+
+export interface BankDepositResult {
+  deposit_id: string;
+  balance: number;
+  ends_at: string;
+  expected_reward: number;
+  bonus_speed: boolean;
+  bonus_slot: boolean;
+}
+
+/** Opens a deposit — the plan's minimum is re-validated server-side regardless of what the UI already checked. */
+export function createBankDeposit(planDays: BankPlanDays, amount: number) {
+  return request<{ result: BankDepositResult; state: PlayerState }>("/api/bank/deposits", {
+    method: "POST",
+    body: JSON.stringify({ planDays, amount }),
+  });
+}
+
+/** Pays out principal + reward — server rejects if not yet matured (ends_at hasn't passed). */
+export function claimBankDeposit(id: string) {
+  return request<{ result: { status: "claimed"; payout: number; reward: number }; state: PlayerState }>(
+    `/api/bank/deposits/${id}/claim`,
+    { method: "POST" },
+  );
+}
+
+/** Returns principal only (0% yield) and instantly drops any buff this deposit was granting. */
+export function earlyWithdrawBankDeposit(id: string) {
+  return request<{ result: { status: "early_closed"; returned: number }; state: PlayerState }>(
+    `/api/bank/deposits/${id}/withdraw`,
+    { method: "POST" },
+  );
 }

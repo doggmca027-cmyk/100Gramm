@@ -36,6 +36,10 @@ const KNOWN_RPC_ERRORS: Record<string, number> = {
   task_not_claimable: 409,
   not_verified: 409,
   too_early: 409,
+  invalid_plan: 400,
+  unknown_deposit: 404,
+  deposit_not_active: 409,
+  deposit_not_matured: 409,
 };
 
 /** Postgres wraps a plpgsql `raise exception 'x'` message as `x` (sometimes with a trailing detail). */

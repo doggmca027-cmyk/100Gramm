@@ -69,6 +69,32 @@ export interface PlayerState {
   inventory: InventoryItem[];
   /** GRAM/USDT — GRAM *is* TON, so this is really just live TON/USDT, cached ≤60s server-side. */
   exchange_rate: { pair: string; rate: number; updated_at: string } | null;
+  /** Own deposits, active ones first — see BankDeposit. */
+  bank_deposits: BankDeposit[];
+  /** Whether ANY currently-active deposit is granting each buff right now — same two flags start_cycle itself checks server-side. */
+  bank_buffs: {
+    speed_boost: boolean;
+    slot_boost: boolean;
+  };
+}
+
+export type BankPlanDays = 7 | 14 | 30;
+export type BankDepositStatus = "active" | "claimed" | "early_closed";
+
+export interface BankDeposit {
+  id: string;
+  amount: number;
+  plan_days: BankPlanDays;
+  yield_percent: number;
+  /** amount * yield_percent / 100 — only paid out on a matured claim, not on early withdrawal. */
+  expected_reward: number;
+  /** Whether THIS deposit is granting the +10% cycle-speed buff while active — decided once at creation (see the 14-day plan). */
+  bonus_speed: boolean;
+  /** Whether THIS deposit is granting the +1-slot buff while active — decided once at creation (see the 14-day plan). */
+  bonus_slot: boolean;
+  status: BankDepositStatus;
+  starts_at: string;
+  ends_at: string;
 }
 
 export type BoostStatus = "PENDING" | "ACTIVE" | "USED" | "EXPIRED";
@@ -155,6 +181,8 @@ export interface TierState {
   can_buy_max: boolean;
   /** Extra capacity from ACTIVE boosts on this tier, on top of (not capped by) slots_max. */
   slots_boost: number;
+  /** Extra capacity from an active Bank deposit's +1-slot buff — flat across every tier, see bank_buffs.slot_boost. */
+  slots_bank_bonus: number;
   slots_total: number;
 }
 
