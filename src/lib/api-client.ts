@@ -1,7 +1,9 @@
 import type {
   BankPlanDays,
   District,
+  DistrictBoostType,
   GangAvatarId,
+  GangCosmetic,
   GangListEntry,
   HistoryEntry,
   PartnerTaskKind,
@@ -691,6 +693,51 @@ export function fetchDistricts() {
 export function attackDistrict(districtId: string) {
   return request<{ result: { gang_id: string; target_district_id: string; battle_date: string }; state: PlayerState }>(
     `/api/districts/${districtId}/attack`,
+    { method: "POST" },
+  );
+}
+
+/** Leader-or-co_leader-only: buys a battle boost, only while the district's window is active. */
+export function activateDistrictBoost(districtId: string, boostType: DistrictBoostType, payFromBank: boolean) {
+  return request<{ result: { expires_at: string }; state: PlayerState }>(
+    `/api/districts/${districtId}/boost`,
+    { method: "POST", body: JSON.stringify({ boostType, payFromBank }) },
+  );
+}
+
+/** Leader-or-co_leader-only: hires the mercenary bot (+50 influence/hour, automatic, for the rest of today's window). */
+export function activateMercenaryBot(districtId: string, payFromBank: boolean) {
+  return request<{ result: { expires_at: string }; state: PlayerState }>(
+    `/api/districts/${districtId}/mercenary`,
+    { method: "POST", body: JSON.stringify({ payFromBank }) },
+  );
+}
+
+/** Public read — the "Кастомизация" shop catalog. */
+export function fetchGangCosmetics() {
+  return request<GangCosmetic[]>("/api/gangs/cosmetics");
+}
+
+/** Leader-only: buys a premium avatar or frame from their own balance. */
+export function purchaseGangCosmetic(cosmeticCode: string) {
+  return request<{ result: { cosmetic_code: string; cosmetic_type: string }; state: PlayerState }>(
+    "/api/gangs/cosmetics/purchase",
+    { method: "POST", body: JSON.stringify({ cosmeticCode }) },
+  );
+}
+
+/** Leader-only: buys +1 co_leader slot for 3 GRAM from their own balance. */
+export function purchaseCoLeaderSlot() {
+  return request<{ result: { co_leader_slots: number }; state: PlayerState }>(
+    "/api/gangs/co-leader-slot",
+    { method: "POST" },
+  );
+}
+
+/** Leader-only: one-time 10 GRAM upgrade to 30% APY gang bank interest. */
+export function purchaseVipTreasury() {
+  return request<{ result: { vip_treasury: boolean }; state: PlayerState }>(
+    "/api/gangs/vip-treasury",
     { method: "POST" },
   );
 }

@@ -21,10 +21,20 @@ import {
   ArrowUp,
   ArrowDown,
   HandCoins,
+  Sparkles,
+  Gem,
   type LucideIcon,
 } from "lucide-react";
-import type { GangAvatarId, GangListEntry, GangMember, GangRole, PlayerState } from "@/lib/types";
-import { GANG_AVATAR_IDS, GANG_CREATION_COST, GANG_SLOT_PACK_COST, GANG_SLOT_PACK_SIZE } from "@/lib/gang-avatars";
+import type { GangAvatarId, GangCosmeticFields, GangListEntry, GangMember, GangRole, PlayerState } from "@/lib/types";
+import {
+  CO_LEADER_SLOT_COST,
+  GANG_AVATAR_IDS,
+  GANG_CREATION_COST,
+  GANG_SLOT_PACK_COST,
+  GANG_SLOT_PACK_SIZE,
+  VIP_TREASURY_COST,
+} from "@/lib/gang-avatars";
+import { gangGlowClassName } from "@/lib/gang-cosmetics";
 import {
   createGang,
   disbandGang,
@@ -34,12 +44,15 @@ import {
   joinGang,
   kickGangMember,
   leaveGang,
+  purchaseCoLeaderSlot,
+  purchaseVipTreasury,
   setGangMemberRole,
   upgradeGangCapacity,
   ApiError,
 } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
 import { DistrictMapScreen } from "./district-map-screen";
+import { GangCustomizationScreen } from "./gang-customization-screen";
 
 /** avatar_id -> emblem icon + accent color. Keep in sync with GANG_AVATAR_IDS (src/lib/gang-avatars.ts). Exported for district-map-screen.tsx's controlling-gang/leaderboard badges. */
 export const GANG_AVATARS: Record<GangAvatarId, { Icon: LucideIcon; className: string }> = {
@@ -53,19 +66,22 @@ export const GANG_AVATARS: Record<GangAvatarId, { Icon: LucideIcon; className: s
   anchor: { Icon: Anchor, className: "text-cyan-400" },
 };
 
+/** `cosmetics` (premium_avatar_id/frame_id) draws a gold/neon ring around gangs that bought customization — see gang-cosmetics.ts. Purely decorative, never changes the underlying emblem icon (no per-cosmetic art in this MVP). */
 export function GangAvatar({
   avatarId,
+  cosmetics,
   sizeClassName = "h-12 w-12",
   iconClassName = "h-6 w-6",
 }: {
   avatarId: GangAvatarId;
+  cosmetics?: Partial<GangCosmeticFields> | null;
   sizeClassName?: string;
   iconClassName?: string;
 }) {
   const { Icon, className } = GANG_AVATARS[avatarId] ?? GANG_AVATARS.default_gang;
   return (
     <div
-      className={`${sizeClassName} flex shrink-0 items-center justify-center rounded-full border border-purple-900/40 bg-slate-900/80`}
+      className={`${sizeClassName} flex shrink-0 items-center justify-center rounded-full border border-purple-900/40 bg-slate-900/80 ${gangGlowClassName(cosmetics)}`}
     >
       <Icon className={`${iconClassName} ${className}`} />
     </div>
@@ -344,7 +360,7 @@ function GangListRow({
           : "border-purple-900/40 bg-slate-900/80"
       }`}
     >
-      <GangAvatar avatarId={gang.avatar_id} sizeClassName="h-11 w-11" iconClassName="h-5 w-5" />
+      <GangAvatar avatarId={gang.avatar_id} cosmetics={gang} sizeClassName="h-11 w-11" iconClassName="h-5 w-5" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold">{gang.name}</p>
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-nav-inactive">
@@ -559,7 +575,7 @@ function GangWithOne({
   const { t } = useLanguage();
   const gang = state.gang!;
   const { entries } = useGangList();
-  const [tabView, setTabView] = useState<"members" | "treasury" | "top">("members");
+  const [tabView, setTabView] = useState<"members" | "treasury" | "customization" | "top">("members");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [donateOpen, setDonateOpen] = useState(false);
@@ -567,6 +583,8 @@ function GangWithOne({
   const [dividendAmount, setDividendAmount] = useState("");
   const [dividendSubmitting, setDividendSubmitting] = useState(false);
   const [dividendError, setDividendError] = useState<string | null>(null);
+  const [slotSubmitting, setSlotSubmitting] = useState(false);
+  const [vipSubmitting, setVipSubmitting] = useState(false);
   const botUsername = process.env.NEXT_PUBLIC_BOT_USERNAME;
   const inviteLink = botUsername ? `https://t.me/${botUsername}?startapp=gang_${gang.id}` : null;
 
@@ -650,6 +668,32 @@ function GangWithOne({
     }
   }
 
+  async function handlePurchaseCoLeaderSlot() {
+    setSlotSubmitting(true);
+    setError(null);
+    try {
+      const { state: next } = await purchaseCoLeaderSlot();
+      onStateChange(next);
+    } catch (err) {
+      setError(gangErrorMessage(err, t));
+    } finally {
+      setSlotSubmitting(false);
+    }
+  }
+
+  async function handlePurchaseVipTreasury() {
+    setVipSubmitting(true);
+    setError(null);
+    try {
+      const { state: next } = await purchaseVipTreasury();
+      onStateChange(next);
+    } catch (err) {
+      setError(gangErrorMessage(err, t));
+    } finally {
+      setVipSubmitting(false);
+    }
+  }
+
   async function handleLeave() {
     if (!confirm(t("gangs.leaveConfirm"))) return;
     setBusy(true);
@@ -682,7 +726,7 @@ function GangWithOne({
     <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pb-24">
       <div className="gradient-surface flex flex-col gap-3 rounded-2xl border border-purple-900/40 p-4 shadow-[0_0_24px_rgba(147,51,234,0.1)]">
         <div className="flex items-center gap-3">
-          <GangAvatar avatarId={gang.avatar_id} sizeClassName="h-14 w-14" iconClassName="h-7 w-7" />
+          <GangAvatar avatarId={gang.avatar_id} cosmetics={gang} sizeClassName="h-14 w-14" iconClassName="h-7 w-7" />
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-lg font-bold">{gang.name}</h1>
             <p className="flex items-center gap-1 text-xs text-nav-inactive">
@@ -803,20 +847,27 @@ function GangWithOne({
         {copied ? t("gangs.copied") : t("gangs.invite")}
       </button>
 
-      <div className="flex gap-2">
-        {(["members", "treasury", "top"] as const).map((view) => (
+      <div className="flex gap-1.5">
+        {(["members", "treasury", "customization", "top"] as const).map((view) => (
           <button
             key={view}
             type="button"
             onClick={() => setTabView(view)}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-xs font-semibold transition-colors ${
+            className={`flex flex-1 items-center justify-center gap-1 rounded-full py-2 text-[11px] font-semibold transition-colors ${
               tabView === view ? "gradient-action" : "gradient-surface text-nav-inactive"
             }`}
           >
             {view === "members" && <Users className="h-3.5 w-3.5 shrink-0" />}
             {view === "treasury" && <HandCoins className="h-3.5 w-3.5 shrink-0" />}
+            {view === "customization" && <Sparkles className="h-3.5 w-3.5 shrink-0" />}
             {view === "top" && <Trophy className="h-3.5 w-3.5 shrink-0" />}
-            {view === "members" ? t("gangs.membersTitle") : view === "treasury" ? t("gangs.treasuryTitle") : t("gangs.topTitle")}
+            {view === "members"
+              ? t("gangs.membersTitle")
+              : view === "treasury"
+                ? t("gangs.treasuryTitle")
+                : view === "customization"
+                  ? t("gangs.customizationTitle")
+                  : t("gangs.topTitle")}
           </button>
         ))}
       </div>
@@ -875,7 +926,54 @@ function GangWithOne({
           ) : (
             <p className="text-xs text-nav-inactive">{t("gangs.dividendsLeaderOnly")}</p>
           )}
+
+          {gang.my_role === "leader" && (
+            <div className="mt-2 flex flex-col gap-3 border-t border-white/5 pt-3">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-xs font-semibold">{t("gangs.coLeaderSlotsTitle")}</p>
+                  <p className="text-[11px] text-nav-inactive">
+                    {t("gangs.coLeaderSlotsHint", { count: gang.co_leader_slots })}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handlePurchaseCoLeaderSlot}
+                  disabled={slotSubmitting || (state.wallet.balance ?? 0) < CO_LEADER_SLOT_COST}
+                  className="shrink-0 rounded-full bg-progress-bg px-3 py-1.5 text-[11px] font-semibold text-gram disabled:opacity-40"
+                >
+                  {slotSubmitting ? t("gangs.buying") : t("gangs.buySlot", { cost: CO_LEADER_SLOT_COST })}
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="flex items-center gap-1 text-xs font-semibold text-amber-300">
+                    <Gem className="h-3.5 w-3.5 shrink-0" />
+                    {t("gangs.vipTreasuryTitle")}
+                  </p>
+                  <p className="text-[11px] text-nav-inactive">
+                    {gang.vip_treasury ? t("gangs.vipTreasuryActive") : t("gangs.vipTreasuryHint")}
+                  </p>
+                </div>
+                {!gang.vip_treasury && (
+                  <button
+                    type="button"
+                    onClick={handlePurchaseVipTreasury}
+                    disabled={vipSubmitting || (state.wallet.balance ?? 0) < VIP_TREASURY_COST}
+                    className="shrink-0 rounded-full bg-gradient-to-r from-amber-500 to-amber-300 px-3 py-1.5 text-[11px] font-semibold text-bg disabled:opacity-40"
+                  >
+                    {vipSubmitting ? t("gangs.buying") : t("gangs.unlockVip", { cost: VIP_TREASURY_COST })}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
+      )}
+
+      {tabView === "customization" && (
+        <GangCustomizationScreen gang={gang} balance={state.wallet.balance ?? 0} onStateChange={onStateChange} />
       )}
 
       {tabView === "top" && (

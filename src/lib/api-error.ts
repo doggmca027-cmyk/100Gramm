@@ -58,6 +58,14 @@ const KNOWN_RPC_ERRORS: Record<string, number> = {
   not_gang_officer: 409,
   district_not_found: 404,
   already_controls_district: 400,
+  battle_not_active: 409,
+  boost_already_active: 409,
+  not_district_defender: 409,
+  invalid_boost_type: 400,
+  mercenary_already_active: 409,
+  cosmetic_not_found: 404,
+  already_vip: 409,
+  co_leader_slots_full: 409,
 };
 
 /** Postgres wraps a plpgsql `raise exception 'x'` message as `x` (sometimes with a trailing detail). */

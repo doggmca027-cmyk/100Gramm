@@ -116,8 +116,14 @@ export interface GangBankTransaction {
   created_at: string;
 }
 
+/** Premium cosmetics a gang may have equipped — see gang-cosmetics-catalog.ts / GET /api/gangs/cosmetics for the shop's own {code -> price/glow} data. */
+export interface GangCosmeticFields {
+  premium_avatar_id: string | null;
+  frame_id: string | null;
+}
+
 /** state.gang — the caller's own gang, full roster included (capped at max_members = 20, cheap to inline). */
-export interface PlayerGang {
+export interface PlayerGang extends GangCosmeticFields {
   id: string;
   name: string;
   avatar_id: GangAvatarId;
@@ -127,6 +133,10 @@ export interface PlayerGang {
   exp_into_level: number;
   exp_per_level: number;
   max_members: number;
+  /** 1 free, +1 per purchaseCoLeaderSlot() — governs how many members set_gang_member_role('co_leader') can promote. */
+  co_leader_slots: number;
+  /** True once purchaseVipTreasury() has been bought — bank interest accrues at 30% APY instead of 10%. */
+  vip_treasury: boolean;
   leader_name: string;
   my_role: GangRole;
   /** The district this gang is currently contesting — null until a leader/co_leader picks one via attackDistrict(). */
@@ -143,11 +153,26 @@ export type DistrictBonusType = "cycle_boost" | "bank_boost" | "slot_discount";
 
 export type DistrictBattleStatus = "peace" | "active";
 
-export interface DistrictCombatant {
+export interface DistrictCombatant extends GangCosmeticFields {
   gang_id: string;
   name: string;
   avatar_id: GangAvatarId;
   points: number;
+}
+
+export type DistrictBoostType = "airstrike_2x" | "airstrike_3x" | "engineer_shield";
+
+export interface DistrictActiveBoost {
+  gang_id: string;
+  gang_name: string;
+  boost_type: DistrictBoostType;
+  expires_at: string;
+}
+
+export interface DistrictMercenaryBot {
+  gang_id: string;
+  gang_name: string;
+  expires_at: string;
 }
 
 /**
@@ -162,22 +187,35 @@ export interface District {
   slug: string;
   bonus_type: DistrictBonusType;
   bonus_value: number;
-  controlling_gang: { id: string; name: string; avatar_id: GangAvatarId } | null;
+  controlling_gang: (GangCosmeticFields & { id: string; name: string; avatar_id: GangAvatarId }) | null;
   battle_status: DistrictBattleStatus;
   /** ISO timestamp of the next status flip — window close if `battle_status` is "active", window open otherwise. */
   next_transition_at: string;
   /** The controlling gang's current-battle defense points — null when the district has no controller yet. */
-  defender: { gang_id: string; name: string; avatar_id: GangAvatarId; points: number } | null;
+  defender: (GangCosmeticFields & { gang_id: string; name: string; avatar_id: GangAvatarId; points: number }) | null;
   /** The single highest-scoring challenger for today's battle, if any have applied. */
   top_challenger: DistrictCombatant | null;
   /** The caller's own gang's role in today's fight for this district — null when the caller isn't in a gang or hasn't applied here. */
   my_gang_role: "defender" | "attacker" | null;
   /** The caller's own gang's points in today's fight — null when `my_gang_role` is null. */
   my_gang_points: number | null;
+  /** Every airstrike/shield currently running on this district, either side. */
+  active_boosts: DistrictActiveBoost[];
+  /** Mercenary bots currently ticking for this district's battle. */
+  mercenary_bots: DistrictMercenaryBot[];
+}
+
+/** GET /api/gangs/cosmetics — the "Кастомизация" shop catalog. */
+export interface GangCosmetic {
+  code: string;
+  cosmetic_type: "avatar" | "frame";
+  name: string;
+  price: number;
+  glow: string;
 }
 
 /** One row of /api/gangs — the browse-to-join list and the "Топ Банд Района" ranking table, same shape either way. */
-export interface GangListEntry {
+export interface GangListEntry extends GangCosmeticFields {
   id: string;
   name: string;
   avatar_id: GangAvatarId;

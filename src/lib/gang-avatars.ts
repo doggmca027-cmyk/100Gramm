@@ -24,3 +24,15 @@ export const GANG_CREATION_COST = 5;
 /** +5 member slots per purchase, 1 GRAM each, paid from the gang's own bank — see upgrade_gang_capacity (0062_gang_capacity_upgrade.sql). UI-only mirrors, same posture as GANG_CREATION_COST above. */
 export const GANG_SLOT_PACK_SIZE = 5;
 export const GANG_SLOT_PACK_COST = 1;
+
+/** +1 co_leader slot, from the leader's own balance — see purchase_co_leader_slot (0066_district_wars_monetization.sql). UI-only mirror. */
+export const CO_LEADER_SLOT_COST = 3;
+
+/** One-time upgrade to 30% APY gang bank interest (from 10% base) — see purchase_vip_treasury (0066_district_wars_monetization.sql). UI-only mirror. */
+export const VIP_TREASURY_COST = 10;
+
+/** Battle boost prices — see activate_district_boost (0066_district_wars_monetization.sql). UI-only mirrors. */
+export const AIRSTRIKE_2X_COST = 2;
+export const AIRSTRIKE_3X_COST = 5;
+export const ENGINEER_SHIELD_COST = 3;
+export const MERCENARY_BOT_COST = 8;
