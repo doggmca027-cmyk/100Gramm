@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Building2, Factory, Landmark, Ship, Swords, Trophy, type LucideIcon } from "lucide-react";
-import type { District, PlayerState } from "@/lib/types";
+import { Building2, Factory, Landmark, Ship, Shield, Swords, Trophy, type LucideIcon } from "lucide-react";
+import type { District, GangAvatarId, PlayerState } from "@/lib/types";
 import { attackDistrict, fetchDistricts, ApiError } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
-import { GANG_AVATARS, GangAvatar } from "./gangs-screen";
+import { useCountdown, formatDuration, useDurationUnits } from "@/hooks/use-countdown";
+import { GangAvatar } from "./gangs-screen";
 
 /** slug -> icon. The districts table itself has no icon column (see 0063_district_wars.sql's header) — same "server stores an id, client maps it to an art asset" split gang-avatars.ts uses for emblems. Falls back to Landmark for any future district slug that isn't listed here. */
 const DISTRICT_ICONS: Record<string, LucideIcon> = {
@@ -22,9 +23,59 @@ function districtErrorMessage(err: unknown, t: ReturnType<typeof useLanguage>["t
       return t("districts.notInGang");
     case "not_gang_officer":
       return t("districts.notOfficer");
+    case "already_controls_district":
+      return t("districts.alreadyControls");
     default:
       return t("gangs.actionFailed");
   }
+}
+
+/** Live "Xh Ym" / "Xm Ys" countdown to `targetIso`, ticking every second — same building blocks bank-screen.tsx uses for its payout countdown. */
+function CountdownLabel({ targetIso }: { targetIso: string }) {
+  const seconds = useCountdown(targetIso);
+  const units = useDurationUnits();
+  return <>{formatDuration(seconds, units)}</>;
+}
+
+function TugOfWarBar({ defensePoints, attackPoints }: { defensePoints: number; attackPoints: number }) {
+  const total = defensePoints + attackPoints;
+  const defenseWidth = total > 0 ? (defensePoints / total) * 100 : 50;
+  return (
+    <div className="flex h-2 w-full overflow-hidden rounded-full bg-progress-bg">
+      <div className="h-full bg-sky-400 transition-all" style={{ width: `${defenseWidth}%` }} />
+      <div className="h-full bg-red-400 transition-all" style={{ width: `${100 - defenseWidth}%` }} />
+    </div>
+  );
+}
+
+function CombatantRow({
+  icon: Icon,
+  label,
+  combatant,
+  emptyLabel,
+  colorClassName,
+}: {
+  icon: LucideIcon;
+  label: string;
+  combatant: { name: string; avatar_id: GangAvatarId; points: number } | null;
+  emptyLabel: string;
+  colorClassName: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <Icon className={`h-3.5 w-3.5 shrink-0 ${colorClassName}`} />
+      <span className="w-14 shrink-0 text-nav-inactive">{label}</span>
+      {combatant ? (
+        <>
+          <GangAvatar avatarId={combatant.avatar_id} sizeClassName="h-5 w-5" iconClassName="h-3 w-3" />
+          <span className="min-w-0 flex-1 truncate">{combatant.name}</span>
+          <span className="shrink-0 font-semibold text-gram">{combatant.points}</span>
+        </>
+      ) : (
+        <span className="flex-1 text-nav-inactive">{emptyLabel}</span>
+      )}
+    </div>
+  );
 }
 
 function DistrictCard({
@@ -40,6 +91,7 @@ function DistrictCard({
 }) {
   const { t } = useLanguage();
   const Icon = DISTRICT_ICONS[district.slug] ?? Landmark;
+  const isActive = district.battle_status === "active";
 
   const bonusLabel =
     district.bonus_type === "cycle_boost"
@@ -48,10 +100,13 @@ function DistrictCard({
         ? t("districts.bonusBankBoost", { value: district.bonus_value })
         : t("districts.bonusSlotDiscount", { value: district.bonus_value });
 
+  const alreadyApplied = district.my_gang_role === "attacker";
+  const showAttackButton = canAttack && district.my_gang_role !== "defender";
+
   return (
     <div
       className={`flex flex-col gap-3 rounded-2xl border p-4 ${
-        district.is_my_target
+        district.my_gang_role
           ? "border-amber-500/50 bg-amber-500/10 shadow-[0_0_18px_rgba(245,158,11,0.14)]"
           : "border-purple-900/40 bg-slate-900/80"
       }`}
@@ -66,57 +121,53 @@ function DistrictCard({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 rounded-xl bg-progress-bg p-2.5 text-xs">
-        {district.controlling_gang ? (
-          <>
-            <GangAvatar avatarId={district.controlling_gang.avatar_id} sizeClassName="h-7 w-7" iconClassName="h-3.5 w-3.5" />
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] text-nav-inactive">{t("districts.controlledBy")}</p>
-              <p className="truncate font-semibold">{district.controlling_gang.name}</p>
-            </div>
-          </>
-        ) : (
-          <p className="text-nav-inactive">{t("districts.unclaimed")}</p>
-        )}
-      </div>
-
-      {district.top_influence.length > 0 && (
+      {isActive ? (
         <div className="flex flex-col gap-1">
-          <p className="flex items-center gap-1 text-[11px] text-nav-inactive">
-            <Trophy className="h-3 w-3 shrink-0 text-amber-400" />
-            {t("districts.topInfluence")}
+          <span className="w-fit rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-bold text-red-400">
+            {t("districts.battleActive")}
+          </span>
+          <p className="text-[11px] text-nav-inactive">
+            {t("districts.untilBattleEnds")}: <CountdownLabel targetIso={district.next_transition_at} />
           </p>
-          {district.top_influence.map((entry, i) => {
-            const { Icon: AvatarIcon, className } = GANG_AVATARS[entry.avatar_id] ?? GANG_AVATARS.default_gang;
-            return (
-              <div key={entry.gang_id} className="flex items-center justify-between text-xs">
-                <span className="flex min-w-0 items-center gap-1.5">
-                  <span className="text-nav-inactive">{i + 1}.</span>
-                  <AvatarIcon className={`h-3.5 w-3.5 shrink-0 ${className}`} />
-                  <span className="truncate">{entry.name}</span>
-                </span>
-                <span className="shrink-0 font-semibold text-gram">{entry.points}</span>
-              </div>
-            );
-          })}
         </div>
-      )}
-
-      {district.my_gang_points !== null && (
+      ) : (
         <p className="text-[11px] text-nav-inactive">
-          {t("districts.myGangPoints", { points: district.my_gang_points })}
+          {t("districts.untilBattleStarts")}: <CountdownLabel targetIso={district.next_transition_at} />
         </p>
       )}
 
-      {canAttack && (
+      <TugOfWarBar defensePoints={district.defender?.points ?? 0} attackPoints={district.top_challenger?.points ?? 0} />
+
+      <div className="flex flex-col gap-1.5 rounded-xl bg-progress-bg p-2.5">
+        <CombatantRow
+          icon={Shield}
+          label={t("districts.defenderLabel")}
+          combatant={district.defender}
+          emptyLabel={t("districts.unclaimed")}
+          colorClassName="text-sky-400"
+        />
+        <CombatantRow
+          icon={Swords}
+          label={t("districts.attackerLabel")}
+          combatant={district.top_challenger}
+          emptyLabel={t("districts.noChallenger")}
+          colorClassName="text-red-400"
+        />
+      </div>
+
+      {district.my_gang_role === "defender" && (
+        <p className="rounded-xl bg-sky-500/10 p-2.5 text-[11px] text-sky-300">{t("districts.defendingBanner")}</p>
+      )}
+
+      {showAttackButton && (
         <button
           type="button"
           onClick={() => onAttack(district.id)}
-          disabled={district.is_my_target || attacking}
+          disabled={alreadyApplied || attacking}
           className="gradient-action flex items-center justify-center gap-1.5 rounded-full py-2.5 text-xs font-semibold disabled:opacity-40"
         >
           <Swords className="h-3.5 w-3.5 shrink-0" />
-          {district.is_my_target ? t("districts.currentTarget") : attacking ? t("districts.attacking") : t("districts.attack")}
+          {alreadyApplied ? t("districts.applied") : attacking ? t("districts.attacking") : t("districts.requestAttack")}
         </button>
       )}
     </div>

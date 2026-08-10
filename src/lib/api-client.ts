@@ -687,9 +687,9 @@ export function fetchDistricts() {
   return request<District[]>("/api/districts");
 }
 
-/** Leader-or-co_leader-only: sets the caller's gang's attack target for district influence points. */
+/** Leader-or-co_leader-only: registers the gang's attack claim on today's-or-tomorrow's battle window and sets it as their target. */
 export function attackDistrict(districtId: string) {
-  return request<{ result: { gang_id: string; target_district_id: string }; state: PlayerState }>(
+  return request<{ result: { gang_id: string; target_district_id: string; battle_date: string }; state: PlayerState }>(
     `/api/districts/${districtId}/attack`,
     { method: "POST" },
   );

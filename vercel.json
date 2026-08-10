@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/notify-ambassadors-combo",
       "schedule": "5 0 * * *"
+    },
+    {
+      "path": "/api/cron/finalize-district-battles",
+      "schedule": "0 22 * * *"
     }
   ]
 }

@@ -141,14 +141,21 @@ export interface PlayerGang {
 
 export type DistrictBonusType = "cycle_boost" | "bank_boost" | "slot_discount";
 
-export interface DistrictInfluenceEntry {
+export type DistrictBattleStatus = "peace" | "active";
+
+export interface DistrictCombatant {
   gang_id: string;
   name: string;
   avatar_id: GangAvatarId;
   points: number;
 }
 
-/** One row of /api/districts — the "Карта Районов" screen. */
+/**
+ * One row of /api/districts — the "Карта Районов" screen. District Wars
+ * runs on a daily 12h battle window (see 0065_district_wars_daily_battles.sql):
+ * `battle_status` is live-computed, not stored, so it's always accurate
+ * regardless of whether a cron has run recently.
+ */
 export interface District {
   id: string;
   name: string;
@@ -156,11 +163,17 @@ export interface District {
   bonus_type: DistrictBonusType;
   bonus_value: number;
   controlling_gang: { id: string; name: string; avatar_id: GangAvatarId } | null;
-  /** True when this is the caller's own gang's current attack target. */
-  is_my_target: boolean;
-  /** The caller's own gang's influence points here — null when the caller isn't in a gang. */
+  battle_status: DistrictBattleStatus;
+  /** ISO timestamp of the next status flip — window close if `battle_status` is "active", window open otherwise. */
+  next_transition_at: string;
+  /** The controlling gang's current-battle defense points — null when the district has no controller yet. */
+  defender: { gang_id: string; name: string; avatar_id: GangAvatarId; points: number } | null;
+  /** The single highest-scoring challenger for today's battle, if any have applied. */
+  top_challenger: DistrictCombatant | null;
+  /** The caller's own gang's role in today's fight for this district — null when the caller isn't in a gang or hasn't applied here. */
+  my_gang_role: "defender" | "attacker" | null;
+  /** The caller's own gang's points in today's fight — null when `my_gang_role` is null. */
   my_gang_points: number | null;
-  top_influence: DistrictInfluenceEntry[];
 }
 
 /** One row of /api/gangs — the browse-to-join list and the "Топ Банд Района" ranking table, same shape either way. */

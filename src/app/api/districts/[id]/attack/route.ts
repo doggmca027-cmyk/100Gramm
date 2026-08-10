@@ -5,7 +5,7 @@ import { apiErrorResponse } from "@/lib/api-error";
 
 export const runtime = "nodejs";
 
-/** Leader-or-co_leader-only: sets the caller's gang's attack target — see set_gang_district_target (0063_district_wars.sql). */
+/** Leader-or-co_leader-only: registers today's/tomorrow's attack claim and sets the target — see request_district_attack (0065_district_wars_daily_battles.sql). */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -15,7 +15,7 @@ export async function POST(
     const { id } = await params;
 
     const supabase = supabaseServer();
-    const { data: result, error } = await supabase.rpc("set_gang_district_target", {
+    const { data: result, error } = await supabase.rpc("request_district_attack", {
       p_user_id: userId,
       p_district_id: id,
     });

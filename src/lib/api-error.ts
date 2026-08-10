@@ -57,6 +57,7 @@ const KNOWN_RPC_ERRORS: Record<string, number> = {
   insufficient_gang_bank: 409,
   not_gang_officer: 409,
   district_not_found: 404,
+  already_controls_district: 400,
 };
 
 /** Postgres wraps a plpgsql `raise exception 'x'` message as `x` (sometimes with a trailing detail). */
