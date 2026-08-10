@@ -49,6 +49,11 @@ const KNOWN_RPC_ERRORS: Record<string, number> = {
   not_in_gang: 409,
   leader_cannot_leave: 409,
   not_gang_leader: 409,
+  invalid_role: 400,
+  not_gang_member: 404,
+  cannot_change_leader_role: 400,
+  cannot_kick_leader: 400,
+  cannot_kick_self: 400,
 };
 
 /** Postgres wraps a plpgsql `raise exception 'x'` message as `x` (sometimes with a trailing detail). */

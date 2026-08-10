@@ -643,3 +643,24 @@ export function leaveGang() {
 export function disbandGang() {
   return request<{ state: PlayerState }>("/api/gangs/disband", { method: "POST" });
 }
+
+/** Tops up the caller's own gang bank from their own GRAM balance — shows up alongside the automatic 10%-of-cycle cut in the same donor/transaction lists. */
+export function donateToGangBank(amount: number) {
+  return request<{ result: { gang_id: string; amount: number; balance: number }; state: PlayerState }>(
+    "/api/gangs/donate",
+    { method: "POST", body: JSON.stringify({ amount }) },
+  );
+}
+
+/** Leader-only promote/demote between 'member' and 'co_leader'. */
+export function setGangMemberRole(userId: string, role: "co_leader" | "member") {
+  return request<{ result: { user_id: string; role: string }; state: PlayerState }>(
+    `/api/gangs/members/${userId}/role`,
+    { method: "POST", body: JSON.stringify({ role }) },
+  );
+}
+
+/** Leader-only removal of any non-leader member. */
+export function kickGangMember(userId: string) {
+  return request<{ state: PlayerState }>(`/api/gangs/members/${userId}/kick`, { method: "POST" });
+}

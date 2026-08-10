@@ -74,6 +74,38 @@ async function recordInboundPartnerClick(
   }
 }
 
+/**
+ * The other consumer of ?startapp=... besides the referral code (bare
+ * digits, handled inside bootstrap_user) and the partner-app prefix (see
+ * recordInboundPartnerClick above): a gang's "Пригласить" link encodes
+ * `gang_<uuid>`. bootstrap_user's own ref-code parsing only matches
+ * `^[0-9]+$`, so this never collides with a referral code, and it doesn't
+ * start with the partner prefix either — safe to check unconditionally.
+ *
+ * Runs on every launch (this whole route does, not just first-ever login),
+ * so re-opening the same invite link after already joining a gang, or
+ * after the gang is full/gone, just fails with a known RPC error that's
+ * silently swallowed here — never allowed to block login, same posture as
+ * the partner-click notification below.
+ */
+const GANG_START_PARAM_PREFIX = "gang_";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+async function tryJoinGangFromStartParam(startParam: string | null, userId: string): Promise<void> {
+  if (!startParam || !startParam.startsWith(GANG_START_PARAM_PREFIX)) return;
+  const gangId = startParam.slice(GANG_START_PARAM_PREFIX.length);
+  if (!UUID_RE.test(gangId)) return;
+
+  try {
+    await supabaseServer().rpc("join_gang", { p_user_id: userId, p_gang_id: gangId });
+    // Known failure modes (already_in_gang, gang_not_found, gang_full) and
+    // anything else are all equally fine to ignore here — the user just
+    // lands in the app normally, same as opening it without a start param.
+  } catch (err) {
+    console.error("tryJoinGangFromStartParam failed:", err);
+  }
+}
+
 /** Fires the outbound webhook and stamps notified_at once it succeeds — never awaited by the caller. */
 async function fireInboundPartnerNotification(pending: {
   partnerAppId: string;
@@ -120,6 +152,8 @@ export async function POST(request: NextRequest) {
   if (error || !userId) {
     return NextResponse.json({ error: "bootstrap_failed" }, { status: 500 });
   }
+
+  await tryJoinGangFromStartParam(validated.startParam, userId);
 
   const pendingPartnerNotify = await recordInboundPartnerClick(validated.startParam, userId);
   if (pendingPartnerNotify) {

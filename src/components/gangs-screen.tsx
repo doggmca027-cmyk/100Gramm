@@ -16,11 +16,26 @@ import {
   Plus,
   LogOut,
   X,
+  UserPlus,
+  UserMinus,
+  ArrowUp,
+  ArrowDown,
+  HandCoins,
   type LucideIcon,
 } from "lucide-react";
 import type { GangAvatarId, GangListEntry, GangMember, GangRole, PlayerState } from "@/lib/types";
 import { GANG_AVATAR_IDS, GANG_CREATION_COST } from "@/lib/gang-avatars";
-import { createGang, disbandGang, fetchGangs, joinGang, leaveGang, ApiError } from "@/lib/api-client";
+import {
+  createGang,
+  disbandGang,
+  donateToGangBank,
+  fetchGangs,
+  joinGang,
+  kickGangMember,
+  leaveGang,
+  setGangMemberRole,
+  ApiError,
+} from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
 
 /** avatar_id -> emblem icon + accent color. Keep in sync with GANG_AVATAR_IDS (src/lib/gang-avatars.ts). */
@@ -95,6 +110,8 @@ function gangErrorMessage(err: unknown, t: ReturnType<typeof useLanguage>["t"]):
       return t("gangs.full");
     case "leader_cannot_leave":
       return t("gangs.leaderCannotLeave");
+    case "amount_too_low":
+      return t("gangs.invalidAmount");
     default:
       return t("gangs.actionFailed");
   }
@@ -205,6 +222,96 @@ function CreateGangModal({
             className="gradient-action flex-[2] rounded-full py-3 text-sm font-semibold disabled:opacity-40"
           >
             {submitting ? t("gangs.creating") : t("gangs.create", { cost: GANG_CREATION_COST })}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Bottom-sheet modal for topping up the gang's bank from the caller's own GRAM balance. Mirrors CreateGangModal's shell. */
+function DonateModal({
+  balance,
+  onClose,
+  onDonated,
+}: {
+  balance: number;
+  onClose: () => void;
+  onDonated: (state: PlayerState) => void;
+}) {
+  const { t } = useLanguage();
+  const [amount, setAmount] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const parsed = Number(amount);
+  const validAmount = amount.trim().length > 0 && Number.isFinite(parsed) && parsed > 0;
+  const canSubmit = validAmount && parsed <= balance && !submitting;
+
+  async function handleSubmit() {
+    if (!canSubmit) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const { state } = await donateToGangBank(parsed);
+      onDonated(state);
+      onClose();
+    } catch (err) {
+      setError(gangErrorMessage(err, t));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60" onClick={onClose}>
+      <div
+        className="flex max-h-[85vh] flex-col gap-4 rounded-t-2xl bg-nav p-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="flex items-center gap-1.5 text-base font-semibold">
+            <HandCoins className="h-4 w-4 text-amber-400" />
+            {t("gangs.donateModalTitle")}
+          </h2>
+          <button type="button" onClick={onClose} className="text-nav-inactive" aria-label={t("common.back")}>
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder={t("gangs.donateAmountPlaceholder")}
+            className={`rounded-lg bg-progress-bg px-3 py-2 text-sm outline-none ring-1 transition-colors ${
+              validAmount && parsed > balance ? "ring-danger" : "ring-transparent"
+            }`}
+          />
+          {validAmount && parsed > balance && (
+            <p className="text-xs text-danger">{t("gangs.insufficientBalance")}</p>
+          )}
+          {error && <p className="text-xs text-danger">{error}</p>}
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-full bg-progress-bg py-3 text-sm font-semibold text-nav-inactive"
+          >
+            {t("gangs.cancel")}
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+            className="gradient-action flex-[2] rounded-full py-3 text-sm font-semibold disabled:opacity-40"
+          >
+            {submitting ? t("gangs.donating") : t("gangs.donateCta")}
           </button>
         </div>
       </div>
@@ -367,7 +474,26 @@ function GangsWithoutOne({
   );
 }
 
-function GangMemberRow({ member }: { member: GangMember }) {
+/**
+ * `management` is only passed for the leader's own view, and only for rows
+ * other than the leader's own (see the `member.role !== "leader"` filter at
+ * the call site) — set_gang_member_role/kick_gang_member both reject
+ * retargeting the leader server-side regardless, this just keeps the
+ * buttons from ever showing where they'd only bounce.
+ */
+function GangMemberRow({
+  member,
+  management,
+}: {
+  member: GangMember;
+  management?: {
+    busy: boolean;
+    onPromote: (userId: string) => void;
+    onDemote: (userId: string) => void;
+    onKick: (userId: string, displayName: string) => void;
+  };
+}) {
+  const { t } = useLanguage();
   return (
     <div className="flex items-center gap-3 p-3 text-sm">
       <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-progress-bg">
@@ -380,6 +506,40 @@ function GangMemberRow({ member }: { member: GangMember }) {
       </div>
       <span className="flex-1 truncate">{member.display_name}</span>
       <RoleBadge role={member.role} />
+      {management && (
+        <div className="flex shrink-0 items-center gap-1">
+          {member.role === "co_leader" ? (
+            <button
+              type="button"
+              onClick={() => management.onDemote(member.user_id)}
+              disabled={management.busy}
+              aria-label={t("gangs.demote")}
+              className="rounded-full bg-progress-bg p-1.5 text-nav-inactive disabled:opacity-40"
+            >
+              <ArrowDown className="h-3.5 w-3.5" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => management.onPromote(member.user_id)}
+              disabled={management.busy}
+              aria-label={t("gangs.promote")}
+              className="rounded-full bg-progress-bg p-1.5 text-nav-inactive disabled:opacity-40"
+            >
+              <ArrowUp className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => management.onKick(member.user_id, member.display_name)}
+            disabled={management.busy}
+            aria-label={t("gangs.kick")}
+            className="rounded-full bg-danger/10 p-1.5 text-danger disabled:opacity-40"
+          >
+            <UserMinus className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -397,8 +557,59 @@ function GangWithOne({
   const [tabView, setTabView] = useState<"members" | "top">("members");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [donateOpen, setDonateOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const botUsername = process.env.NEXT_PUBLIC_BOT_USERNAME;
+  const inviteLink = botUsername ? `https://t.me/${botUsername}?startapp=gang_${gang.id}` : null;
 
   const progressPercent = Math.min(100, Math.round((gang.exp_into_level / gang.exp_per_level) * 100));
+
+  async function handleCopyInvite() {
+    if (!inviteLink) return;
+    await navigator.clipboard.writeText(inviteLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function handlePromote(userId: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      const { state: next } = await setGangMemberRole(userId, "co_leader");
+      onStateChange(next);
+    } catch (err) {
+      setError(gangErrorMessage(err, t));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleDemote(userId: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      const { state: next } = await setGangMemberRole(userId, "member");
+      onStateChange(next);
+    } catch (err) {
+      setError(gangErrorMessage(err, t));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleKick(userId: string, displayName: string) {
+    if (!confirm(t("gangs.kickConfirm", { name: displayName }))) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const { state: next } = await kickGangMember(userId);
+      onStateChange(next);
+    } catch (err) {
+      setError(gangErrorMessage(err, t));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function handleLeave() {
     if (!confirm(t("gangs.leaveConfirm"))) return;
@@ -461,17 +672,27 @@ function GangWithOne({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 rounded-2xl border border-purple-900/40 bg-slate-900/80 p-3 text-sm">
-          <div>
-            <p className="text-[11px] text-nav-inactive">{t("gangs.bankBalance")}</p>
-            <p className="text-lg font-semibold text-gram">{gang.bank_balance_gram.toFixed(2)}</p>
-            <p className="text-xs text-nav-inactive">{t("common.gram")}</p>
+        <div className="rounded-2xl border border-purple-900/40 bg-slate-900/80 p-3 text-sm">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <p className="text-[11px] text-nav-inactive">{t("gangs.bankBalance")}</p>
+              <p className="text-lg font-semibold text-gram">{gang.bank_balance_gram.toFixed(2)}</p>
+              <p className="text-xs text-nav-inactive">{t("common.gram")}</p>
+            </div>
+            <div>
+              <p className="text-[11px] text-nav-inactive">{t("gangs.bankCurrency")}</p>
+              <p className="text-lg font-semibold text-gram">{gang.bank_balance_ton.toFixed(2)}</p>
+              <p className="text-xs text-nav-inactive">{t("common.gram")}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[11px] text-nav-inactive">{t("gangs.bankCurrency")}</p>
-            <p className="text-lg font-semibold text-gram">{gang.bank_balance_ton.toFixed(2)}</p>
-            <p className="text-xs text-nav-inactive">{t("common.gram")}</p>
-          </div>
+          <button
+            type="button"
+            onClick={() => setDonateOpen(true)}
+            className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-full bg-progress-bg py-2 text-xs font-semibold text-gram"
+          >
+            <HandCoins className="h-3.5 w-3.5 shrink-0" />
+            {t("gangs.donate")}
+          </button>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -513,6 +734,16 @@ function GangWithOne({
         </p>
       </div>
 
+      <button
+        type="button"
+        onClick={handleCopyInvite}
+        disabled={!inviteLink}
+        className="gradient-action flex items-center justify-center gap-1.5 rounded-full py-3 text-sm font-semibold disabled:opacity-40"
+      >
+        {!copied && <UserPlus className="h-4 w-4" />}
+        {copied ? t("gangs.copied") : t("gangs.invite")}
+      </button>
+
       <div className="flex gap-2">
         {(["members", "top"] as const).map((view) => (
           <button
@@ -532,7 +763,15 @@ function GangWithOne({
       {tabView === "members" ? (
         <div className="gradient-surface flex flex-col divide-y divide-white/5 rounded-xl">
           {gang.members.map((member) => (
-            <GangMemberRow key={member.user_id} member={member} />
+            <GangMemberRow
+              key={member.user_id}
+              member={member}
+              management={
+                gang.my_role === "leader" && member.role !== "leader"
+                  ? { busy, onPromote: handlePromote, onDemote: handleDemote, onKick: handleKick }
+                  : undefined
+              }
+            />
           ))}
         </div>
       ) : (
@@ -566,6 +805,14 @@ function GangWithOne({
           <LogOut className="h-4 w-4 shrink-0" />
           {busy ? t("gangs.leaving") : t("gangs.leave")}
         </button>
+      )}
+
+      {donateOpen && (
+        <DonateModal
+          balance={state.wallet.balance ?? 0}
+          onClose={() => setDonateOpen(false)}
+          onDonated={onStateChange}
+        />
       )}
     </div>
   );
