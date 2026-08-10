@@ -61,7 +61,7 @@ export interface PlayerState {
     invite_code: string;
     referred_count: number;
     earned_total: number;
-    /** Boosted referral rates (15/9/5% vs standard 10/5/2%) apply when this is true. */
+    /** Ambassador status is visible in the Squad screen; deposit referral payouts are fixed at 10/5/2%. */
     is_ambassador: boolean;
   };
   daily_combo: DailyCombo | null;

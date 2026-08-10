@@ -103,7 +103,7 @@ const en: typeof ru = {
     activeSlots: "Active slots",
     friendBonusTitle: "Friend bonus",
     friendBonusText: "Invite friends and earn",
-    friendBonusSuffix: "of their income",
+    friendBonusSuffix: "from their deposits",
   },
   quests: {
     title: "Urgent orders",
@@ -222,11 +222,11 @@ const en: typeof ru = {
     title: "Crew",
     teamIncome: "Team income",
     description:
-      "It's hard to survive alone in this world. Invite friends — get a share of GRAM from every cycle they run.",
+      "It's hard to survive alone in this world. Invite friends — get a share of GRAM from their deposits.",
     level1: "Level 1 (partners) — {percent}%",
     level2: "Level 2 — {percent}%",
     level3: "Level 3 — {percent}%",
-    ambassadorBadge: "You're an ambassador — boosted referral rates",
+    ambassadorBadge: "You're an ambassador — referral payouts are fixed at 10/5/2%.",
     ambassadorComboHint:
       "To receive today's secret combo order by DM from the bot, message it /start at least once.",
     ambassadorOpenBotChat: "Open chat with bot",

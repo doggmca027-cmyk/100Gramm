@@ -147,7 +147,7 @@ export function SquadScreen({ state }: { state: PlayerState }) {
         {copied ? t("squad.copied") : t("squad.invite")}
       </button>
 
-      {/* Line tabs: 1/2/3 — matches the 3-level referral tree start_cycle actually pays out. */}
+      {/* Line tabs: 1/2/3 match the 3-level referral tree the deposit referral flow uses. */}
       <div className="grid grid-cols-3 gap-2">
         {[1, 2, 3].map((n) => (
           <button
