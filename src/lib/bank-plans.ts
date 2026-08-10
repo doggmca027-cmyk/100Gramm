@@ -20,12 +20,14 @@ export interface BankPlan {
   minAmount: number;
   grantsSpeed: boolean;
   grantsSlot: boolean;
+  /** i18n key for the full sentence spelling out this plan's buff — shown under the card, not just the icon badges. */
+  perkDescriptionKey: `bank.perk${string}`;
 }
 
 export const BANK_PLANS: BankPlan[] = [
-  { days: 7, yieldPercent: 5, minAmount: 3, grantsSpeed: true, grantsSlot: false },
-  { days: 14, yieldPercent: 12, minAmount: 10, grantsSpeed: false, grantsSlot: false },
-  { days: 30, yieldPercent: 30, minAmount: 15, grantsSpeed: true, grantsSlot: true },
+  { days: 7, yieldPercent: 5, minAmount: 3, grantsSpeed: true, grantsSlot: false, perkDescriptionKey: "bank.perk7" },
+  { days: 14, yieldPercent: 12, minAmount: 10, grantsSpeed: false, grantsSlot: false, perkDescriptionKey: "bank.perk14" },
+  { days: 30, yieldPercent: 30, minAmount: 15, grantsSpeed: true, grantsSlot: true, perkDescriptionKey: "bank.perk30" },
 ];
 
 export function bankPlan(days: BankPlanDays): BankPlan {

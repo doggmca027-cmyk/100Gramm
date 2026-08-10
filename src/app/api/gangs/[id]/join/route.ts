@@ -5,7 +5,6 @@ import { apiErrorResponse } from "@/lib/api-error";
 
 export const runtime = "nodejs";
 
-/** Early withdrawal — returns principal only (0% yield) and instantly drops any buff the deposit was granting. */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -15,9 +14,9 @@ export async function POST(
     const { id } = await params;
 
     const supabase = supabaseServer();
-    const { data: result, error } = await supabase.rpc("early_withdraw_bank_deposit", {
+    const { data: result, error } = await supabase.rpc("join_gang", {
       p_user_id: userId,
-      p_deposit_id: id,
+      p_gang_id: id,
     });
     if (error) throw error;
 

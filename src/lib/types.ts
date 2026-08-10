@@ -76,6 +76,78 @@ export interface PlayerState {
     speed_boost: boolean;
     slot_boost: boolean;
   };
+  /** The caller's own gang, with its full member roster — null when they're not in one. See PlayerGang. */
+  gang: PlayerGang | null;
+}
+
+export type GangAvatarId =
+  | "default_gang"
+  | "skull"
+  | "crown"
+  | "flame"
+  | "shield"
+  | "swords"
+  | "ghost"
+  | "anchor";
+
+export type GangRole = "leader" | "co_leader" | "member";
+
+export interface GangMember {
+  user_id: string;
+  display_name: string;
+  photo_url: string | null;
+  role: GangRole;
+  joined_at: string;
+}
+
+export interface GangBankDonor {
+  user_id: string;
+  display_name: string;
+  photo_url: string | null;
+  amount: number;
+}
+
+export interface GangBankTransaction {
+  id: string;
+  from_user_id: string;
+  display_name: string;
+  photo_url: string | null;
+  amount_gram: number;
+  created_at: string;
+}
+
+/** state.gang — the caller's own gang, full roster included (capped at max_members = 20, cheap to inline). */
+export interface PlayerGang {
+  id: string;
+  name: string;
+  avatar_id: GangAvatarId;
+  level: number;
+  experience: number;
+  /** experience % exp_per_level — how far into the current level, for the EXP bar. */
+  exp_into_level: number;
+  exp_per_level: number;
+  max_members: number;
+  leader_name: string;
+  my_role: GangRole;
+  members: GangMember[];
+  bank_balance_gram: number;
+  bank_balance_ton: number;
+  bank_top_donors: GangBankDonor[];
+  bank_transactions: GangBankTransaction[];
+}
+
+/** One row of /api/gangs — the browse-to-join list and the "Топ Банд Района" ranking table, same shape either way. */
+export interface GangListEntry {
+  id: string;
+  name: string;
+  avatar_id: GangAvatarId;
+  level: number;
+  experience: number;
+  max_members: number;
+  member_count: number;
+  leader_name: string;
+  /** True when this is the caller's own gang — for highlighting it in the ranking table. */
+  is_mine: boolean;
 }
 
 export type BankPlanDays = 7 | 14 | 30;
@@ -86,7 +158,7 @@ export interface BankDeposit {
   amount: number;
   plan_days: BankPlanDays;
   yield_percent: number;
-  /** amount * yield_percent / 100 — only paid out on a matured claim, not on early withdrawal. */
+  /** amount * yield_percent / 100 — the full-term reward; paid out gradually as reward_paid, see below. */
   expected_reward: number;
   /** Whether THIS deposit is granting the +10% cycle-speed buff while active — decided once at creation (see the 14-day plan). */
   bonus_speed: boolean;
@@ -95,6 +167,12 @@ export interface BankDeposit {
   status: BankDepositStatus;
   starts_at: string;
   ends_at: string;
+  /** How many daily installments have been credited so far — reaches plan_days exactly when status flips to 'claimed' on its own. */
+  days_paid: number;
+  /** Cumulative principal credited so far (of `amount`) — grows by ~amount/plan_days each server day. */
+  principal_paid: number;
+  /** Cumulative reward credited so far (of `expected_reward`) — grows by ~expected_reward/plan_days each server day. */
+  reward_paid: number;
 }
 
 export type BoostStatus = "PENDING" | "ACTIVE" | "USED" | "EXPIRED";

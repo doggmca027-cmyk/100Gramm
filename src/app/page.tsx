@@ -7,8 +7,10 @@ import { AppHeader } from "@/components/app-header";
 import { BottomNav, type TabId } from "@/components/bottom-nav";
 import { PathScreen } from "@/components/path-screen";
 import { BalanceScreen } from "@/components/balance-screen";
+import { BankScreen } from "@/components/bank-screen";
 import { UpgradesScreen } from "@/components/upgrades-screen";
 import { SquadScreen } from "@/components/squad-screen";
+import { GangsScreen } from "@/components/gangs-screen";
 import { GamesScreen } from "@/components/games-screen";
 import { AdminScreen } from "@/components/admin-screen";
 import { LeaderboardScreen } from "@/components/leaderboard-screen";
@@ -72,10 +74,12 @@ export default function Home() {
             {tab === "balance" && (
               <BalanceScreen state={state} onStateChange={setState} />
             )}
+            {tab === "bank" && <BankScreen state={state} onStateChange={setState} />}
             {tab === "upgrades" && (
               <UpgradesScreen state={state} onStateChange={setState} />
             )}
             {tab === "squad" && <SquadScreen state={state} />}
+            {tab === "gangs" && <GangsScreen state={state} onStateChange={setState} />}
             {tab === "games" && <GamesScreen state={state} onStateChange={setState} />}
           </main>
           <BottomNav active={tab} onChange={setTab} />

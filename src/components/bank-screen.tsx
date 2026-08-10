@@ -1,23 +1,29 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Vault, Coins, Lock, Zap, Clock, CheckCircle2 } from "lucide-react";
+import { Vault, Coins, Lock, Zap, Clock } from "lucide-react";
 import type { PlayerState, BankDeposit, BankPlanDays } from "@/lib/types";
 import { BANK_PLANS, bankPlan } from "@/lib/bank-plans";
-import { createBankDeposit, claimBankDeposit, earlyWithdrawBankDeposit, ApiError } from "@/lib/api-client";
+import { createBankDeposit, ApiError } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
 import { formatGramAmount } from "@/lib/format-gram";
 import { useCountdown, formatDuration, useDurationUnits } from "@/hooks/use-countdown";
 
-/** Shared shell for both the active and history rows — header/reward/buff badges never differ, only the status line + action slot do. */
+/** The next UTC calendar-day rollover — daily installments are credited exactly at this boundary, see resolve_due_bank_payouts (0057_bank_daily_payouts.sql). */
+function nextUtcMidnightIso(): string {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1)).toISOString();
+}
+
+/** Shared shell for both the active and history rows. */
 function DepositCard({
   deposit,
-  statusLine,
+  body,
   error,
   action,
 }: {
   deposit: BankDeposit;
-  statusLine: ReactNode;
+  body: ReactNode;
   error: string | null;
   action: ReactNode;
 }) {
@@ -32,12 +38,7 @@ function DepositCard({
         <span className="text-sm font-semibold text-amber-400">{formatGramAmount(deposit.amount)} GRAM</span>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-nav-inactive">
-        {statusLine}
-        <span className="text-emerald-400">
-          +{formatGramAmount(deposit.expected_reward)} {t("common.gram")} ({deposit.yield_percent}%)
-        </span>
-      </div>
+      {body}
 
       {deposit.status === "active" && (deposit.bonus_speed || deposit.bonus_slot) && (
         <div className="flex gap-3 text-[11px] text-purple-300">
@@ -63,107 +64,66 @@ function DepositCard({
   );
 }
 
-/** An active (still-locked or matured-but-unclaimed) deposit — the only kind that needs a live countdown. */
-function ActiveDepositRow({
-  deposit,
-  onChanged,
-}: {
-  deposit: BankDeposit;
-  onChanged: (state: PlayerState) => void;
-}) {
+/** An active deposit — shows daily-payout progress + a live countdown to the next installment. Frozen for the full staking term, no early-exit action (nothing to manually claim either, see 0057_bank_daily_payouts.sql). */
+function ActiveDepositRow({ deposit }: { deposit: BankDeposit }) {
   const { t } = useLanguage();
   const units = useDurationUnits();
-  const remaining = useCountdown(deposit.ends_at);
-  const matured = remaining <= 0;
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const untilNextPayout = useCountdown(nextUtcMidnightIso());
 
-  async function handleClaim() {
-    setBusy(true);
-    setError(null);
-    try {
-      const { state } = await claimBankDeposit(deposit.id);
-      onChanged(state);
-    } catch (err) {
-      setError(
-        err instanceof ApiError && err.code === "deposit_not_matured"
-          ? t("bank.notMaturedYet")
-          : err instanceof ApiError && err.code === "deposit_not_active"
-            ? t("bank.alreadyResolved")
-            : t("bank.actionFailed"),
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
+  const totalPayable = deposit.amount + deposit.expected_reward;
+  const paidSoFar = deposit.principal_paid + deposit.reward_paid;
+  const progressPercent = Math.min(100, Math.round((deposit.days_paid / deposit.plan_days) * 100));
 
-  async function handleEarlyWithdraw() {
-    if (!window.confirm(t("bank.earlyWithdrawConfirm"))) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const { state } = await earlyWithdrawBankDeposit(deposit.id);
-      onChanged(state);
-    } catch (err) {
-      setError(
-        err instanceof ApiError && err.code === "deposit_not_active"
-          ? t("bank.alreadyResolved")
-          : t("bank.actionFailed"),
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <DepositCard
-      deposit={deposit}
-      error={error}
-      statusLine={
-        <span className="flex items-center gap-1">
-          <Clock className="h-3.5 w-3.5 shrink-0" />
-          {matured ? t("bank.matured") : formatDuration(remaining, units)}
-        </span>
-      }
-      action={
-        matured ? (
-          <button
-            type="button"
-            onClick={handleClaim}
-            disabled={busy}
-            className="gradient-action rounded-full py-2 text-xs font-semibold disabled:opacity-50"
-          >
-            {t("bank.claim")}
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={handleEarlyWithdraw}
-            disabled={busy}
-            className="rounded-full border border-danger/40 bg-danger/10 py-2 text-xs font-semibold text-danger disabled:opacity-50"
-          >
-            {t("bank.earlyWithdraw")}
-          </button>
-        )
-      }
-    />
-  );
-}
-
-/** A resolved (claimed/early_closed) deposit — static, no countdown, no action. */
-function PastDepositRow({ deposit }: { deposit: BankDeposit }) {
-  const { t } = useLanguage();
   return (
     <DepositCard
       deposit={deposit}
       error={null}
-      statusLine={<span>{deposit.status === "claimed" ? t("bank.statusClaimed") : t("bank.statusEarlyClosed")}</span>}
+      body={
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between text-xs text-nav-inactive">
+            <span>
+              {t("bank.paidProgress", { paid: formatGramAmount(paidSoFar), total: formatGramAmount(totalPayable) })}
+            </span>
+            <span>{t("bank.daysProgress", { done: deposit.days_paid, total: deposit.plan_days })}</span>
+          </div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-progress-bg">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-purple-500 to-amber-400 transition-all"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <span className="flex items-center gap-1 text-xs text-boost">
+            <Clock className="h-3.5 w-3.5 shrink-0" />
+            {t("bank.nextPayoutIn", { time: formatDuration(untilNextPayout, units) })}
+          </span>
+        </div>
+      }
       action={null}
     />
   );
 }
 
-export function BankSection({
+/** A resolved (fully paid out / early-closed) deposit — static, no countdown, no action. */
+function PastDepositRow({ deposit }: { deposit: BankDeposit }) {
+  const { t } = useLanguage();
+  const totalPayable = deposit.amount + deposit.expected_reward;
+  const paidSoFar = deposit.principal_paid + deposit.reward_paid;
+  return (
+    <DepositCard
+      deposit={deposit}
+      error={null}
+      body={
+        <div className="flex items-center justify-between text-xs text-nav-inactive">
+          <span>{deposit.status === "claimed" ? t("bank.statusClaimed") : t("bank.statusEarlyClosed")}</span>
+          <span>{t("bank.paidProgress", { paid: formatGramAmount(paidSoFar), total: formatGramAmount(totalPayable) })}</span>
+        </div>
+      }
+      action={null}
+    />
+  );
+}
+
+export function BankScreen({
   state,
   onStateChange,
 }: {
@@ -213,11 +173,14 @@ export function BankSection({
   const pastDeposits = state.bank_deposits.filter((d) => d.status !== "active");
 
   return (
-    <div className="flex flex-col gap-3">
-      <h2 className="flex items-center gap-1.5 px-1 text-sm font-semibold text-nav-inactive">
-        <Vault className="h-4 w-4 text-amber-400" />
-        {t("bank.title")}
-      </h2>
+    <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-4 pb-24">
+      <div>
+        <h1 className="flex items-center gap-1.5 text-lg font-bold">
+          <Vault className="h-5 w-5 text-amber-400" />
+          {t("bank.title")}
+        </h1>
+        <p className="mt-1 text-xs text-nav-inactive">{t("bank.subtitle")}</p>
+      </div>
 
       <div className="grid grid-cols-3 gap-2">
         {BANK_PLANS.map((p) => (
@@ -242,6 +205,15 @@ export function BankSection({
               )}
             </div>
           </button>
+        ))}
+      </div>
+
+      {/* Full sentence per plan, not just icons — what exactly you get, spelled out. */}
+      <div className="flex flex-col gap-1.5 rounded-xl bg-progress-bg p-3 text-xs text-nav-inactive">
+        {BANK_PLANS.map((p) => (
+          <p key={p.days} className={p.days === selectedPlan ? "font-semibold text-white" : undefined}>
+            <span className="text-amber-400">{t("bank.days", { n: p.days })}:</span> {t(p.perkDescriptionKey)}
+          </p>
         ))}
       </div>
 
@@ -300,19 +272,16 @@ export function BankSection({
 
       {activeDeposits.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h3 className="flex items-center gap-1.5 px-1 text-xs font-semibold text-nav-inactive">
-            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
-            {t("bank.activeDeposits")}
-          </h3>
+          <h2 className="px-1 text-xs font-semibold text-nav-inactive">{t("bank.activeDeposits")}</h2>
           {activeDeposits.map((d) => (
-            <ActiveDepositRow key={d.id} deposit={d} onChanged={onStateChange} />
+            <ActiveDepositRow key={d.id} deposit={d} />
           ))}
         </div>
       )}
 
       {pastDeposits.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h3 className="px-1 text-xs font-semibold text-nav-inactive">{t("bank.pastDeposits")}</h3>
+          <h2 className="px-1 text-xs font-semibold text-nav-inactive">{t("bank.pastDeposits")}</h2>
           {pastDeposits.map((d) => (
             <PastDepositRow key={d.id} deposit={d} />
           ))}

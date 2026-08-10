@@ -5,20 +5,13 @@ import { apiErrorResponse } from "@/lib/api-error";
 
 export const runtime = "nodejs";
 
-/** Pays out principal + reward — claim_bank_deposit rejects if not yet matured or not the caller's deposit. */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+/** The leader's only way out of their own gang — deletes it outright (ON DELETE CASCADE drops every member row too). */
+export async function POST(request: NextRequest) {
   try {
     const userId = await requireUserId(request);
-    const { id } = await params;
 
     const supabase = supabaseServer();
-    const { data: result, error } = await supabase.rpc("claim_bank_deposit", {
-      p_user_id: userId,
-      p_deposit_id: id,
-    });
+    const { error } = await supabase.rpc("disband_gang", { p_user_id: userId });
     if (error) throw error;
 
     const { data: state, error: stateError } = await supabase.rpc("get_player_state", {
@@ -26,7 +19,7 @@ export async function POST(
     });
     if (stateError) throw stateError;
 
-    return NextResponse.json({ result, state });
+    return NextResponse.json({ state });
   } catch (error) {
     return apiErrorResponse(error);
   }

@@ -41,7 +41,7 @@ export function SquadScreen({ state }: { state: PlayerState }) {
     ? `https://t.me/${botUsername}?startapp=${state.squad.invite_code}`
     : null;
   const isAmbassador = state.squad.is_ambassador;
-  const [rate1, rate2, rate3] = isAmbassador ? REFERRAL_RATES.ambassador : REFERRAL_RATES.standard;
+  const [rate1, rate2, rate3] = REFERRAL_RATES;
 
   const [levels, setLevels] = useState<SquadLevel[] | null>(null);
   const [levelsError, setLevelsError] = useState(false);

@@ -6,7 +6,6 @@ import { ArrowUpCircle, ArrowDownCircle, CheckCircle2, Wallet, ScrollText, Users
 import type { PlayerState } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
 import { ComingSoonSection } from "./coming-soon-section";
-import { BankSection } from "./bank-section";
 import { HistoryModal } from "./history-modal";
 import { WalletModal } from "./wallet-modal";
 import { WalletConnectModal } from "./wallet-connect-modal";
@@ -24,7 +23,7 @@ export function BalanceScreen({
 }) {
   const { t } = useLanguage();
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [level1Rate] = state.squad.is_ambassador ? REFERRAL_RATES.ambassador : REFERRAL_RATES.standard;
+  const [level1Rate] = REFERRAL_RATES;
   const [walletMode, setWalletMode] = useState<"deposit" | "withdraw" | null>(null);
   const [walletConnectOpen, setWalletConnectOpen] = useState(false);
   const [tonConnectUI] = useTonConnectUI();
@@ -140,8 +139,6 @@ export function BalanceScreen({
           {t("balance.friendBonusSuffix")}
         </p>
       </div>
-
-      <BankSection state={state} onStateChange={onStateChange} />
 
       <ComingSoonSection
         icon={Boxes}

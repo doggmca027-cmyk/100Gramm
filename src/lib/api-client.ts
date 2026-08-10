@@ -1,5 +1,7 @@
 import type {
   BankPlanDays,
+  GangAvatarId,
+  GangListEntry,
   HistoryEntry,
   PartnerTaskKind,
   PartnerTaskVerificationMethod,
@@ -614,18 +616,30 @@ export function createBankDeposit(planDays: BankPlanDays, amount: number) {
   });
 }
 
-/** Pays out principal + reward — server rejects if not yet matured (ends_at hasn't passed). */
-export function claimBankDeposit(id: string) {
-  return request<{ result: { status: "claimed"; payout: number; reward: number }; state: PlayerState }>(
-    `/api/bank/deposits/${id}/claim`,
-    { method: "POST" },
+/** Browse-to-join list AND the "Топ Банд Района" ranking table — same endpoint, `search` just narrows it by name. */
+export function fetchGangs(search?: string) {
+  const qs = search?.trim() ? `?q=${encodeURIComponent(search.trim())}` : "";
+  return request<GangListEntry[]>(`/api/gangs${qs}`);
+}
+
+/** Founds a gang for 5 GRAM ("5 TON") — name/charset/profanity/balance are all re-validated server-side regardless. */
+export function createGang(name: string, avatarId: GangAvatarId) {
+  return request<{ result: { gang_id: string; name: string; balance: number }; state: PlayerState }>(
+    "/api/gangs",
+    { method: "POST", body: JSON.stringify({ name, avatarId }) },
   );
 }
 
-/** Returns principal only (0% yield) and instantly drops any buff this deposit was granting. */
-export function earlyWithdrawBankDeposit(id: string) {
-  return request<{ result: { status: "early_closed"; returned: number }; state: PlayerState }>(
-    `/api/bank/deposits/${id}/withdraw`,
-    { method: "POST" },
-  );
+export function joinGang(gangId: string) {
+  return request<{ state: PlayerState }>(`/api/gangs/${gangId}/join`, { method: "POST" });
+}
+
+/** Rejects with 'leader_cannot_leave' for the gang's leader — they use leaveGang's disband counterpart instead. */
+export function leaveGang() {
+  return request<{ state: PlayerState }>("/api/gangs/leave", { method: "POST" });
+}
+
+/** The leader's only way out of their own gang — deletes it outright, every member (including the leader) is removed. */
+export function disbandGang() {
+  return request<{ state: PlayerState }>("/api/gangs/disband", { method: "POST" });
 }

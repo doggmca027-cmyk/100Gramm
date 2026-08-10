@@ -40,6 +40,15 @@ const KNOWN_RPC_ERRORS: Record<string, number> = {
   unknown_deposit: 404,
   deposit_not_active: 409,
   deposit_not_matured: 409,
+  already_in_gang: 409,
+  invalid_name_length: 400,
+  invalid_name_chars: 400,
+  name_taken: 409,
+  gang_not_found: 404,
+  gang_full: 409,
+  not_in_gang: 409,
+  leader_cannot_leave: 409,
+  not_gang_leader: 409,
 };
 
 /** Postgres wraps a plpgsql `raise exception 'x'` message as `x` (sometimes with a trailing detail). */

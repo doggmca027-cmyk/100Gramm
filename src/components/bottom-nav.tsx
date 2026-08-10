@@ -1,15 +1,17 @@
 "use client";
 
-import { Compass, Wallet, Zap, Users, Dices, type LucideIcon } from "lucide-react";
+import { Compass, Wallet, Vault, Zap, Users, Shield, Dices, type LucideIcon } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/context";
 
-export type TabId = "path" | "balance" | "upgrades" | "squad" | "games";
+export type TabId = "path" | "balance" | "bank" | "upgrades" | "squad" | "gangs" | "games";
 
 const TABS: { id: TabId; Icon: LucideIcon }[] = [
   { id: "path", Icon: Compass },
   { id: "balance", Icon: Wallet },
+  { id: "bank", Icon: Vault },
   { id: "upgrades", Icon: Zap },
   { id: "squad", Icon: Users },
+  { id: "gangs", Icon: Shield },
   { id: "games", Icon: Dices },
 ];
 
@@ -31,12 +33,12 @@ export function BottomNav({
             key={id}
             type="button"
             onClick={() => onChange(id)}
-            className={`flex flex-col items-center gap-1 rounded-xl px-3 py-1 text-xs font-medium transition-colors ${
+            className={`flex flex-col items-center gap-1 rounded-xl px-1.5 py-1 text-[10px] font-medium transition-colors ${
               isActive ? "text-amber-400" : "text-neutral-500"
             }`}
           >
             <Icon
-              size={20}
+              size={19}
               strokeWidth={isActive ? 2.25 : 2}
               className={`transition-transform duration-200 ${
                 isActive ? "scale-105 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]" : ""
