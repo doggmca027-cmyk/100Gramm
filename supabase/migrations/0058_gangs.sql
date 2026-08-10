@@ -170,7 +170,7 @@ begin
   values (p_user_id, v_season_id, v_balance, v_balance)
   on conflict (user_id, season_id) do nothing;
 
-  -- Lock first, check second � same order every other balance-deducting
+  -- Lock first, check second � same order every other balance-deducting
 
   if v_balance is null then
     raise exception 'no_active_season';
@@ -913,7 +913,7 @@ begin
           'display_name', coalesce(du.username, du.first_name, 'Игрок'),
           'photo_url', du.photo_url,
           'amount', donors.total_amount
-        ) order by donors.total_amount desc, donors.from_user_id limit 5), '[]'::jsonb)
+        ) order by donors.total_amount desc, donors.from_user_id), '[]'::jsonb)
         from (
           select gb.from_user_id, sum(gb.amount_gram) as total_amount
           from gang_bank_transactions gb
@@ -932,10 +932,14 @@ begin
           'photo_url', du.photo_url,
           'amount_gram', gb.amount_gram,
           'created_at', gb.created_at
-        ) order by gb.created_at desc limit 10), '[]'::jsonb)
-        from gang_bank_transactions gb
+        ) order by gb.created_at desc), '[]'::jsonb)
+        from (
+          select * from gang_bank_transactions
+          where gang_id = g.id
+          order by created_at desc
+          limit 10
+        ) gb
         join users du on du.id = gb.from_user_id
-        where gb.gang_id = g.id
       )
       )
       from gang_members gm_self
