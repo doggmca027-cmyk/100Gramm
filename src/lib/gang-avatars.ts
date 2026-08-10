@@ -20,3 +20,7 @@ export const GANG_AVATAR_IDS: GangAvatarId[] = [
 
 /** GRAM cost to found a gang ("5 TON" — see create_gang's v_cost comment in 0058_gangs.sql for why it's GRAM, not a separate currency). UI-only: disables the create button early, the RPC is what actually enforces it. */
 export const GANG_CREATION_COST = 5;
+
+/** +5 member slots per purchase, 1 GRAM each, paid from the gang's own bank — see upgrade_gang_capacity (0062_gang_capacity_upgrade.sql). UI-only mirrors, same posture as GANG_CREATION_COST above. */
+export const GANG_SLOT_PACK_SIZE = 5;
+export const GANG_SLOT_PACK_COST = 1;

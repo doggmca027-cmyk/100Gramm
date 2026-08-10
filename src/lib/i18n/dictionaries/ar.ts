@@ -355,6 +355,8 @@ const ar: typeof ru = {
     demote: "تنزيل الرتبة",
     kick: "طرد",
     kickConfirm: "هل تريد طرد {name} من النقابة؟",
+    upgradeCapacity: "+{slots} أماكن مقابل {cost} GRAM من الخزينة",
+    insufficientGangBank: "لا يوجد GRAM كافٍ في خزينة النقابة",
     topTitle: "أفضل نقابات الحي",
     leave: "غادر النقابة",
     leaveConfirm: "هل تريد مغادرة هذه النقابة نهائيًا؟",

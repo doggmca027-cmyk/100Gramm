@@ -356,6 +356,8 @@ const id: typeof ru = {
     demote: "Turunkan pangkat",
     kick: "Keluarkan",
     kickConfirm: "Keluarkan {name} dari sindikat?",
+    upgradeCapacity: "+{slots} slot seharga {cost} GRAM dari bank",
+    insufficientGangBank: "GRAM di bank sindikat tidak cukup",
     topTitle: "Sindikat distrik terbaik",
     leave: "Keluar dari sindikat",
     leaveConfirm: "Yakin keluar dari sindikat ini?",

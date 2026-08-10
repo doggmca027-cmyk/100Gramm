@@ -354,6 +354,8 @@ const ru = {
     demote: "Разжаловать",
     kick: "Исключить",
     kickConfirm: "Точно исключить {name} из синдиката?",
+    upgradeCapacity: "+{slots} мест за {cost} GRAM из банка",
+    insufficientGangBank: "В банке синдиката недостаточно GRAM",
     topTitle: "Топ синдикатов района",
     leave: "Выйти из синдиката",
     leaveConfirm: "Точно выйти из синдиката?",

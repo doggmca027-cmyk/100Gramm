@@ -24,7 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { GangAvatarId, GangListEntry, GangMember, GangRole, PlayerState } from "@/lib/types";
-import { GANG_AVATAR_IDS, GANG_CREATION_COST } from "@/lib/gang-avatars";
+import { GANG_AVATAR_IDS, GANG_CREATION_COST, GANG_SLOT_PACK_COST, GANG_SLOT_PACK_SIZE } from "@/lib/gang-avatars";
 import {
   createGang,
   disbandGang,
@@ -34,6 +34,7 @@ import {
   kickGangMember,
   leaveGang,
   setGangMemberRole,
+  upgradeGangCapacity,
   ApiError,
 } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
@@ -112,6 +113,8 @@ function gangErrorMessage(err: unknown, t: ReturnType<typeof useLanguage>["t"]):
       return t("gangs.leaderCannotLeave");
     case "amount_too_low":
       return t("gangs.invalidAmount");
+    case "insufficient_gang_bank":
+      return t("gangs.insufficientGangBank");
     default:
       return t("gangs.actionFailed");
   }
@@ -611,6 +614,19 @@ function GangWithOne({
     }
   }
 
+  async function handleUpgradeCapacity() {
+    setBusy(true);
+    setError(null);
+    try {
+      const { state: next } = await upgradeGangCapacity();
+      onStateChange(next);
+    } catch (err) {
+      setError(gangErrorMessage(err, t));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleLeave() {
     if (!confirm(t("gangs.leaveConfirm"))) return;
     setBusy(true);
@@ -728,10 +744,23 @@ function GangWithOne({
           </div>
         </div>
 
-        <p className="flex items-center gap-1.5 text-xs text-nav-inactive">
-          <Coins className="h-3.5 w-3.5 shrink-0 text-amber-400" />
-          {t("gangs.membersCount", { count: gang.members.length, max: gang.max_members })}
-        </p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="flex items-center gap-1.5 text-xs text-nav-inactive">
+            <Coins className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+            {t("gangs.membersCount", { count: gang.members.length, max: gang.max_members })}
+          </p>
+          {gang.my_role === "leader" && (
+            <button
+              type="button"
+              onClick={handleUpgradeCapacity}
+              disabled={busy || gang.bank_balance_gram < GANG_SLOT_PACK_COST}
+              className="flex shrink-0 items-center gap-1 rounded-full bg-progress-bg px-2.5 py-1 text-[11px] font-semibold text-gram disabled:opacity-40"
+            >
+              <Plus className="h-3 w-3 shrink-0" />
+              {t("gangs.upgradeCapacity", { slots: GANG_SLOT_PACK_SIZE, cost: GANG_SLOT_PACK_COST })}
+            </button>
+          )}
+        </div>
       </div>
 
       <button

@@ -54,6 +54,7 @@ const KNOWN_RPC_ERRORS: Record<string, number> = {
   cannot_change_leader_role: 400,
   cannot_kick_leader: 400,
   cannot_kick_self: 400,
+  insufficient_gang_bank: 409,
 };
 
 /** Postgres wraps a plpgsql `raise exception 'x'` message as `x` (sometimes with a trailing detail). */

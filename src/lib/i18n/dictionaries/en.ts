@@ -356,6 +356,8 @@ const en: typeof ru = {
     demote: "Demote",
     kick: "Kick",
     kickConfirm: "Kick {name} from the gang?",
+    upgradeCapacity: "+{slots} slots for {cost} GRAM from the bank",
+    insufficientGangBank: "Not enough GRAM in the gang bank",
     topTitle: "Top district syndicates",
     leave: "Leave syndicate",
     leaveConfirm: "Leave this syndicate for good?",

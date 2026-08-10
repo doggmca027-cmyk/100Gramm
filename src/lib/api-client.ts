@@ -664,3 +664,11 @@ export function setGangMemberRole(userId: string, role: "co_leader" | "member") 
 export function kickGangMember(userId: string) {
   return request<{ state: PlayerState }>(`/api/gangs/members/${userId}/kick`, { method: "POST" });
 }
+
+/** Leader-only: +5 member slots for 1 GRAM, paid from the gang's own bank (not the leader's personal balance). */
+export function upgradeGangCapacity() {
+  return request<{ result: { gang_id: string; max_members: number; bank_balance_gram: number }; state: PlayerState }>(
+    "/api/gangs/upgrade-capacity",
+    { method: "POST" },
+  );
+}

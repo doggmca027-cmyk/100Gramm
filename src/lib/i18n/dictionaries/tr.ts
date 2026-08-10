@@ -356,6 +356,8 @@ const tr: typeof ru = {
     demote: "Rütbeyi düşür",
     kick: "At",
     kickConfirm: "{name} çeteden atılsın mı?",
+    upgradeCapacity: "Kasadan {cost} GRAM karşılığında +{slots} yer",
+    insufficientGangBank: "Çete kasasında yeterli GRAM yok",
     topTitle: "Bölgenin en iyi sendikaları",
     leave: "Sendikadan ayrıl",
     leaveConfirm: "Bu sendikadan kalıcı olarak ayrılınsın mı?",
