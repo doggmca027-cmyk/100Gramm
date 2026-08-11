@@ -19,6 +19,14 @@
     {
       "path": "/api/cron/finalize-weekly-leaderboard",
       "schedule": "59 23 * * 0"
+    },
+    {
+      "path": "/api/cron/district-war-notifications",
+      "schedule": "30 9 * * *"
+    },
+    {
+      "path": "/api/cron/district-war-notifications",
+      "schedule": "30 21 * * *"
     }
   ]
 }
