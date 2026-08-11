@@ -49,7 +49,15 @@ export const MERCENARY_BOT_COST = 8;
  * only one number to keep in sync instead of a whole 15-row table.
  */
 export const WEEKLY_PRIZE_POOL_TON = 200;
-/** Minimum "Забустить Влияние" purchase — buy_direct_influence rejects less. */
-export const DIRECT_INFLUENCE_MIN_TON = 1;
-/** Influence Points minted per 1 GRAM ("TON") of direct purchase. */
-export const DIRECT_INFLUENCE_RATE = 200;
+/**
+ * Minimum "Забустить Влияние" purchase — buy_direct_influence rejects less.
+ * Repriced from 1 to 5 in 0074_reprice_direct_influence.sql: 200 points now
+ * costs 5 TON (was 1), so the floor moves in lockstep with the rate below.
+ */
+export const DIRECT_INFLUENCE_MIN_TON = 5;
+/**
+ * Influence Points minted per 1 GRAM ("TON") of direct purchase. Repriced
+ * from 200 to 40 in 0074_reprice_direct_influence.sql (a straight 5x price
+ * hike) — 5 TON still buys exactly 200 points, same as 1 TON used to.
+ */
+export const DIRECT_INFLUENCE_RATE = 40;

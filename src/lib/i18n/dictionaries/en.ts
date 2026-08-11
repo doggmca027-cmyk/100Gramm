@@ -228,7 +228,7 @@ const en: typeof ru = {
     boostModalTitle: "Boost Influence",
     boostPointsPreview: "Will add: {points} influence points",
     boostSubmitCta: "Buy",
-    boostMotivation: "Help your Syndicate break into the TOP-15 and grab a share of 100 TON!",
+    boostMotivation: "Help your Syndicate break into the TOP-15 and grab a share of 200 TON!",
   },
   squad: {
     title: "Crew",

@@ -226,7 +226,7 @@ const ru = {
     boostModalTitle: "Забустить Влияние",
     boostPointsPreview: "Начислится: {points} очков влияния",
     boostSubmitCta: "Купить",
-    boostMotivation: "Помоги своему Синдикату пробиться в ТОП-15 и забрать кусок от 100 TON!",
+    boostMotivation: "Помоги своему Синдикату пробиться в ТОП-15 и забрать кусок от 200 TON!",
   },
   squad: {
     title: "Банда",

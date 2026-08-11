@@ -5,7 +5,7 @@ import { apiErrorResponse } from "@/lib/api-error";
 
 export const runtime = "nodejs";
 
-/** Leader-or-co_leader-only: instantly buys weekly Influence Points for the caller's gang — see buy_direct_influence (0070_syndicate_weekly_leaderboard.sql). */
+/** Leader-or-co_leader-only: instantly buys weekly Influence Points for the caller's gang — see buy_direct_influence (0074_reprice_direct_influence.sql). */
 export async function POST(request: NextRequest) {
   try {
     const userId = await requireUserId(request);

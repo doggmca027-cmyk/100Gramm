@@ -228,7 +228,7 @@ const id: typeof ru = {
     boostModalTitle: "Tingkatkan Pengaruh",
     boostPointsPreview: "Akan ditambahkan: {points} poin pengaruh",
     boostSubmitCta: "Beli",
-    boostMotivation: "Bantu Sindikatmu menembus TOP-15 dan raih bagian dari hadiah 100 TON!",
+    boostMotivation: "Bantu Sindikatmu menembus TOP-15 dan raih bagian dari hadiah 200 TON!",
   },
   squad: {
     title: "Geng",
