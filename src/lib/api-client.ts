@@ -639,8 +639,41 @@ export function createGang(name: string, avatarId: GangAvatarId) {
   );
 }
 
+/** Open gang, free entry only — rejects with gang_closed / gang_requires_payment otherwise, see join_gang (0078_gang_closed_paid_description.sql). */
 export function joinGang(gangId: string) {
   return request<{ state: PlayerState }>(`/api/gangs/${gangId}/join`, { method: "POST" });
+}
+
+/** Explicit-confirm join for an open gang with a nonzero entry price — actually charges the caller's balance into the gang's bank. */
+export function payAndJoinGang(gangId: string) {
+  return request<{ result: { gang_id: string; paid: number }; state: PlayerState }>(
+    `/api/gangs/${gangId}/pay-join`,
+    { method: "POST" },
+  );
+}
+
+/** Files an application to a closed gang — no balance touched; the leader approves/rejects via respondGangJoinRequest. */
+export function requestJoinGang(gangId: string) {
+  return request<{ result: { request_id: string; gang_id: string } }>(
+    `/api/gangs/${gangId}/request-join`,
+    { method: "POST" },
+  );
+}
+
+/** Leader-only: approves (actually seats the member, charging them if the gang is paid) or rejects a pending application. */
+export function respondGangJoinRequest(requestId: string, approve: boolean) {
+  return request<{ result: { request_id: string; approved: boolean }; state: PlayerState }>(
+    `/api/gangs/join-requests/${requestId}/respond`,
+    { method: "POST", body: JSON.stringify({ approve }) },
+  );
+}
+
+/** Leader-only: closed/open toggle, entry price, description. */
+export function updateGangSettings(settings: { isClosed: boolean; entryPriceGram: number; description: string }) {
+  return request<{
+    result: { gang_id: string; is_closed: boolean; entry_price_gram: number; description: string | null };
+    state: PlayerState;
+  }>("/api/gangs/settings", { method: "POST", body: JSON.stringify(settings) });
 }
 
 /** Rejects with 'leader_cannot_leave' for the gang's leader — they use leaveGang's disband counterpart instead. */

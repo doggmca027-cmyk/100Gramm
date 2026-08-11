@@ -26,6 +26,8 @@ import {
   Megaphone,
   Repeat,
   Clock,
+  Lock,
+  Settings,
   type LucideIcon,
 } from "lucide-react";
 import type {
@@ -56,8 +58,10 @@ import {
   joinGang,
   kickGangMember,
   leaveGang,
+  payAndJoinGang,
   purchaseCoLeaderSlot,
   purchaseVipTreasury,
+  requestJoinGang,
   setGangMemberRole,
   upgradeGangCapacity,
   ApiError,
@@ -66,6 +70,7 @@ import { useLanguage } from "@/lib/i18n/context";
 import { LANGUAGE_LOCALE } from "@/lib/i18n/types";
 import { DistrictMapScreen } from "./district-map-screen";
 import { GangCustomizationScreen } from "./gang-customization-screen";
+import { GangSettingsScreen } from "./gang-settings-screen";
 
 /** avatar_id -> emblem icon + accent color. Keep in sync with GANG_AVATAR_IDS (src/lib/gang-avatars.ts). Exported for district-map-screen.tsx's controlling-gang/leaderboard badges. */
 export const GANG_AVATARS: Record<GangAvatarId, { Icon: LucideIcon; className: string }> = {
@@ -146,6 +151,24 @@ function gangErrorMessage(err: unknown, t: ReturnType<typeof useLanguage>["t"]):
       return t("gangs.invalidAmount");
     case "insufficient_gang_bank":
       return t("gangs.insufficientGangBank");
+    case "gang_closed":
+      return t("gangs.errGangClosed");
+    case "gang_requires_payment":
+      return t("gangs.errGangRequiresPayment");
+    case "request_already_pending":
+      return t("gangs.errRequestAlreadyPending");
+    case "requester_already_in_gang":
+      return t("gangs.errRequesterAlreadyInGang");
+    case "requester_insufficient_balance":
+      return t("gangs.errRequesterInsufficientBalance");
+    case "request_already_resolved":
+      return t("gangs.errRequestAlreadyResolved");
+    case "invalid_price":
+      return t("gangs.errInvalidPrice");
+    case "description_too_long":
+      return t("gangs.errDescriptionTooLong");
+    case "invalid_description_chars":
+      return t("gangs.invalidNameChars");
     default:
       return t("gangs.actionFailed");
   }
@@ -437,17 +460,96 @@ function GangBankListModal({
   );
 }
 
-function GangListRow({
+/** Bottom-sheet confirming a paid, open gang's fixed entry price before actually charging — the one explicit-tap moment pay_and_join_gang relies on (see 0078_gang_closed_paid_description.sql's header). */
+function PayToJoinModal({
   gang,
-  onJoin,
-  joining,
+  balance,
+  onClose,
+  onJoined,
 }: {
   gang: GangListEntry;
-  onJoin: ((id: string) => void) | null;
-  joining: boolean;
+  balance: number;
+  onClose: () => void;
+  onJoined: (state: PlayerState) => void;
+}) {
+  const { t } = useLanguage();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const canAfford = balance >= gang.entry_price_gram;
+
+  async function handleConfirm() {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const { state } = await payAndJoinGang(gang.id);
+      onJoined(state);
+      onClose();
+    } catch (err) {
+      setError(gangErrorMessage(err, t));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60" onClick={onClose}>
+      <div
+        className="flex max-h-[85vh] flex-col gap-4 rounded-t-2xl bg-nav p-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="flex items-center gap-1.5 text-base font-semibold">
+            <HandCoins className="h-4 w-4 text-amber-400" />
+            {t("gangs.payToJoinTitle", { name: gang.name })}
+          </h2>
+          <button type="button" onClick={onClose} className="text-nav-inactive" aria-label={t("common.back")}>
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <p className="text-sm text-nav-inactive">{t("gangs.payToJoinHint", { price: gang.entry_price_gram })}</p>
+        {!canAfford && <p className="text-xs text-danger">{t("gangs.insufficientBalance")}</p>}
+        {error && <p className="text-xs text-danger">{error}</p>}
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-full bg-progress-bg py-3 text-sm font-semibold text-nav-inactive"
+          >
+            {t("gangs.cancel")}
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            disabled={!canAfford || submitting}
+            className="gradient-action flex-[2] rounded-full py-3 text-sm font-semibold disabled:opacity-40"
+          >
+            {submitting ? t("gangs.joining") : t("gangs.joinForPrice", { price: gang.entry_price_gram })}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GangListRow({
+  gang,
+  onAction,
+  busy,
+}: {
+  gang: GangListEntry;
+  onAction: ((gang: GangListEntry) => void) | null;
+  busy: boolean;
 }) {
   const { t } = useLanguage();
   const isFull = gang.member_count >= gang.max_members;
+
+  let buttonLabel = t("gangs.join");
+  if (isFull) buttonLabel = t("gangs.full");
+  else if (gang.my_pending_request) buttonLabel = t("gangs.requestSent");
+  else if (gang.is_closed) buttonLabel = t("gangs.requestToJoin");
+  else if (gang.entry_price_gram > 0) buttonLabel = t("gangs.joinForPrice", { price: gang.entry_price_gram });
 
   return (
     <div
@@ -459,23 +561,33 @@ function GangListRow({
     >
       <GangAvatar avatarId={gang.avatar_id} cosmetics={gang} sizeClassName="h-11 w-11" iconClassName="h-5 w-5" />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold">{gang.name}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="truncate text-sm font-semibold">{gang.name}</p>
+          {gang.is_closed && <Lock className="h-3 w-3 shrink-0 text-nav-inactive" />}
+        </div>
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-nav-inactive">
           <span className="flex items-center gap-1">
             <Trophy className="h-3 w-3 shrink-0 text-amber-400" />
             {t("gangs.level", { level: gang.level })}
           </span>
           <span>{t("gangs.membersCount", { count: gang.member_count, max: gang.max_members })}</span>
+          {gang.entry_price_gram > 0 && (
+            <span className="flex items-center gap-1 text-gram">
+              <HandCoins className="h-3 w-3 shrink-0" />
+              {gang.entry_price_gram}
+            </span>
+          )}
         </div>
+        {gang.description && <p className="mt-0.5 truncate text-[11px] text-nav-inactive">{gang.description}</p>}
       </div>
-      {onJoin && (
+      {onAction && (
         <button
           type="button"
-          onClick={() => onJoin(gang.id)}
-          disabled={isFull || joining}
+          onClick={() => onAction(gang)}
+          disabled={isFull || busy || gang.my_pending_request}
           className="gradient-action shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold disabled:opacity-40"
         >
-          {isFull ? t("gangs.full") : t("gangs.join")}
+          {buttonLabel}
         </button>
       )}
     </div>
@@ -515,13 +627,14 @@ function GangsWithoutOne({
   const { entries, reload } = useGangList();
   const [query, setQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
-  const [joiningId, setJoiningId] = useState<string | null>(null);
+  const [payGang, setPayGang] = useState<GangListEntry | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [joinError, setJoinError] = useState<string | null>(null);
 
   const filtered = entries?.filter((g) => g.name.toLowerCase().includes(query.trim().toLowerCase())) ?? null;
 
   async function handleJoin(gangId: string) {
-    setJoiningId(gangId);
+    setBusyId(gangId);
     setJoinError(null);
     try {
       const { state } = await joinGang(gangId);
@@ -530,7 +643,31 @@ function GangsWithoutOne({
       setJoinError(gangErrorMessage(err, t));
       reload();
     } finally {
-      setJoiningId(null);
+      setBusyId(null);
+    }
+  }
+
+  async function handleRequestJoin(gangId: string) {
+    setBusyId(gangId);
+    setJoinError(null);
+    try {
+      await requestJoinGang(gangId);
+      reload();
+    } catch (err) {
+      setJoinError(gangErrorMessage(err, t));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  function handleAction(gang: GangListEntry) {
+    if (gang.is_closed) {
+      void handleRequestJoin(gang.id);
+    } else if (gang.entry_price_gram > 0) {
+      setJoinError(null);
+      setPayGang(gang);
+    } else {
+      void handleJoin(gang.id);
     }
   }
 
@@ -576,7 +713,7 @@ function GangsWithoutOne({
 
         <div className="flex flex-col gap-2">
           {filtered?.map((gang) => (
-            <GangListRow key={gang.id} gang={gang} onJoin={handleJoin} joining={joiningId === gang.id} />
+            <GangListRow key={gang.id} gang={gang} onAction={handleAction} busy={busyId === gang.id} />
           ))}
         </div>
       </div>
@@ -586,6 +723,15 @@ function GangsWithoutOne({
           balance={balance}
           onClose={() => setModalOpen(false)}
           onCreated={onStateChange}
+        />
+      )}
+
+      {payGang && (
+        <PayToJoinModal
+          gang={payGang}
+          balance={balance}
+          onClose={() => setPayGang(null)}
+          onJoined={onStateChange}
         />
       )}
     </div>
@@ -710,7 +856,7 @@ function GangWithOne({
 }) {
   const { t } = useLanguage();
   const gang = state.gang!;
-  const [tabView, setTabView] = useState<"members" | "treasury" | "customization">("members");
+  const [tabView, setTabView] = useState<"members" | "treasury" | "customization" | "settings">("members");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [donateOpen, setDonateOpen] = useState(false);
@@ -898,6 +1044,21 @@ function GangWithOne({
           </p>
         )}
 
+        {gang.description && <p className="text-xs text-nav-inactive">{gang.description}</p>}
+
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-nav-inactive">
+          <span className="flex items-center gap-1">
+            {gang.is_closed ? <Lock className="h-3 w-3 shrink-0" /> : <UserPlus className="h-3 w-3 shrink-0" />}
+            {gang.is_closed ? t("gangs.closedBadge") : t("gangs.openBadge")}
+          </span>
+          {gang.entry_price_gram > 0 && (
+            <span className="flex items-center gap-1 text-gram">
+              <HandCoins className="h-3 w-3 shrink-0" />
+              {t("gangs.entryPriceBadge", { price: gang.entry_price_gram })}
+            </span>
+          )}
+        </div>
+
         <div className="rounded-2xl border border-purple-900/40 bg-slate-900/80 p-3 text-sm">
           <div className="grid grid-cols-2 gap-2">
             <div>
@@ -1010,23 +1171,33 @@ function GangWithOne({
       )}
 
       <div className="flex gap-1.5">
-        {(["members", "treasury", "customization"] as const).map((view) => (
+        {(
+          ["members", "treasury", "customization", ...(gang.my_role === "leader" ? (["settings"] as const) : [])] as const
+        ).map((view) => (
           <button
             key={view}
             type="button"
             onClick={() => setTabView(view)}
-            className={`flex flex-1 items-center justify-center gap-1 rounded-full py-2 text-[11px] font-semibold transition-colors ${
+            className={`relative flex flex-1 items-center justify-center gap-1 rounded-full py-2 text-[11px] font-semibold transition-colors ${
               tabView === view ? "gradient-action" : "gradient-surface text-nav-inactive"
             }`}
           >
             {view === "members" && <Users className="h-3.5 w-3.5 shrink-0" />}
             {view === "treasury" && <HandCoins className="h-3.5 w-3.5 shrink-0" />}
             {view === "customization" && <Sparkles className="h-3.5 w-3.5 shrink-0" />}
+            {view === "settings" && <Settings className="h-3.5 w-3.5 shrink-0" />}
             {view === "members"
               ? t("gangs.membersTitle")
               : view === "treasury"
                 ? t("gangs.treasuryTitle")
-                : t("gangs.customizationTitle")}
+                : view === "customization"
+                  ? t("gangs.customizationTitle")
+                  : t("gangs.settingsTitle")}
+            {view === "settings" && gang.join_requests.length > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[9px] font-bold text-white">
+                {gang.join_requests.length}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -1133,6 +1304,10 @@ function GangWithOne({
 
       {tabView === "customization" && (
         <GangCustomizationScreen gang={gang} balance={state.wallet.balance ?? 0} onStateChange={onStateChange} />
+      )}
+
+      {tabView === "settings" && gang.my_role === "leader" && (
+        <GangSettingsScreen gang={gang} onStateChange={onStateChange} />
       )}
 
       {error && <p className="text-center text-xs text-danger">{error}</p>}
