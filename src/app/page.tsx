@@ -64,7 +64,7 @@ export default function Home() {
       {adminOpen ? (
         <AdminScreen state={state} onStateChange={setState} onBack={() => setAdminOpen(false)} />
       ) : leaderboardOpen ? (
-        <LeaderboardScreen onBack={() => setLeaderboardOpen(false)} />
+        <LeaderboardScreen state={state} onStateChange={setState} onBack={() => setLeaderboardOpen(false)} />
       ) : tasksOpen ? (
         <TasksScreen state={state} onStateChange={setState} onBack={() => setTasksOpen(false)} />
       ) : (

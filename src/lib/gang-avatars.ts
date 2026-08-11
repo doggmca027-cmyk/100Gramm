@@ -36,3 +36,20 @@ export const AIRSTRIKE_2X_COST = 2;
 export const AIRSTRIKE_3X_COST = 5;
 export const ENGINEER_SHIELD_COST = 3;
 export const MERCENARY_BOT_COST = 8;
+
+/**
+ * Weekly Syndicate leaderboard — see buy_direct_influence/
+ * finalize_weekly_leaderboard_season (0070_syndicate_weekly_leaderboard.sql,
+ * doubled to 200 in 0072_double_weekly_prize_pool.sql). This is only a
+ * pre-load fallback for the banner (get_syndicate_leaderboard's own
+ * `prize_pool_ton` is the source of truth once the request resolves,
+ * see syndicate-leaderboard-panel.tsx) — per-rank prize amounts always
+ * come from the server (SyndicateLeaderboardEntry.prize_ton /
+ * SyndicateLeaderboardMyGang.prize_ton), never mirrored here, so there's
+ * only one number to keep in sync instead of a whole 15-row table.
+ */
+export const WEEKLY_PRIZE_POOL_TON = 200;
+/** Minimum "Забустить Влияние" purchase — buy_direct_influence rejects less. */
+export const DIRECT_INFLUENCE_MIN_TON = 1;
+/** Influence Points minted per 1 GRAM ("TON") of direct purchase. */
+export const DIRECT_INFLUENCE_RATE = 200;

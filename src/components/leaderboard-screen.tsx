@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Crown, Trophy, Coins, RotateCw, type LucideIcon } from "lucide-react";
+import { Crown, Trophy, Coins, RotateCw, Shield, type LucideIcon } from "lucide-react";
 import { fetchLeaderboard, type LeaderboardEntry, type LeaderboardMetric } from "@/lib/api-client";
+import type { PlayerState } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
+import { SyndicateLeaderboardPanel } from "./syndicate-leaderboard-panel";
 
 const RANK_BADGE_CLASS: Record<number, string> = {
   1: "bg-gram text-bg",
@@ -11,9 +13,13 @@ const RANK_BADGE_CLASS: Record<number, string> = {
   3: "bg-[#cd8a4f] text-bg",
 };
 
-const TABS: { metric: LeaderboardMetric; labelKey: "leaderboard.tabEarned" | "leaderboard.tabCycles"; Icon: LucideIcon }[] = [
-  { metric: "total_earned", labelKey: "leaderboard.tabEarned", Icon: Coins },
-  { metric: "cycles_launched_total", labelKey: "leaderboard.tabCycles", Icon: RotateCw },
+/** "syndicates" is a whole separate panel (SyndicateLeaderboardPanel), not another LeaderboardMetric — the individual-player ranking below only ever drives the first two tabs. */
+type LeaderboardTab = LeaderboardMetric | "syndicates";
+
+const TABS: { tab: LeaderboardTab; labelKey: "leaderboard.tabEarned" | "leaderboard.tabCycles" | "leaderboard.syndicateTab"; Icon: LucideIcon }[] = [
+  { tab: "total_earned", labelKey: "leaderboard.tabEarned", Icon: Coins },
+  { tab: "cycles_launched_total", labelKey: "leaderboard.tabCycles", Icon: RotateCw },
+  { tab: "syndicates", labelKey: "leaderboard.syndicateTab", Icon: Shield },
 ];
 
 /** Score text for one entry, matching whichever metric the active tab is ranked by. */
@@ -101,12 +107,22 @@ function PodiumSlot({
   );
 }
 
-export function LeaderboardScreen({ onBack }: { onBack: () => void }) {
+export function LeaderboardScreen({
+  state,
+  onStateChange,
+  onBack,
+}: {
+  state: PlayerState;
+  onStateChange: (state: PlayerState) => void;
+  onBack: () => void;
+}) {
   const { t } = useLanguage();
-  const [metric, setMetric] = useState<LeaderboardMetric>("total_earned");
+  const [tab, setTab] = useState<LeaderboardTab>("total_earned");
   const [entries, setEntries] = useState<LeaderboardEntry[] | null>(null);
+  const metric: LeaderboardMetric | null = tab === "syndicates" ? null : tab;
 
   useEffect(() => {
+    if (metric === null) return;
     // Guards against a stale response landing after the user has already
     // switched tabs again — without this, a slow "cycles" request that
     // resolves after a later "earnings" request would overwrite the
@@ -128,10 +144,10 @@ export function LeaderboardScreen({ onBack }: { onBack: () => void }) {
   // handler) rather than synchronously inside the effect above — keeps the
   // effect a pure "sync entries with metric" and avoids the extra render
   // that setting state at the top of an effect body would cause.
-  function selectMetric(next: LeaderboardMetric) {
-    if (next === metric) return;
-    setMetric(next);
-    setEntries(null);
+  function selectTab(next: LeaderboardTab) {
+    if (next === tab) return;
+    setTab(next);
+    if (next !== "syndicates") setEntries(null);
   }
 
   const podium = entries?.slice(0, 3) ?? [];
@@ -150,13 +166,13 @@ export function LeaderboardScreen({ onBack }: { onBack: () => void }) {
       </header>
 
       <div className="flex gap-2 px-4 pt-3">
-        {TABS.map(({ metric: m, labelKey, Icon }) => (
+        {TABS.map(({ tab: tb, labelKey, Icon }) => (
           <button
-            key={m}
+            key={tb}
             type="button"
-            onClick={() => selectMetric(m)}
+            onClick={() => selectTab(tb)}
             className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-xs font-semibold transition-colors ${
-              metric === m ? "gradient-action" : "gradient-surface text-nav-inactive"
+              tab === tb ? "gradient-action" : "gradient-surface text-nav-inactive"
             }`}
           >
             <Icon className="h-3.5 w-3.5" />
@@ -165,49 +181,53 @@ export function LeaderboardScreen({ onBack }: { onBack: () => void }) {
         ))}
       </div>
 
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pb-8">
-        {entries === null && (
-          <p className="p-3 text-center text-sm text-nav-inactive">{t("common.loading")}</p>
-        )}
-        {entries?.length === 0 && (
-          <p className="p-3 text-center text-sm text-nav-inactive">{t("leaderboard.empty")}</p>
-        )}
+      {tab === "syndicates" ? (
+        <SyndicateLeaderboardPanel state={state} onStateChange={onStateChange} />
+      ) : (
+        <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pb-8">
+          {entries === null && (
+            <p className="p-3 text-center text-sm text-nav-inactive">{t("common.loading")}</p>
+          )}
+          {entries?.length === 0 && (
+            <p className="p-3 text-center text-sm text-nav-inactive">{t("leaderboard.empty")}</p>
+          )}
 
-        {podium.length > 0 && (
-          <div className="flex items-end justify-center gap-4 pt-2">
-            {podium[1] && <PodiumSlot entry={podium[1]} rank={2} metric={metric} t={t} />}
-            {podium[0] && <PodiumSlot entry={podium[0]} rank={1} metric={metric} t={t} />}
-            {podium[2] && <PodiumSlot entry={podium[2]} rank={3} metric={metric} t={t} />}
-          </div>
-        )}
+          {podium.length > 0 && (
+            <div className="flex items-end justify-center gap-4 pt-2">
+              {podium[1] && <PodiumSlot entry={podium[1]} rank={2} metric={tab} t={t} />}
+              {podium[0] && <PodiumSlot entry={podium[0]} rank={1} metric={tab} t={t} />}
+              {podium[2] && <PodiumSlot entry={podium[2]} rank={3} metric={tab} t={t} />}
+            </div>
+          )}
 
-        {entries && entries.length > 0 && (
-          <p className="rounded-xl bg-progress-bg px-3 py-2 text-center text-xs text-nav-inactive">
-            {metric === "cycles_launched_total" ? t("leaderboard.subtitleCycles") : t("leaderboard.subtitle")}
-          </p>
-        )}
+          {entries && entries.length > 0 && (
+            <p className="rounded-xl bg-progress-bg px-3 py-2 text-center text-xs text-nav-inactive">
+              {tab === "cycles_launched_total" ? t("leaderboard.subtitleCycles") : t("leaderboard.subtitle")}
+            </p>
+          )}
 
-        {rest.length > 0 && (
-          <div className="gradient-surface flex flex-col divide-y divide-white/5 rounded-xl">
-            {rest.map((entry, index) => (
-              <div
-                key={`${entry.display_name}-${index}`}
-                className="flex items-center gap-3 p-3 text-sm"
-              >
-                <span className="w-5 shrink-0 text-center text-xs text-nav-inactive">{index + 4}</span>
-                <LeaderboardAvatar
-                  name={entry.display_name}
-                  photoUrl={entry.photo_url}
-                  sizeClassName="h-9 w-9"
-                  textClassName="text-sm"
-                />
-                <span className="flex-1 truncate">{entry.display_name?.trim() ? entry.display_name.trim() : t("common.playerFallback")}</span>
-                <span className="shrink-0 text-gram">{scoreText(entry, metric, t)}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+          {rest.length > 0 && (
+            <div className="gradient-surface flex flex-col divide-y divide-white/5 rounded-xl">
+              {rest.map((entry, index) => (
+                <div
+                  key={`${entry.display_name}-${index}`}
+                  className="flex items-center gap-3 p-3 text-sm"
+                >
+                  <span className="w-5 shrink-0 text-center text-xs text-nav-inactive">{index + 4}</span>
+                  <LeaderboardAvatar
+                    name={entry.display_name}
+                    photoUrl={entry.photo_url}
+                    sizeClassName="h-9 w-9"
+                    textClassName="text-sm"
+                  />
+                  <span className="flex-1 truncate">{entry.display_name?.trim() ? entry.display_name.trim() : t("common.playerFallback")}</span>
+                  <span className="shrink-0 text-gram">{scoreText(entry, tab, t)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

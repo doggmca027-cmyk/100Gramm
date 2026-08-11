@@ -23,6 +23,7 @@ import {
   HandCoins,
   Sparkles,
   Gem,
+  Megaphone,
   type LucideIcon,
 } from "lucide-react";
 import type { GangAvatarId, GangCosmeticFields, GangListEntry, GangMember, GangRole, PlayerState } from "@/lib/types";
@@ -574,8 +575,7 @@ function GangWithOne({
 }) {
   const { t } = useLanguage();
   const gang = state.gang!;
-  const { entries } = useGangList();
-  const [tabView, setTabView] = useState<"members" | "treasury" | "customization" | "top">("members");
+  const [tabView, setTabView] = useState<"members" | "treasury" | "customization">("members");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [donateOpen, setDonateOpen] = useState(false);
@@ -847,8 +847,24 @@ function GangWithOne({
         {copied ? t("gangs.copied") : t("gangs.invite")}
       </button>
 
+      {gang.activity_feed.length > 0 && (
+        <div className="gradient-surface flex flex-col gap-1.5 rounded-2xl p-3">
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-nav-inactive">
+            <Megaphone className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+            {t("gangs.activityFeedTitle")}
+          </p>
+          <div className="flex flex-col gap-1">
+            {gang.activity_feed.slice(0, 5).map((entry) => (
+              <p key={entry.id} className="truncate text-xs text-nav-inactive">
+                {entry.message}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-1.5">
-        {(["members", "treasury", "customization", "top"] as const).map((view) => (
+        {(["members", "treasury", "customization"] as const).map((view) => (
           <button
             key={view}
             type="button"
@@ -860,14 +876,11 @@ function GangWithOne({
             {view === "members" && <Users className="h-3.5 w-3.5 shrink-0" />}
             {view === "treasury" && <HandCoins className="h-3.5 w-3.5 shrink-0" />}
             {view === "customization" && <Sparkles className="h-3.5 w-3.5 shrink-0" />}
-            {view === "top" && <Trophy className="h-3.5 w-3.5 shrink-0" />}
             {view === "members"
               ? t("gangs.membersTitle")
               : view === "treasury"
                 ? t("gangs.treasuryTitle")
-                : view === "customization"
-                  ? t("gangs.customizationTitle")
-                  : t("gangs.topTitle")}
+                : t("gangs.customizationTitle")}
           </button>
         ))}
       </div>
@@ -974,15 +987,6 @@ function GangWithOne({
 
       {tabView === "customization" && (
         <GangCustomizationScreen gang={gang} balance={state.wallet.balance ?? 0} onStateChange={onStateChange} />
-      )}
-
-      {tabView === "top" && (
-        <div className="flex flex-col gap-2">
-          {entries === null && <p className="p-3 text-center text-sm text-nav-inactive">{t("common.loading")}</p>}
-          {entries?.map((g) => (
-            <GangListRow key={g.id} gang={g} onJoin={null} joining={false} />
-          ))}
-        </div>
       )}
 
       {error && <p className="text-center text-xs text-danger">{error}</p>}

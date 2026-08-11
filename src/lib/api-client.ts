@@ -10,6 +10,7 @@ import type {
   PartnerTaskVerificationMethod,
   PlayerState,
   SquadLevel,
+  SyndicateLeaderboard,
 } from "./types";
 
 export class ApiError extends Error {
@@ -309,6 +310,11 @@ export type LeaderboardMetric = "total_earned" | "completed_cycles_total" | "cyc
 
 export function fetchLeaderboard(metric: LeaderboardMetric = "total_earned") {
   return request<LeaderboardEntry[]>(`/api/leaderboard?metric=${metric}`);
+}
+
+/** The Leaderboard screen's "Синдикаты" tab — weekly top-15 gangs by Influence Points, the reset countdown, and the caller's own gang's row. */
+export function fetchSyndicateLeaderboard() {
+  return request<SyndicateLeaderboard>("/api/leaderboard/syndicates");
 }
 
 export function fetchHistory() {
@@ -739,5 +745,13 @@ export function purchaseVipTreasury() {
   return request<{ result: { vip_treasury: boolean }; state: PlayerState }>(
     "/api/gangs/vip-treasury",
     { method: "POST" },
+  );
+}
+
+/** Leader-or-co_leader-only: instantly buys `tonAmount * 200` weekly Influence Points (min 1 TON) — see buy_direct_influence (0070_syndicate_weekly_leaderboard.sql). */
+export function buyDirectInfluence(tonAmount: number, payFromBank: boolean) {
+  return request<{ result: { points_added: number; weekly_influence_points: number }; state: PlayerState }>(
+    "/api/gangs/buy-influence",
+    { method: "POST", body: JSON.stringify({ tonAmount, payFromBank }) },
   );
 }
