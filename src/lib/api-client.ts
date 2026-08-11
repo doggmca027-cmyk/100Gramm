@@ -748,7 +748,7 @@ export function purchaseVipTreasury() {
   );
 }
 
-/** Leader-or-co_leader-only: instantly buys `tonAmount * 200` weekly Influence Points (min 1 TON) — see buy_direct_influence (0070_syndicate_weekly_leaderboard.sql). */
+/** Leader-or-co_leader-only: instantly buys `tonAmount * 40` weekly Influence Points (min 5 TON) — see buy_direct_influence (0074_reprice_direct_influence.sql). */
 export function buyDirectInfluence(tonAmount: number, payFromBank: boolean) {
   return request<{ result: { points_added: number; weekly_influence_points: number }; state: PlayerState }>(
     "/api/gangs/buy-influence",

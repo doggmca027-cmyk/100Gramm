@@ -228,7 +228,7 @@ const ar: typeof ru = {
     boostModalTitle: "تعزيز النفوذ",
     boostPointsPreview: "سيُضاف: {points} نقطة نفوذ",
     boostSubmitCta: "شراء",
-    boostMotivation: "ساعد نقابتك على الوصول إلى أفضل 15 واحصل على نصيبك من 100 TON!",
+    boostMotivation: "ساعد نقابتك على الوصول إلى أفضل 15 واحصل على نصيبك من 200 TON!",
   },
   squad: {
     title: "العصابة",

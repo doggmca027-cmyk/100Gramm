@@ -26,7 +26,16 @@ import {
   Megaphone,
   type LucideIcon,
 } from "lucide-react";
-import type { GangAvatarId, GangCosmeticFields, GangListEntry, GangMember, GangRole, PlayerState } from "@/lib/types";
+import type {
+  GangAvatarId,
+  GangBankDonor,
+  GangBankTransaction,
+  GangCosmeticFields,
+  GangListEntry,
+  GangMember,
+  GangRole,
+  PlayerState,
+} from "@/lib/types";
 import {
   CO_LEADER_SLOT_COST,
   GANG_AVATAR_IDS,
@@ -52,6 +61,7 @@ import {
   ApiError,
 } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n/context";
+import { LANGUAGE_LOCALE } from "@/lib/i18n/types";
 import { DistrictMapScreen } from "./district-map-screen";
 import { GangCustomizationScreen } from "./gang-customization-screen";
 
@@ -341,6 +351,90 @@ function DonateModal({
   );
 }
 
+/**
+ * Bottom-sheet with the full top-donors or bank-transactions list. The
+ * compact cards on the treasury tab only show the first 3 of what
+ * get_player_state already sends (top 20 donors, last 20 transactions —
+ * see 0076_more_bank_history.sql) — this just surfaces the rest of what's
+ * already in memory, no extra fetch needed.
+ */
+function GangBankListModal({
+  mode,
+  donors,
+  transactions,
+  onClose,
+}: {
+  mode: "donors" | "transactions";
+  donors: GangBankDonor[];
+  transactions: GangBankTransaction[];
+  onClose: () => void;
+}) {
+  const { t, lang } = useLanguage();
+
+  function formatDate(iso: string): string {
+    return new Date(iso).toLocaleString(LANGUAGE_LOCALE[lang], {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60" onClick={onClose}>
+      <div
+        className="flex max-h-[80vh] flex-col gap-3 rounded-t-2xl bg-nav p-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="flex items-center gap-1.5 text-base font-semibold">
+            {mode === "donors" ? (
+              <Trophy className="h-4 w-4 shrink-0 text-amber-400" />
+            ) : (
+              <HandCoins className="h-4 w-4 shrink-0 text-amber-400" />
+            )}
+            {mode === "donors" ? t("gangs.topDonors") : t("gangs.recentBankTransactions")}
+          </h2>
+          <button type="button" onClick={onClose} className="text-nav-inactive" aria-label={t("common.back")}>
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="gradient-surface flex flex-col divide-y divide-white/5 overflow-y-auto rounded-xl">
+          {mode === "donors" &&
+            (donors.length === 0 ? (
+              <p className="p-3 text-sm text-nav-inactive">{t("gangs.noDonors")}</p>
+            ) : (
+              donors.map((donor) => (
+                <div key={donor.user_id} className="flex items-center justify-between gap-2 p-3 text-sm">
+                  <span className="truncate">{donor.display_name}</span>
+                  <span className="shrink-0 font-semibold text-gram">
+                    {donor.amount.toFixed(2)} {t("common.gram")}
+                  </span>
+                </div>
+              ))
+            ))}
+          {mode === "transactions" &&
+            (transactions.length === 0 ? (
+              <p className="p-3 text-sm text-nav-inactive">{t("gangs.noTransactions")}</p>
+            ) : (
+              transactions.map((tx) => (
+                <div key={tx.id} className="flex items-center justify-between gap-2 p-3 text-sm">
+                  <div className="min-w-0">
+                    <p className="truncate">{tx.display_name}</p>
+                    <p className="text-xs text-nav-inactive">{formatDate(tx.created_at)}</p>
+                  </div>
+                  <span className="shrink-0 font-semibold text-gram">
+                    {tx.amount_gram.toFixed(2)} {t("common.gram")}
+                  </span>
+                </div>
+              ))
+            ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function GangListRow({
   gang,
   onJoin,
@@ -579,6 +673,7 @@ function GangWithOne({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [donateOpen, setDonateOpen] = useState(false);
+  const [bankListView, setBankListView] = useState<"donors" | "transactions" | null>(null);
   const [copied, setCopied] = useState(false);
   const [dividendAmount, setDividendAmount] = useState("");
   const [dividendSubmitting, setDividendSubmitting] = useState(false);
@@ -786,7 +881,12 @@ function GangWithOne({
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-2xl border border-purple-900/40 bg-slate-900/80 p-3 text-sm">
+          <button
+            type="button"
+            onClick={() => setBankListView("donors")}
+            disabled={gang.bank_top_donors.length === 0}
+            className="rounded-2xl border border-purple-900/40 bg-slate-900/80 p-3 text-left text-sm disabled:opacity-70"
+          >
             <p className="text-[11px] text-nav-inactive">{t("gangs.topDonors")}</p>
             {gang.bank_top_donors.length === 0 ? (
               <p className="mt-2 text-xs text-nav-inactive">{t("gangs.noDonors")}</p>
@@ -800,8 +900,13 @@ function GangWithOne({
                 ))}
               </div>
             )}
-          </div>
-          <div className="rounded-2xl border border-purple-900/40 bg-slate-900/80 p-3 text-sm">
+          </button>
+          <button
+            type="button"
+            onClick={() => setBankListView("transactions")}
+            disabled={gang.bank_transactions.length === 0}
+            className="rounded-2xl border border-purple-900/40 bg-slate-900/80 p-3 text-left text-sm disabled:opacity-70"
+          >
             <p className="text-[11px] text-nav-inactive">{t("gangs.recentBankTransactions")}</p>
             {gang.bank_transactions.length === 0 ? (
               <p className="mt-2 text-xs text-nav-inactive">{t("gangs.noTransactions")}</p>
@@ -815,7 +920,7 @@ function GangWithOne({
                 ))}
               </div>
             )}
-          </div>
+          </button>
         </div>
 
         <div className="flex items-center justify-between gap-2">
@@ -1018,6 +1123,15 @@ function GangWithOne({
           balance={state.wallet.balance ?? 0}
           onClose={() => setDonateOpen(false)}
           onDonated={onStateChange}
+        />
+      )}
+
+      {bankListView && (
+        <GangBankListModal
+          mode={bankListView}
+          donors={gang.bank_top_donors}
+          transactions={gang.bank_transactions}
+          onClose={() => setBankListView(null)}
         />
       )}
     </div>

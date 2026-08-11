@@ -228,7 +228,7 @@ const tr: typeof ru = {
     boostModalTitle: "Etkiyi Artır",
     boostPointsPreview: "Eklenecek: {points} etki puanı",
     boostSubmitCta: "Satın al",
-    boostMotivation: "Sendikanın İLK 15'e girmesine yardım et ve 100 TON'luk ödülden payını al!",
+    boostMotivation: "Sendikanın İLK 15'e girmesine yardım et ve 200 TON'luk ödülden payını al!",
   },
   squad: {
     title: "Ekip",

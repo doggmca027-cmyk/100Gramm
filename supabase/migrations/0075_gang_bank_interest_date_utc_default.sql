@@ -1,0 +1,22 @@
+-- Fixes gangs.bank_interest_accrued_date's default from `current_date`
+-- (evaluated in the connecting session's timezone -- not guaranteed to be
+-- UTC) to an explicit UTC date, matching every place that actually reads
+-- or writes this column: resolve_due_gang_bank_interest's own "already
+-- caught up today" guard and its post-accrual update both already use
+-- `(now() at time zone 'utc')::date` (0066_district_wars_monetization.sql).
+-- A gang created by a non-UTC session previously seeded this column one
+-- day off from that clock, which could over- or under-count a single day
+-- of interest the first time it ever resolves for that gang.
+--
+-- Only affects gangs created from here on -- existing gangs keep whatever
+-- date they already have. Deliberately not backfilled: resolve_due_gang_
+-- bank_interest may have already advanced an existing gang's column past
+-- its creation date (every get_player_state call resolves it), and there
+-- is no way to tell "still the original off-by-one default" apart from
+-- "correctly resolved and just happens to land on that date" from the
+-- column alone -- guessing wrong would double-count a day of interest
+-- already paid. The impact of leaving old rows as-is is at most one day's
+-- interest (a fraction of a percent of that gang's balance), a much
+-- smaller risk than a wrong backfill.
+alter table gangs
+  alter column bank_interest_accrued_date set default ((now() at time zone 'utc')::date);
