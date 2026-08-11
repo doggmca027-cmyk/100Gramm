@@ -98,6 +98,12 @@ export interface GangMember {
   photo_url: string | null;
   role: GangRole;
   joined_at: string;
+  /** This season's finished-cycle count — same counter wallet.completed_cycles_total reads for the viewer's own profile. */
+  completed_cycles: number;
+  /** Lifetime GRAM this member has donated into THIS gang's bank (sum of gang_bank_transactions, unbounded — not just the top-20 in bank_top_donors). */
+  donated_gram: number;
+  /** Newest of (last cycle start, last bank donation); null if the member has done neither since joining — the "never actually played" signal. */
+  last_active_at: string | null;
 }
 
 export interface GangBankDonor {
