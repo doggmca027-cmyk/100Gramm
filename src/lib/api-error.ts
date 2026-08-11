@@ -66,6 +66,17 @@ const KNOWN_RPC_ERRORS: Record<string, number> = {
   cosmetic_not_found: 404,
   already_vip: 409,
   co_leader_slots_full: 409,
+  gang_closed: 409,
+  gang_requires_payment: 409,
+  gang_not_paid: 409,
+  gang_not_closed: 409,
+  request_already_pending: 409,
+  requester_already_in_gang: 409,
+  requester_insufficient_balance: 409,
+  request_already_resolved: 409,
+  invalid_price: 400,
+  description_too_long: 400,
+  invalid_description_chars: 400,
 };
 
 /** Postgres wraps a plpgsql `raise exception 'x'` message as `x` (sometimes with a trailing detail). */

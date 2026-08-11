@@ -106,6 +106,15 @@ export interface GangMember {
   last_active_at: string | null;
 }
 
+/** A pending application to a closed gang — state.gang.join_requests, leader-only (empty array for everyone else). */
+export interface GangJoinRequest {
+  id: string;
+  user_id: string;
+  display_name: string;
+  photo_url: string | null;
+  created_at: string;
+}
+
 export interface GangBankDonor {
   user_id: string;
   display_name: string;
@@ -157,7 +166,14 @@ export interface PlayerGang extends GangCosmeticFields {
   /** The district this gang is currently contesting — null until a leader/co_leader picks one via attackDistrict(). */
   target_district_id: string | null;
   target_district_name: string | null;
+  /** Application-only membership — joinGang rejects it, members are added via respondGangJoinRequest instead. */
+  is_closed: boolean;
+  /** GRAM required to join, 0 = free. */
+  entry_price_gram: number;
+  description: string | null;
   members: GangMember[];
+  /** Pending applications, oldest first — populated only when my_role is 'leader', empty array otherwise. */
+  join_requests: GangJoinRequest[];
   bank_balance_gram: number;
   bank_balance_ton: number;
   bank_top_donors: GangBankDonor[];
@@ -279,6 +295,13 @@ export interface GangListEntry extends GangCosmeticFields {
   leader_name: string;
   /** True when this is the caller's own gang — for highlighting it in the ranking table. */
   is_mine: boolean;
+  /** Application-only membership — join_gang rejects it, use requestJoinGang instead. */
+  is_closed: boolean;
+  /** GRAM required to join, 0 = free. Nonzero + open uses payAndJoinGang; nonzero + closed is paid at approval time instead. */
+  entry_price_gram: number;
+  description: string | null;
+  /** True when the caller already has a pending (unresolved) application to THIS gang. */
+  my_pending_request: boolean;
 }
 
 export type BankPlanDays = 7 | 14 | 30;

@@ -87,6 +87,15 @@ async function recordInboundPartnerClick(
  * after the gang is full/gone, just fails with a known RPC error that's
  * silently swallowed here — never allowed to block login, same posture as
  * the partner-click notification below.
+ *
+ * join_gang (0078_gang_closed_paid_description.sql) refuses anything that
+ * would need leader approval (gang_closed) or move money
+ * (gang_requires_payment) — deliberately, since this whole path runs with
+ * no user interaction at all, so it can never silently charge someone or
+ * file something on their behalf without them tapping anything. The one
+ * exception: gang_closed specifically falls back to request_join_gang,
+ * which is safe to do silently too — no balance is ever touched by filing
+ * an application, only by a leader later approving it.
  */
 const GANG_START_PARAM_PREFIX = "gang_";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -97,10 +106,15 @@ async function tryJoinGangFromStartParam(startParam: string | null, userId: stri
   if (!UUID_RE.test(gangId)) return;
 
   try {
-    await supabaseServer().rpc("join_gang", { p_user_id: userId, p_gang_id: gangId });
-    // Known failure modes (already_in_gang, gang_not_found, gang_full) and
-    // anything else are all equally fine to ignore here — the user just
-    // lands in the app normally, same as opening it without a start param.
+    const { error } = await supabaseServer().rpc("join_gang", { p_user_id: userId, p_gang_id: gangId });
+    // Known failure modes (already_in_gang, gang_not_found, gang_full,
+    // gang_requires_payment) and anything else are all equally fine to
+    // ignore here — the user just lands in the app normally, same as
+    // opening it without a start param. gang_closed alone gets one retry
+    // as a (money-free) join request instead of being swallowed outright.
+    if (error?.message?.includes("gang_closed")) {
+      await supabaseServer().rpc("request_join_gang", { p_user_id: userId, p_gang_id: gangId });
+    }
   } catch (err) {
     console.error("tryJoinGangFromStartParam failed:", err);
   }
