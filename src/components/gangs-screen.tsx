@@ -24,6 +24,8 @@ import {
   Sparkles,
   Gem,
   Megaphone,
+  Repeat,
+  Clock,
   type LucideIcon,
 } from "lucide-react";
 import type {
@@ -590,6 +592,14 @@ function GangsWithoutOne({
   );
 }
 
+/** A member with no cycle and no bank donation for this many days (or ever) reads as a dead account — flagged in red so leaders can spot who to kick at a glance. */
+const GANG_MEMBER_INACTIVE_DAYS = 3;
+
+/** Module-level (not inline in the component) so the Date.now() call doesn't trip react-hooks/purity — same pattern as use-countdown.ts's secondsUntil/elapsedPercent. */
+function daysSince(iso: string): number {
+  return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000));
+}
+
 /**
  * `management` is only passed for the leader's own view, and only for rows
  * other than the leader's own (see the `member.role !== "leader"` filter at
@@ -610,6 +620,16 @@ function GangMemberRow({
   };
 }) {
   const { t } = useLanguage();
+
+  const lastActiveDays = member.last_active_at === null ? null : daysSince(member.last_active_at);
+  const isInactive = lastActiveDays === null || lastActiveDays >= GANG_MEMBER_INACTIVE_DAYS;
+  const lastActiveLabel =
+    lastActiveDays === null
+      ? t("gangs.lastActiveNever")
+      : lastActiveDays === 0
+        ? t("gangs.lastActiveToday")
+        : t("gangs.lastActiveDaysAgo", { days: lastActiveDays });
+
   return (
     <div className="flex items-center gap-3 p-3 text-sm">
       <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-progress-bg">
@@ -620,8 +640,29 @@ function GangMemberRow({
           <span className="text-sm font-bold">{member.display_name.charAt(0).toUpperCase()}</span>
         )}
       </div>
-      <span className="flex-1 truncate">{member.display_name}</span>
-      <RoleBadge role={member.role} />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className="truncate">{member.display_name}</span>
+          <RoleBadge role={member.role} />
+        </div>
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] text-nav-inactive">
+          <span className="flex items-center gap-1" title={t("gangs.memberCyclesLabel")}>
+            <Repeat className="h-3 w-3 shrink-0" />
+            {member.completed_cycles}
+          </span>
+          <span className="flex items-center gap-1" title={t("gangs.memberDonatedLabel")}>
+            <HandCoins className="h-3 w-3 shrink-0" />
+            {member.donated_gram.toFixed(2)}
+          </span>
+          <span
+            className={`flex items-center gap-1 ${isInactive ? "font-semibold text-danger" : ""}`}
+            title={t("gangs.memberLastActiveLabel")}
+          >
+            <Clock className="h-3 w-3 shrink-0" />
+            {lastActiveLabel}
+          </span>
+        </div>
+      </div>
       {management && (
         <div className="flex shrink-0 items-center gap-1">
           {member.role === "co_leader" ? (
