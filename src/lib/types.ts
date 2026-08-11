@@ -116,6 +116,13 @@ export interface GangBankTransaction {
   created_at: string;
 }
 
+/** One line of the gang activity feed — server-generated (Russian-only, not per-locale, see 0071_open_battle_boosts_to_members.sql) system message, e.g. a member activating a boost or buying Influence. */
+export interface GangActivityEntry {
+  id: string;
+  message: string;
+  created_at: string;
+}
+
 /** Premium cosmetics a gang may have equipped — see gang-cosmetics-catalog.ts / GET /api/gangs/cosmetics for the shop's own {code -> price/glow} data. */
 export interface GangCosmeticFields {
   premium_avatar_id: string | null;
@@ -137,6 +144,8 @@ export interface PlayerGang extends GangCosmeticFields {
   co_leader_slots: number;
   /** True once purchaseVipTreasury() has been bought — bank interest accrues at 30% APY instead of 10%. */
   vip_treasury: boolean;
+  /** This week's Influence Points so far — resets to 0 every Sunday 23:59 UTC, see the Leaderboard's "Синдикаты" tab. */
+  weekly_influence_points: number;
   leader_name: string;
   my_role: GangRole;
   /** The district this gang is currently contesting — null until a leader/co_leader picks one via attackDistrict(). */
@@ -147,6 +156,8 @@ export interface PlayerGang extends GangCosmeticFields {
   bank_balance_ton: number;
   bank_top_donors: GangBankDonor[];
   bank_transactions: GangBankTransaction[];
+  /** Latest 10 system messages (boost activations, Influence purchases), newest first — see gang_activity_log. */
+  activity_feed: GangActivityEntry[];
 }
 
 export type DistrictBonusType = "cycle_boost" | "bank_boost" | "slot_discount";
@@ -203,6 +214,42 @@ export interface District {
   active_boosts: DistrictActiveBoost[];
   /** Mercenary bots currently ticking for this district's battle. */
   mercenary_bots: DistrictMercenaryBot[];
+}
+
+/** One card of the Leaderboard's "Синдикаты" tab — a gang ranked in this week's top 15 by weekly_influence_points. */
+export interface SyndicateLeaderboardEntry extends GangCosmeticFields {
+  rank: number;
+  gang_id: string;
+  name: string;
+  avatar_id: GangAvatarId;
+  member_count: number;
+  weekly_influence_points: number;
+  /** GRAM this rank pays out at the next weekly reset — see finalize_weekly_leaderboard_season. */
+  prize_ton: number;
+  /** True when this is the caller's own gang — for highlighting it inside the top-15 list. */
+  is_mine: boolean;
+}
+
+/** The caller's own gang's standing, always present (even ranked below 15, or with 0 points and therefore no rank yet) so its "Забустить Влияние" button always has a row to live in. */
+export interface SyndicateLeaderboardMyGang {
+  gang_id: string;
+  name: string;
+  weekly_influence_points: number;
+  /** Global rank across every gang — null only when weekly_influence_points is still 0 (not ranked yet this week). */
+  rank: number | null;
+  prize_ton: number;
+  my_role: GangRole;
+  target_district_id: string | null;
+}
+
+/** GET /api/leaderboard/syndicates — the Leaderboard screen's "Синдикаты" tab. */
+export interface SyndicateLeaderboard {
+  /** ISO timestamp of the next Sunday-23:59-UTC reset + payout. */
+  next_reset_at: string;
+  prize_pool_ton: number;
+  entries: SyndicateLeaderboardEntry[];
+  /** Null only when the caller isn't in a gang. */
+  my_gang: SyndicateLeaderboardMyGang | null;
 }
 
 /** GET /api/gangs/cosmetics — the "Кастомизация" shop catalog. */

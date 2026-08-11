@@ -55,6 +55,8 @@ function districtErrorMessage(err: unknown, t: ReturnType<typeof useLanguage>["t
       return t("gangs.insufficientBalance");
     case "insufficient_gang_bank":
       return t("gangs.insufficientGangBank");
+    case "bank_payment_officers_only":
+      return t("gangs.bankOfficersOnly");
     default:
       return t("gangs.actionFailed");
   }
@@ -161,7 +163,11 @@ function DistrictCard({
 
   const alreadyApplied = district.my_gang_role === "attacker";
   const showAttackButton = canManage && district.my_gang_role !== "defender";
-  const showBoostPanel = canManage && isActive && district.my_gang_role !== null;
+  // Battle Boosts (airstrike/shield) are open to ANY gang member currently
+  // fighting this district, not just leader/co_leader — see
+  // 0071_open_battle_boosts_to_members.sql. Paying from the gang bank
+  // (below) and hiring the mercenary bot stay officer-only.
+  const showBoostPanel = isActive && district.my_gang_role !== null;
   const isAttacking = busyKey === `${district.id}:attack`;
   const isHiringMercenary = busyKey === `${district.id}:mercenary`;
 
@@ -242,10 +248,14 @@ function DistrictCard({
 
       {showBoostPanel && (
         <div className="flex flex-col gap-2 rounded-xl border border-purple-900/40 bg-black/20 p-2.5">
-          <label className="flex items-center gap-1.5 text-[11px] text-nav-inactive">
-            <input type="checkbox" checked={payFromBank} onChange={onTogglePayFromBank} className="accent-amber-400" />
-            {t("districts.payFromBank")}
-          </label>
+          {canManage ? (
+            <label className="flex items-center gap-1.5 text-[11px] text-nav-inactive">
+              <input type="checkbox" checked={payFromBank} onChange={onTogglePayFromBank} className="accent-amber-400" />
+              {t("districts.payFromBank")}
+            </label>
+          ) : (
+            <p className="text-[11px] text-nav-inactive">{t("districts.personalBalanceOnly")}</p>
+          )}
           <div className="grid grid-cols-2 gap-1.5">
             <button
               type="button"
@@ -276,15 +286,17 @@ function DistrictCard({
                 {t("districts.buyShield", { cost: ENGINEER_SHIELD_COST })}
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => onMercenary(district.id)}
-              disabled={isHiringMercenary}
-              className="col-span-2 flex items-center justify-center gap-1 rounded-full bg-progress-bg py-2 text-[10px] font-semibold text-purple-300 disabled:opacity-40"
-            >
-              <Bot className="h-3 w-3 shrink-0" />
-              {isHiringMercenary ? t("gangs.buying") : t("districts.hireMercenary", { cost: MERCENARY_BOT_COST })}
-            </button>
+            {canManage && (
+              <button
+                type="button"
+                onClick={() => onMercenary(district.id)}
+                disabled={isHiringMercenary}
+                className="col-span-2 flex items-center justify-center gap-1 rounded-full bg-progress-bg py-2 text-[10px] font-semibold text-purple-300 disabled:opacity-40"
+              >
+                <Bot className="h-3 w-3 shrink-0" />
+                {isHiringMercenary ? t("gangs.buying") : t("districts.hireMercenary", { cost: MERCENARY_BOT_COST })}
+              </button>
+            )}
           </div>
         </div>
       )}
