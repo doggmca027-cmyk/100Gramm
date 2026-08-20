@@ -7,7 +7,6 @@ import { useLanguage } from "@/lib/i18n/context";
 import { useCountdown, formatDuration, useDurationUnits } from "@/hooks/use-countdown";
 import { TIER_ICON, TIER_ACCENT, DEFAULT_TIER_ICON } from "@/lib/tier-art";
 import { submitComboGuess } from "@/lib/api-client";
-import { itemIcon, itemNameKey } from "@/lib/combo-items";
 
 // Fallback for useCountdown when there's no combo yet (e.g. season just
 // ended) — a fixed far-future placeholder, never actually rendered since the
@@ -106,17 +105,11 @@ export function GamesScreen({
               <PartyPopper className="h-4 w-4" />
               {t("games.comboCompletedTitle")}
             </p>
-            <p className="flex items-center justify-center gap-1.5 text-sm opacity-90">
-              {combo.reward_item && (() => {
-                const RewardIcon = itemIcon(combo.reward_item.item_type);
-                return <RewardIcon className="h-4 w-4 shrink-0" />;
-              })()}
-              {combo.reward_item
-                ? t("games.comboCompletedBody", {
-                    item: t(itemNameKey(combo.reward_item.item_type)),
-                  })
-                : t("games.comboCompletedBodyUnknown")}
-            </p>
+            {/* Reward reveal (icon + item name) deliberately not rendered
+                here — boosters are hidden from the app, but the combo game
+                itself, and this "you solved it" banner, stay. The win is
+                still recorded and the item still lands in inventory
+                server-side, just never shown. */}
           </div>
           <div className="grid grid-cols-4 gap-2">
             {(combo.revealed_tiers ?? []).map((card, i) => {
@@ -145,25 +138,13 @@ export function GamesScreen({
         </div>
       ) : (
         <>
-          <div className="gradient-surface flex flex-col gap-2 rounded-xl p-3 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-nav-inactive">{t("games.comboReward")}</span>
-              <span className="font-semibold">{t("games.comboAttemptsLeft", { n: attemptsLeft })}</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {combo.possible_drops.map((drop) => {
-                const DropIcon = itemIcon(drop.item_type);
-                return (
-                  <span
-                    key={drop.item_type}
-                    className="flex items-center gap-1 rounded-full bg-progress-bg px-2 py-1 text-[10px] text-nav-inactive"
-                  >
-                    <DropIcon className="h-3 w-3 shrink-0 text-purple-400" />
-                    {t(itemNameKey(drop.item_type))} · {drop.drop_weight}%
-                  </span>
-                );
-              })}
-            </div>
+          {/* The possible-drops preview (what booster + odds) is
+              deliberately not rendered — same "hide the booster, keep the
+              game" treatment as the post-win reveal above. Attempts-left
+              on its own is still worth showing. */}
+          <div className="gradient-surface flex items-center justify-between rounded-xl p-3 text-sm">
+            <span className="text-nav-inactive">{t("games.comboTitle")}</span>
+            <span className="font-semibold">{t("games.comboAttemptsLeft", { n: attemptsLeft })}</span>
           </div>
 
           <div className="grid grid-cols-4 gap-2">

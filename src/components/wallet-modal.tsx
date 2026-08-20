@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, CheckCircle2, Wallet as WalletIcon, Hourglass, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { X, CheckCircle2, Wallet as WalletIcon, Hourglass, ArrowUpCircle, ArrowDownCircle, Ban } from "lucide-react";
 import { beginCell } from "@ton/core";
 import { CHAIN, UserRejectsError, useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
 import type { PlayerState } from "@/lib/types";
@@ -15,12 +15,27 @@ import { UsdtAutoDeposit } from "./usdt-auto-deposit";
 type DepositPhase = "idle" | "preparing" | "awaiting-wallet" | "verifying" | "success";
 type DepositCurrency = "GRAM" | "USDT";
 
-const DEFAULT_WITHDRAW_CONFIG = { withdraw_min: 1, withdraw_fee_percent: 15 };
+const DEFAULT_WITHDRAW_CONFIG = {
+  withdraw_min: 1,
+  withdraw_fee_percent: 15,
+  deposits_enabled: true,
+  withdrawals_enabled: true,
+};
 /** TON is 1:1 with GRAM — the shared floor applies directly, must match MIN_DEPOSIT_TON server-side. */
 const MIN_DEPOSIT_TON = MIN_DEPOSIT_GRAM;
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
+}
+
+function DisabledNotice({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="gradient-surface flex flex-col items-center gap-2 rounded-xl p-6 text-center">
+      <Ban className="h-10 w-10 text-amber-400" />
+      <p className="text-sm font-semibold">{title}</p>
+      <p className="text-xs text-nav-inactive">{body}</p>
+    </div>
+  );
 }
 
 function truncateAddress(address: string): string {
@@ -95,6 +110,11 @@ export function WalletModal({
 
   const withdrawConfig = state.season.config.wallet ?? DEFAULT_WITHDRAW_CONFIG;
   const pending = state.wallet.pending_withdrawal;
+  // Absent (older seasons, or the DEFAULT_WITHDRAW_CONFIG fallback above)
+  // behaves as enabled — mirrors the coalesce(..., true) default the SQL
+  // functions use when this key isn't in seasons.config yet.
+  const depositsEnabled = withdrawConfig.deposits_enabled !== false;
+  const withdrawalsEnabled = withdrawConfig.withdrawals_enabled !== false;
 
   const withdrawNormalized = withdrawValue.trim().replace(",", ".");
   const withdrawAmount = Number(withdrawNormalized);
@@ -147,7 +167,9 @@ export function WalletModal({
               ? t("wallet.errorAlreadyPending")
               : err instanceof ApiError && err.code === "invalid_address"
                 ? t("wallet.errorInvalidAddress")
-                : t("wallet.errorGeneric"),
+                : err instanceof ApiError && err.code === "withdrawals_disabled"
+                  ? t("wallet.withdrawalsDisabledBody")
+                  : t("wallet.errorGeneric"),
       );
     } finally {
       setWithdrawSubmitting(false);
@@ -201,7 +223,9 @@ export function WalletModal({
           ? t("walletConnect.errorNotConfirmed")
           : err instanceof ApiError && err.code === "amount_too_low"
             ? t("walletConnect.errorTooLow", { min: MIN_DEPOSIT_TON })
-            : t("walletConnect.errorGeneric"),
+            : err instanceof ApiError && err.code === "deposits_disabled"
+              ? t("wallet.depositsDisabledBody")
+              : t("walletConnect.errorGeneric"),
       );
     }
   }
@@ -231,13 +255,13 @@ export function WalletModal({
           </button>
         </div>
 
-        {mode === "deposit" && (
+        {mode === "deposit" && depositsEnabled && (
           <p className="text-xs text-nav-inactive">
             {t("wallet.depositMinNote", { min: MIN_DEPOSIT_GRAM })}
           </p>
         )}
 
-        {mode === "deposit" && (
+        {mode === "deposit" && depositsEnabled && (
           // GRAM vs USDT — both tabs offer the same two funding paths
           // (auto via TON Connect + manual address/memo, see
           // ManualDepositRequisites/UsdtAutoDeposit below). Toggle stays
@@ -260,7 +284,12 @@ export function WalletModal({
         )}
 
         {mode === "deposit" ? (
-          depositCurrency === "USDT" ? (
+          !depositsEnabled ? (
+            <DisabledNotice
+              title={t("wallet.depositsDisabledTitle")}
+              body={t("wallet.depositsDisabledBody")}
+            />
+          ) : depositCurrency === "USDT" ? (
             // Two independent ways to fund USDT, always both shown: the
             // auto-flow needs a TON Connect-paired wallet; the requisites
             // below work from *any* wallet or exchange (spec: transactions
@@ -375,6 +404,11 @@ export function WalletModal({
             </div>
             <p className="text-xs text-nav-inactive">{t("wallet.pendingBody")}</p>
           </div>
+        ) : !withdrawalsEnabled ? (
+          <DisabledNotice
+            title={t("wallet.withdrawalsDisabledTitle")}
+            body={t("wallet.withdrawalsDisabledBody")}
+          />
         ) : (
           <>
             <p className="text-xs text-nav-inactive">

@@ -527,6 +527,9 @@ export interface WalletConfig {
   deposit_min: number;
   withdraw_min: number;
   withdraw_fee_percent: number;
+  /** Absent (older seasons) behaves as enabled — mirrors the coalesce(..., true) default in the SQL functions that read this. */
+  deposits_enabled?: boolean;
+  withdrawals_enabled?: boolean;
 }
 
 export interface PendingWithdrawal {

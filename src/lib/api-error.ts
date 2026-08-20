@@ -20,6 +20,8 @@ const KNOWN_RPC_ERRORS: Record<string, number> = {
   boost_not_pending: 409,
   tier_already_boosted: 409,
   amount_too_low: 400,
+  deposits_disabled: 403,
+  withdrawals_disabled: 403,
   unknown_pack: 404,
   invalid_tx_hash: 400,
   tx_already_used: 409,

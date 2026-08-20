@@ -9,6 +9,7 @@ import {
 } from "@/lib/telegram-auth";
 import { supabaseServer } from "@/lib/supabase-server";
 import { notifyPartnerCallback, parseInboundStartParam } from "@/lib/partner-webhook";
+import { isAdminTelegramId } from "@/lib/admin";
 
 export const runtime = "nodejs";
 
@@ -155,6 +156,23 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = supabaseServer();
+
+  // Maintenance gate — checked before bootstrap_user (or any other side
+  // effect) runs, so a non-admin can't even create their user_seasons row
+  // while the flag is on. Flipped via seasons.config.features.maintenance
+  // (see 0087_maintenance_mode_on.sql); admins (NEXT_PUBLIC_ADMIN_TELEGRAM_IDS)
+  // pass straight through so the team can keep testing during the window.
+  const { data: activeSeason } = await supabase
+    .from("seasons")
+    .select("config")
+    .eq("is_active", true)
+    .maybeSingle();
+  const maintenanceOn = Boolean(
+    (activeSeason?.config as { features?: { maintenance?: boolean } } | null)?.features?.maintenance,
+  );
+  if (maintenanceOn && !isAdminTelegramId(String(validated.user.id))) {
+    return NextResponse.json({ error: "maintenance" }, { status: 503 });
+  }
   const { data: userId, error } = await supabase.rpc("bootstrap_user", {
     p_telegram_id: validated.user.id,
     p_username: validated.user.username ?? null,

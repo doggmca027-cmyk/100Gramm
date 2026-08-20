@@ -1,14 +1,23 @@
 "use client";
 
-import { Flame, Zap, Wrench } from "lucide-react";
+import { Flame, Wrench } from "lucide-react";
 import type { PlayerState } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
 import { TIER_ICON, TIER_ACCENT, DEFAULT_TIER_ICON } from "@/lib/tier-art";
-import { BoostInventory } from "./boost-inventory";
-import { ItemInventory } from "./item-inventory";
+// BoostInventory / ItemInventory intentionally not rendered below —
+// boosters are hidden from the app. Both components and everything under
+// them (apply/use flows, API routes) are untouched; re-enabling is just
+// putting the two JSX lines back.
+// import { BoostInventory } from "./boost-inventory";
+// import { ItemInventory } from "./item-inventory";
 
 export function UpgradesScreen({
   state,
+  // Only BoostInventory/ItemInventory ever needed this — kept in the prop
+  // signature (page.tsx still passes it, same as every other screen) so
+  // re-enabling those two components is just uncommenting them above,
+  // nothing to wire back up here.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onStateChange,
 }: {
   state: PlayerState;
@@ -21,8 +30,6 @@ export function UpgradesScreen({
     <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4 pb-24">
       <p className="px-1 text-sm text-nav-inactive">{t("upgrades.subtitle")}</p>
 
-      <BoostInventory state={state} onStateChange={onStateChange} />
-      <ItemInventory state={state} onStateChange={onStateChange} />
 
       {unlockedTiers.map((tier) => {
         const atCap = tier.can_buy_max;
@@ -44,12 +51,7 @@ export function UpgradesScreen({
               <p className="text-lg font-bold">
                 {tier.slots_open}
                 <span className="text-sm text-nav-inactive">/{tier.slots_max}</span>
-                {tier.slots_boost > 0 && (
-                  <span className="ms-1 inline-flex items-center gap-0.5 text-sm text-boost">
-                    +{tier.slots_boost}
-                    <Zap className="h-3.5 w-3.5" />
-                  </span>
-                )}
+                {/* tier.slots_boost badge intentionally not rendered — boosters are hidden from the app. */}
               </p>
             </div>
 
@@ -72,9 +74,6 @@ export function UpgradesScreen({
               </>
             )}
 
-            {tier.slots_boost > 0 && (
-              <p className="mt-2 text-xs text-boost">{t("productCard.tempSlotNote")}</p>
-            )}
           </div>
         );
       })}
