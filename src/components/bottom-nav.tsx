@@ -1,17 +1,22 @@
 "use client";
 
-import { Compass, Wallet, Vault, Zap, Users, Shield, Dices, type LucideIcon } from "lucide-react";
+import { Compass, Wallet, Vault, Zap, Users, Dices, type LucideIcon } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/context";
 
 export type TabId = "path" | "balance" | "bank" | "upgrades" | "squad" | "gangs" | "games";
 
+// "gangs" is deliberately left out of this list — hides the tab from the
+// nav bar without touching TabId, page.tsx's `tab === "gangs"` branch, or
+// GangsScreen itself, so the whole feature can come back by adding one line
+// here. Anything that reaches gangs some other way (e.g. a gang_<uuid>
+// startapp invite link, handled server-side in
+// tryJoinGangFromStartParam) is unaffected — this only hides the nav entry.
 const TABS: { id: TabId; Icon: LucideIcon }[] = [
   { id: "path", Icon: Compass },
   { id: "balance", Icon: Wallet },
   { id: "bank", Icon: Vault },
   { id: "upgrades", Icon: Zap },
   { id: "squad", Icon: Users },
-  { id: "gangs", Icon: Shield },
   { id: "games", Icon: Dices },
 ];
 

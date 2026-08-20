@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Crown, Trophy, Coins, RotateCw, Shield, type LucideIcon } from "lucide-react";
+import { Crown, Trophy, Coins, RotateCw, type LucideIcon } from "lucide-react";
 import { fetchLeaderboard, type LeaderboardEntry, type LeaderboardMetric } from "@/lib/api-client";
 import type { PlayerState } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
@@ -16,10 +16,13 @@ const RANK_BADGE_CLASS: Record<number, string> = {
 /** "syndicates" is a whole separate panel (SyndicateLeaderboardPanel), not another LeaderboardMetric — the individual-player ranking below only ever drives the first two tabs. */
 type LeaderboardTab = LeaderboardMetric | "syndicates";
 
+// "syndicates" is deliberately left out of this list — hides the tab
+// button without touching LeaderboardTab, the tab === "syndicates" render
+// branch below, or SyndicateLeaderboardPanel/its API route, so it can come
+// back by adding one line here.
 const TABS: { tab: LeaderboardTab; labelKey: "leaderboard.tabEarned" | "leaderboard.tabCycles" | "leaderboard.syndicateTab"; Icon: LucideIcon }[] = [
   { tab: "total_earned", labelKey: "leaderboard.tabEarned", Icon: Coins },
   { tab: "cycles_launched_total", labelKey: "leaderboard.tabCycles", Icon: RotateCw },
-  { tab: "syndicates", labelKey: "leaderboard.syndicateTab", Icon: Shield },
 ];
 
 /** Score text for one entry, matching whichever metric the active tab is ranked by. */
