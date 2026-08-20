@@ -39,6 +39,10 @@ export interface PlayerState {
     auto_collect_until: string | null;
     /** "Authority" — earned from system tasks only, no gameplay effect yet. */
     xp: number;
+    /** Daily-combo passive (0 = none yet): added on top of every tier's payout_percent, see TierState.effective_payout_percent. */
+    combo_income_bonus_percent: number;
+    /** Daily-combo passive (0 = none yet): shaved off every tier's cycle_hours, see TierState.effective_cycle_hours. */
+    combo_time_reduction_percent: number;
   };
   stats: {
     profit_24h: number;
@@ -385,10 +389,10 @@ export interface DailyCombo {
   last_guess: ComboGuessCard[] | null;
   /** The secret combo, only ever populated once is_completed is true. */
   revealed_tiers: ComboCard[] | null;
-  /** The full drop table, for showing odds before playing. */
-  possible_drops: ComboDropOdds[];
-  /** What today's win actually granted — null until won. */
-  reward_item: ComboItemTemplate | null;
+  /** Which passive category today's win rolled — null until won. See wallet.combo_income_bonus_percent/combo_time_reduction_percent for the resulting value. */
+  reward_type: "income_bonus" | "time_reduction" | null;
+  /** The rolled value (1-4 for income_bonus, 1-5 for time_reduction) — null until won. */
+  reward_value: number | null;
 }
 
 export interface TierState {
@@ -400,6 +404,10 @@ export interface TierState {
   price: number;
   payout_percent: number;
   cycle_hours: number;
+  /** payout_percent + wallet.combo_income_bonus_percent — what a claimed cycle on this tier actually pays out at (before any late-claim halving). */
+  effective_payout_percent: number;
+  /** cycle_hours reduced by wallet.combo_time_reduction_percent — what start_cycle actually uses on this tier (not counting the separate, dynamic bank speed-boost buff). */
+  effective_cycle_hours: number;
   unlocked: boolean;
   completed_cycles: number;
   unlock_required_cycles: number;

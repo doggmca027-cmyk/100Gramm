@@ -282,8 +282,10 @@ export interface ComboGuessResult {
   correct: boolean[];
   attempts_used: number;
   attempts_max: number;
-  /** Which item was actually dropped — null on a losing guess. */
-  reward_item_type: string | null;
+  /** Which passive category was rolled — null on a losing guess. */
+  reward_type: "income_bonus" | "time_reduction" | null;
+  /** The rolled value (1-4 for income_bonus, 1-5 for time_reduction) — null on a losing guess. */
+  reward_value: number | null;
 }
 
 export function submitComboGuess(tiers: number[]) {
