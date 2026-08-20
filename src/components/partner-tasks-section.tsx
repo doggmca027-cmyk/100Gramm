@@ -218,16 +218,24 @@ export function PartnerTasksSection({
   icon?: LucideIcon;
   emptyText?: string;
 }) {
+  // Boosters are hidden from the app — reward_item_type tasks pay a booster
+  // item with reward_amount 0 (never GRAM alongside it, see PartnerTask's
+  // doc comment), so there's no partial reward to fall back to: the whole
+  // card is filtered out here rather than shown with a broken/empty reward.
+  // The task rows themselves (and admin's ability to create more) are
+  // untouched — this only hides them from this list.
+  const visibleTasks = tasks.filter((task) => !task.reward_item_type);
+
   return (
     <div className="flex flex-col gap-2">
       <h2 className="flex items-center gap-1.5 px-1 text-sm font-semibold text-nav-inactive">
         <Icon className="h-4 w-4 text-purple-400" />
         {title}
       </h2>
-      {tasks.length === 0 && emptyText && (
+      {visibleTasks.length === 0 && emptyText && (
         <p className="px-1 text-sm text-nav-inactive">{emptyText}</p>
       )}
-      {tasks.map((task) => (
+      {visibleTasks.map((task) => (
         <TaskCard key={task.id} task={task} onClaimed={onStateChange} />
       ))}
     </div>

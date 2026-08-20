@@ -168,9 +168,6 @@ export function ProductDetailScreen({
               )
             )}
           </div>
-          {tier.slots_boost > 0 && (
-            <p className="mb-2 text-xs text-boost">{t("productCard.tempSlotNote")}</p>
-          )}
           <div className="grid grid-cols-4 gap-2">
             {slotTiles.map((endsAt, i) => (
               <SlotTile key={i} endsAt={endsAt} />

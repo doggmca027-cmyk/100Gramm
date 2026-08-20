@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Lock, Timer, Clock, Layers, Zap, Flame } from "lucide-react";
+import { Lock, Timer, Clock, Layers, Flame } from "lucide-react";
 import type { ActiveCycle, TierState } from "@/lib/types";
 import { useCountdown, useElapsedPercent, formatDuration, useDurationUnits } from "@/hooks/use-countdown";
 import { useLanguage } from "@/lib/i18n/context";
@@ -178,12 +178,9 @@ export function ProductCard({
           <span className="inline-flex items-center gap-1">
             <Layers className="h-3.5 w-3.5 shrink-0 text-amber-400" />
             {t("productCard.slots")} {tier.slots_open}/{tier.slots_max}
-            {tier.slots_boost > 0 && (
-              <span className="inline-flex items-center gap-0.5 text-boost">
-                +{tier.slots_boost}
-                <Zap className="h-3 w-3" />
-              </span>
-            )}
+            {/* tier.slots_boost badge intentionally not rendered — boosters
+                are hidden from the app. slots_total (used everywhere the
+                actual slot count matters) already folds it in regardless. */}
           </span>
           {tier.can_buy_max ? (
             <span className="text-profit">· {t("productCard.slotsMaxed")}</span>
@@ -193,9 +190,6 @@ export function ProductCard({
                 · {t("productCard.nextSlotIn", { n: tier.cycles_to_next_slot })}
               </span>
             )
-          )}
-          {tier.slots_boost > 0 && (
-            <span className="w-full text-boost">{t("productCard.tempSlotNote")}</span>
           )}
         </div>
 
