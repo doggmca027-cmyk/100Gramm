@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { init, isTMA, mockTelegramEnv, retrieveRawInitData } from "@telegram-apps/sdk-react";
 import { useLanguage } from "@/lib/i18n/context";
 
-type Status = "pending" | "iframe" | "ready" | "error";
+type Status = "pending" | "iframe" | "ready" | "error" | "maintenance";
 
 /**
  * Mirrors the environment check @telegram-apps/bridge's postEvent does
@@ -130,6 +130,15 @@ export function AppBootstrap({ children }: { children: React.ReactNode }) {
         });
 
         if (!res.ok) {
+          // Distinguish the maintenance-mode 503 from a generic failure —
+          // see /api/auth/telegram's maintenance gate. Everything else
+          // (including a network error where res.json() itself would
+          // throw) falls through to the generic "error" status below.
+          const body = await res.json().catch(() => null);
+          if (res.status === 503 && body?.error === "maintenance") {
+            if (!cancelled) setStatus("maintenance");
+            return;
+          }
           throw new Error("auth_failed");
         }
 
@@ -161,6 +170,19 @@ export function AppBootstrap({ children }: { children: React.ReactNode }) {
         title="100ГРАМ (dev)"
         className="h-full w-full flex-1 border-0"
       />
+    );
+  }
+
+  if (status === "maintenance") {
+    // Deliberately English-only and not routed through t() — this is
+    // shown regardless of the viewer's chosen language, see
+    // /api/auth/telegram's maintenance gate.
+    return (
+      <div className="flex flex-1 items-center justify-center p-6 text-center">
+        <p className="text-nav-inactive">
+          Technical works are in progress. Please check back soon.
+        </p>
+      </div>
     );
   }
 
