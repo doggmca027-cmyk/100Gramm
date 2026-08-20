@@ -19,6 +19,15 @@ export function AppBootstrap({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
+    // init() returns its own teardown function — without calling it on
+    // unmount, React's dev-only Strict Mode double-invoke (mount ->
+    // cleanup -> mount again) leaves the SDK's internal state from the
+    // first init() call still standing when the second one runs, which
+    // makes that second call throw UnknownEnvError. Discarding the
+    // returned function (as this used to) "works" outside of Strict
+    // Mode's double-invoke, i.e. in production, which is why this went
+    // unnoticed until testing the plain-browser dev flow.
+    let cleanupSdk: VoidFunction | undefined;
 
     (async () => {
       try {
@@ -43,10 +52,17 @@ export function AppBootstrap({ children }: { children: React.ReactNode }) {
               tgWebAppVersion: "8",
               tgWebAppPlatform: "tdesktop",
             },
+            // Re-mocking on Strict Mode's second invoke would otherwise
+            // wrap window.parent.postMessage again on top of the first
+            // mock's wrapper instead of replacing it — harmless in this
+            // app (nothing depends on postMessage interception here) but
+            // exactly what the SDK's own docs warn against for repeated
+            // mockTelegramEnv calls in one lifecycle.
+            resetPostMessage: true,
           });
         }
 
-        init();
+        cleanupSdk = init();
 
         const initData = retrieveRawInitData();
         if (!initData) {
@@ -73,6 +89,7 @@ export function AppBootstrap({ children }: { children: React.ReactNode }) {
 
     return () => {
       cancelled = true;
+      cleanupSdk?.();
     };
   }, []);
 
