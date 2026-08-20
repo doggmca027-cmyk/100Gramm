@@ -164,6 +164,10 @@ const id: typeof ru = {
     useConnectedWallet: "Isi dari dompet yang terhubung",
     connectInsteadOfTyping: "atau hubungkan dompet daripada mengetik alamat",
     errorInvalidAddress: "Periksa alamat dompetnya — sepertinya tidak lengkap atau tidak valid",
+    depositsDisabledTitle: "Setoran sementara tidak tersedia",
+    depositsDisabledBody: "Kami sedang memperbarui ekonomi aplikasi — setoran akan aktif kembali sebentar lagi",
+    withdrawalsDisabledTitle: "Penarikan sementara tidak tersedia",
+    withdrawalsDisabledBody: "Kami sedang memperbarui ekonomi aplikasi — penarikan akan aktif kembali sebentar lagi",
   },
   walletConnect: {
     navLabel: "Dompet",

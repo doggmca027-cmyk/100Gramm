@@ -164,6 +164,10 @@ const tr: typeof ru = {
     useConnectedWallet: "Bağlı cüzdanımdan doldur",
     connectInsteadOfTyping: "veya adresi yazmak yerine bir cüzdan bağla",
     errorInvalidAddress: "Cüzdan adresini kontrol et — eksik veya geçersiz görünüyor",
+    depositsDisabledTitle: "Para yatırma geçici olarak kullanılamıyor",
+    depositsDisabledBody: "Uygulamanın ekonomisini güncelliyoruz — para yatırma kısa süre içinde tekrar çalışacak",
+    withdrawalsDisabledTitle: "Para çekme geçici olarak kullanılamıyor",
+    withdrawalsDisabledBody: "Uygulamanın ekonomisini güncelliyoruz — para çekme kısa süre içinde tekrar çalışacak",
   },
   walletConnect: {
     navLabel: "Cüzdan",

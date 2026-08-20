@@ -164,6 +164,10 @@ const en: typeof ru = {
     useConnectedWallet: "Fill in from my connected wallet",
     connectInsteadOfTyping: "or connect a wallet instead of typing the address",
     errorInvalidAddress: "Check that wallet address — it looks incomplete or invalid",
+    depositsDisabledTitle: "Deposits are temporarily unavailable",
+    depositsDisabledBody: "We're updating the app's economy — deposits will be back shortly",
+    withdrawalsDisabledTitle: "Withdrawals are temporarily unavailable",
+    withdrawalsDisabledBody: "We're updating the app's economy — withdrawals will be back shortly",
   },
   walletConnect: {
     navLabel: "Wallet",

@@ -164,6 +164,10 @@ const ar: typeof ru = {
     useConnectedWallet: "استخدم عنوان المحفظة المتصلة",
     connectInsteadOfTyping: "أو اربط محفظة بدلاً من إدخال العنوان يدويًا",
     errorInvalidAddress: "تحقق من عنوان المحفظة — يبدو أنه غير كامل أو غير صحيح",
+    depositsDisabledTitle: "الإيداع غير متاح مؤقتًا",
+    depositsDisabledBody: "نعمل على تحديث اقتصاد التطبيق — سيعمل الإيداع مجددًا قريبًا",
+    withdrawalsDisabledTitle: "السحب غير متاح مؤقتًا",
+    withdrawalsDisabledBody: "نعمل على تحديث اقتصاد التطبيق — سيعمل السحب مجددًا قريبًا",
   },
   walletConnect: {
     navLabel: "المحفظة",

@@ -162,6 +162,10 @@ const ru = {
     useConnectedWallet: "Подставить адрес из подключённого кошелька",
     connectInsteadOfTyping: "или подключи кошелёк, чтобы не вводить адрес вручную",
     errorInvalidAddress: "Проверь адрес кошелька — похоже, он неполный или неверный",
+    depositsDisabledTitle: "Пополнение временно недоступно",
+    depositsDisabledBody: "Мы обновляем экономику приложения — пополнения снова заработают в ближайшее время",
+    withdrawalsDisabledTitle: "Вывод временно недоступен",
+    withdrawalsDisabledBody: "Мы обновляем экономику приложения — вывод снова заработает в ближайшее время",
   },
   walletConnect: {
     navLabel: "Кошелёк",
