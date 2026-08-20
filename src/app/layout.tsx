@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { Geist, Geist_Mono, Tajawal } from "next/font/google";
 import { AppBootstrap } from "@/components/app-bootstrap";
 import { TonConnectProvider } from "@/components/ton-connect-provider";
@@ -55,25 +54,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <AppBootstrap>{children}</AppBootstrap>
           </TonConnectProvider>
         </LanguageProvider>
-        {/*
-          Taddy ad/monetization SDK (https://taddy.gitbook.io/docs/sdk/web).
-          Loaded site-wide on purpose, per an explicit decision after a
-          security review flagged the tradeoff: this app has no route split
-          between player and admin content (admin-screen.tsx renders inside
-          the same client tree), and the CSRF cookie is deliberately
-          non-httpOnly so the app's own JS can read it (see assertCsrfToken
-          in lib/session.ts) — any script sharing the page, this one
-          included, has that same read access. `strategy="afterInteractive"`
-          keeps it off the critical render path; ordered after AppBootstrap
-          so it loads once the Telegram bridge (@telegram-apps/sdk-react,
-          not a classic telegram-web-app.js <script> tag in this project)
-          has already initialized.
-        */}
-        <Script
-          src="https://sdk.taddy.pro/web/taddy.min.js"
-          data-pub-id="ae36b389e4466760a9476a1a6894457f"
-          strategy="afterInteractive"
-        />
       </body>
     </html>
   );
